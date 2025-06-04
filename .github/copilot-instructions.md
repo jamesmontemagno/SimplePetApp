@@ -3,9 +3,11 @@
 ## Project Overview
 This is a Blazor WebAssembly application built with .NET 9. 
 
-it is
+it is located on https://github.com/jamesmontemagno/SimplePetApp
 
 The application follows modern best practices for Blazor WASM development.
+
+All code for the frontend is loctated in the MyPetVenues folder
 
 ## Coding Standards
 - Use C# 12 features where appropriate
