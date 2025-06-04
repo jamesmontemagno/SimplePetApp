@@ -1,3 +1,80 @@
+/* Theme Variables */
+:root {
+    /* Light Theme Variables */
+    --light-bg: #f8f9fa;
+    --light-card-bg: #ffffff;
+    --light-text: #333333;
+    --light-text-muted: #6c757d;
+    --light-border: #e9ecef;
+    --light-heading: #212529;
+    --light-shadow: rgba(0, 0, 0, 0.05);
+
+    /* Dark Theme Variables */
+    --dark-bg: #121212;
+    --dark-card-bg: #1e1e1e;
+    --dark-text: #e0e0e0;
+    --dark-text-muted: #a0a0a0;
+    --dark-border: #2d2d2d;
+    --dark-heading: #ffffff;
+    --dark-shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* Dark Mode Styles */
+.dark-mode {
+    --bg-color: var(--dark-bg);
+    --card-bg: var(--dark-card-bg);
+    --text-color: var(--dark-text);
+    --text-muted: var(--dark-text-muted);
+    --border-color: var(--dark-border);
+    --heading-color: var(--dark-heading);
+    --shadow-color: var(--dark-shadow);
+}
+
+/* Light Mode Styles */
+.light-mode {
+    --bg-color: var(--light-bg);
+    --card-bg: var(--light-card-bg);
+    --text-color: var(--light-text);
+    --text-muted: var(--light-text-muted);
+    --border-color: var(--light-border);
+    --heading-color: var(--light-heading);
+    --shadow-color: var(--light-shadow);
+}
+
+/* Apply Dark Mode by Default */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body:not(.light-mode):not(.dark-mode) {
+    --bg-color: var(--dark-bg);
+    --card-bg: var(--dark-card-bg);
+    --text-color: var(--dark-text);
+    --text-muted: var(--dark-text-muted);
+    --border-color: var(--dark-border);
+    --heading-color: var(--dark-heading);
+    --shadow-color: var(--dark-shadow);
+}
+
+/* Global Reset */
+* {
+    box-sizing: border-box;
+}
+
+a {
+    color: #ff66c4;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--heading-color);
+}
+
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }

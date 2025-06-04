@@ -1,7 +1,115 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>PetFriendlyPlaces - Discover Pet-Friendly Venues</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">Find Perfect Places for You and Your Pets 🐶 🐱 🐰</h1>
+        <p class="hero-subtitle">Discover, share, and rate pet-friendly venues in your area</p>
+        <div class="hero-buttons">
+            <a href="#" class="button primary">Explore Venues</a>
+            <a href="#" class="button secondary">Add a Venue</a>
+        </div>
+    </div>
+    <div class="hero-images">
+        <img src="images/dog1.png" alt="Happy dog" class="hero-image active" />
+        <img src="images/cat1.jpg" alt="Cute cat" class="hero-image" />
+        <img src="images/bunny.jpg" alt="Adorable bunny" class="hero-image" />
+    </div>
+</section>
 
-Welcome to your new app.
+<section class="features">
+    <h2 class="section-title">🌟 Why Use PetFriendlyPlaces?</h2>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <h3>Find Venues Easily</h3>
+            <p>Discover pet-friendly parks, cafes, hotels, and stores in your area with our powerful search tools.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">⭐</div>
+            <h3>Read & Write Reviews</h3>
+            <p>Share your experiences and learn from others with our community-driven reviews.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📍</div>
+            <h3>Add New Places</h3>
+            <p>Help grow our database by submitting your favorite pet-friendly locations.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🏆</div>
+            <h3>Earn Badges</h3>
+            <p>Get recognized for your contributions with special badges and community status.</p>
+        </div>
+    </div>
+</section>
+
+<section class="categories">
+    <h2 class="section-title">Explore Venue Categories 🌈</h2>
+    <div class="category-grid">
+        <a href="#" class="category-card">
+            <img src="images/dog5.jpg" alt="Park" />
+            <h3>Parks & Recreation</h3>
+            <p>Open spaces for your pets to run and play</p>
+        </a>
+        <a href="#" class="category-card">
+            <img src="images/cat3.jpg" alt="Cafe" />
+            <h3>Cafes & Restaurants</h3>
+            <p>Dine with your furry friends</p>
+        </a>
+        <a href="#" class="category-card">
+            <img src="images/dog7.jpg" alt="Hotel" />
+            <h3>Hotels & Lodging</h3>
+            <p>Pet-friendly places to stay</p>
+        </a>
+        <a href="#" class="category-card">
+            <img src="images/hedgehog.jpg" alt="Stores" />
+            <h3>Shops & Stores</h3>
+            <p>Retailers that welcome pets</p>
+        </a>
+    </div>
+</section>
+
+<section class="testimonials">
+    <h2 class="section-title">What Pet Owners Say 💬</h2>
+    <div class="testimonial-carousel">
+        <div class="testimonial-card">
+            <div class="testimonial-image">
+                <img src="images/dog8.jpg" alt="Happy dog" />
+            </div>
+            <div class="testimonial-content">
+                <p>"PetFriendlyPlaces helped me find a wonderful café where my dog Max is always welcome. We go there every weekend now!"</p>
+                <h4>Sarah & Max</h4>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-image">
+                <img src="images/cat2.jpg" alt="Happy cat" />
+            </div>
+            <div class="testimonial-content">
+                <p>"I travel often with my cat Luna, and this app has been incredible for finding hotels that actually welcome cats, not just dogs."</p>
+                <h4>Michael & Luna</h4>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta">
+    <div class="cta-content">
+        <h2>Ready to Discover Perfect Places for You and Your Pet?</h2>
+        <p>Join our growing community of pet lovers and contribute to the largest database of pet-friendly venues.</p>
+        <a href="#" class="button primary large">Get Started Now 🚀</a>
+    </div>
+</section>
+
+@code {
+    // Add code to cycle through hero images
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // In a real implementation, we would use JS interop here
+            // to cycle through the hero images
+        }
+    }
+}
