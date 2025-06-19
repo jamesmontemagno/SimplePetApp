@@ -118,6 +118,11 @@ body, .landing-header, .footer {
     margin-bottom: 2rem;
     color: var(--text-dark);
 }
+.cta-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
 .cta-btn {
     background: var(--primary-gradient);
     color: var(--text-light);

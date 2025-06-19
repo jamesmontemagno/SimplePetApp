@@ -1,3 +1,14 @@
+/* CSS Variables for consistency */
+:root {
+    --primary-gradient: linear-gradient(90deg, #ff4e8e 0%, #ff6a88 100%);
+    --secondary-gradient: linear-gradient(90deg, #ffb6c1 0%, #ff4e8e 100%);
+    --dark-bg: #1a1a2e;
+    --light-bg: #fff0f6;
+    --text-dark: #1a1a2e;
+    --text-light: #fff;
+    --card-bg: #fff0f6cc;
+}
+
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }

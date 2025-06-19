@@ -1,0 +1,156 @@
+@page "/pets"
+@inject IPetProfileService PetProfileService
+@inject NavigationManager Navigation
+
+<PageTitle>Pet Profiles</PageTitle>
+
+<div class="pet-profiles-container">
+    <div class="page-header">
+        <h1>🐾 Pet Profiles</h1>
+        <button class="btn btn-primary" @onclick="AddNewPet">
+            ➕ Add New Pet
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading">
+            <p>Loading pet profiles...</p>
+        </div>
+    }
+    else if (!profiles.Any())
+    {
+        <div class="no-profiles">
+            <div class="no-profiles-content">
+                <h2>🐕 No Pet Profiles Yet!</h2>
+                <p>Start by adding your first pet profile to track your furry friends.</p>
+                <button class="btn btn-primary" @onclick="AddNewPet">
+                    ➕ Add Your First Pet
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="profiles-grid">
+            @foreach (var profile in profiles)
+            {
+                <div class="profile-card" @key="profile.Id">
+                    <div class="profile-image">
+                        @if (!string.IsNullOrEmpty(profile.PhotoUrl))
+                        {
+                            <img src="@profile.PhotoUrl" alt="@profile.Name" />
+                        }
+                        else
+                        {
+                            <div class="no-image">🐾</div>
+                        }
+                    </div>
+                    <div class="profile-info">
+                        <h3>@profile.Name</h3>
+                        @if (!string.IsNullOrEmpty(profile.Breed))
+                        {
+                            <p class="breed">@profile.Breed</p>
+                        }
+                        @if (profile.BirthDate.HasValue)
+                        {
+                            <p class="age">Age: @GetAge(profile.BirthDate.Value)</p>
+                        }
+                        @if (!string.IsNullOrEmpty(profile.Description))
+                        {
+                            <p class="description">@GetTruncatedDescription(profile.Description)</p>
+                        }
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn btn-secondary" @onclick="() => ViewProfile(profile.Id)">
+                            👁️ View
+                        </button>
+                        <button class="btn btn-outline" @onclick="() => EditProfile(profile.Id)">
+                            ✏️ Edit
+                        </button>
+                        <button class="btn btn-danger" @onclick="() => DeleteProfile(profile.Id)">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<PetProfile> profiles = [];
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProfiles();
+    }
+
+    private async Task LoadProfiles()
+    {
+        isLoading = true;
+        try
+        {
+            profiles = await PetProfileService.GetProfilesAsync();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void AddNewPet()
+    {
+        Navigation.NavigateTo("/pets/add");
+    }
+
+    private void ViewProfile(Guid id)
+    {
+        Navigation.NavigateTo($"/pets/{id}");
+    }
+
+    private void EditProfile(Guid id)
+    {
+        Navigation.NavigateTo($"/pets/edit/{id}");
+    }
+
+    private async Task DeleteProfile(Guid id)
+    {
+        if (await ConfirmDelete())
+        {
+            await PetProfileService.DeleteProfileAsync(id);
+            await LoadProfiles();
+        }
+    }
+
+    private async Task<bool> ConfirmDelete()
+    {
+        // Simple confirmation for now - could be enhanced with a modal dialog
+        return await Task.FromResult(true); // In a real app, this would show a confirmation dialog
+    }
+
+    private string GetAge(DateTime birthDate)
+    {
+        var today = DateTime.Today;
+        var age = today.Year - birthDate.Year;
+        if (birthDate.Date > today.AddYears(-age)) age--;
+        
+        if (age == 0)
+        {
+            var months = (today.Year - birthDate.Year) * 12 + today.Month - birthDate.Month;
+            return months <= 1 ? "Less than 1 month" : $"{months} months";
+        }
+        
+        return age == 1 ? "1 year" : $"{age} years";
+    }
+
+    private string GetTruncatedDescription(string description)
+    {
+        const int maxLength = 100;
+        if (description.Length <= maxLength)
+            return description;
+        
+        return description[..maxLength] + "...";
+    }
+}

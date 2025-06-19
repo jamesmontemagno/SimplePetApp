@@ -1,0 +1,126 @@
+@page "/pets/add"
+@page "/pets/edit/{id:guid}"
+@inject IPetProfileService PetProfileService
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsEditMode ? "Edit Pet Profile" : "Add New Pet")</PageTitle>
+
+<div class="pet-form-container">
+    <div class="form-header">
+        <h1>@(IsEditMode ? "✏️ Edit Pet Profile" : "➕ Add New Pet")</h1>
+        <button class="btn btn-secondary" @onclick="GoBack">
+            ← Back to Pets
+        </button>
+    </div>
+
+    <div class="form-content">
+        <EditForm Model="petProfile" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            
+            <div class="form-group">
+                <label for="name">Pet Name *</label>
+                <InputText id="name" @bind-Value="petProfile.Name" class="form-control" placeholder="Enter your pet's name" />
+                <ValidationMessage For="@(() => petProfile.Name)" />
+            </div>
+
+            <div class="form-group">
+                <label for="breed">Breed</label>
+                <InputText id="breed" @bind-Value="petProfile.Breed" class="form-control" placeholder="Enter breed (optional)" />
+                <ValidationMessage For="@(() => petProfile.Breed)" />
+            </div>
+
+            <div class="form-group">
+                <label for="birthdate">Birth Date</label>
+                <InputDate id="birthdate" @bind-Value="petProfile.BirthDate" class="form-control" />
+                <ValidationMessage For="@(() => petProfile.BirthDate)" />
+            </div>
+
+            <div class="form-group">
+                <label for="photourl">Photo URL</label>
+                <InputText id="photourl" @bind-Value="petProfile.PhotoUrl" class="form-control" placeholder="Enter photo URL (optional)" />
+                <ValidationMessage For="@(() => petProfile.PhotoUrl)" />
+                @if (!string.IsNullOrEmpty(petProfile.PhotoUrl))
+                {
+                    <div class="photo-preview">
+                        <img src="@petProfile.PhotoUrl" alt="Photo preview" />
+                    </div>
+                }
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <InputTextArea id="description" @bind-Value="petProfile.Description" class="form-control" rows="4" placeholder="Tell us about your pet (optional)" />
+                <ValidationMessage For="@(() => petProfile.Description)" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                    @if (isSubmitting)
+                    {
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <span>@(IsEditMode ? "💾 Update Pet" : "➕ Add Pet")</span>
+                    }
+                </button>
+                <button type="button" class="btn btn-outline" @onclick="GoBack">
+                    Cancel
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid? Id { get; set; }
+
+    private PetProfile petProfile = new();
+    private bool isSubmitting = false;
+
+    private bool IsEditMode => Id.HasValue && Id.Value != Guid.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEditMode)
+        {
+            var existingProfile = await PetProfileService.GetProfileAsync(Id!.Value);
+            if (existingProfile != null)
+            {
+                petProfile = existingProfile;
+            }
+            else
+            {
+                // Profile not found, redirect to list
+                Navigation.NavigateTo("/pets");
+            }
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        isSubmitting = true;
+        try
+        {
+            if (IsEditMode)
+            {
+                await PetProfileService.UpdateProfileAsync(petProfile);
+            }
+            else
+            {
+                await PetProfileService.AddProfileAsync(petProfile);
+            }
+
+            Navigation.NavigateTo("/pets");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/pets");
+    }
+}

@@ -1,0 +1,163 @@
+@page "/pets/{id:guid}"
+@inject IPetProfileService PetProfileService
+@inject NavigationManager Navigation
+
+<PageTitle>@(profile?.Name ?? "Pet Profile")</PageTitle>
+
+<div class="pet-details-container">
+    @if (isLoading)
+    {
+        <div class="loading">
+            <p>Loading pet profile...</p>
+        </div>
+    }
+    else if (profile == null)
+    {
+        <div class="not-found">
+            <h2>🐾 Pet Not Found</h2>
+            <p>The pet profile you're looking for doesn't exist.</p>
+            <button class="btn btn-primary" @onclick="GoBack">
+                ← Back to Pets
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="details-header">
+            <button class="btn btn-secondary" @onclick="GoBack">
+                ← Back to Pets
+            </button>
+            <div class="header-actions">
+                <button class="btn btn-outline" @onclick="EditProfile">
+                    ✏️ Edit
+                </button>
+                <button class="btn btn-danger" @onclick="DeleteProfile">
+                    🗑️ Delete
+                </button>
+            </div>
+        </div>
+
+        <div class="profile-details">
+            <div class="profile-photo">
+                @if (!string.IsNullOrEmpty(profile.PhotoUrl))
+                {
+                    <img src="@profile.PhotoUrl" alt="@profile.Name" />
+                }
+                else
+                {
+                    <div class="no-photo">🐾</div>
+                }
+            </div>
+
+            <div class="profile-info">
+                <h1>@profile.Name</h1>
+                
+                <div class="info-grid">
+                    @if (!string.IsNullOrEmpty(profile.Breed))
+                    {
+                        <div class="info-item">
+                            <span class="label">Breed:</span>
+                            <span class="value">@profile.Breed</span>
+                        </div>
+                    }
+                    
+                    @if (profile.BirthDate.HasValue)
+                    {
+                        <div class="info-item">
+                            <span class="label">Age:</span>
+                            <span class="value">@GetAge(profile.BirthDate.Value)</span>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="label">Birth Date:</span>
+                            <span class="value">@profile.BirthDate.Value.ToString("MMMM dd, yyyy")</span>
+                        </div>
+                    }
+                    
+                    <div class="info-item">
+                        <span class="label">Profile Created:</span>
+                        <span class="value">@DateTime.Now.ToString("MMMM dd, yyyy")</span>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(profile.Description))
+                {
+                    <div class="description-section">
+                        <h3>About @profile.Name</h3>
+                        <p>@profile.Description</p>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private PetProfile? profile;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProfile();
+    }
+
+    private async Task LoadProfile()
+    {
+        isLoading = true;
+        try
+        {
+            profile = await PetProfileService.GetProfileAsync(Id);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/pets");
+    }
+
+    private void EditProfile()
+    {
+        Navigation.NavigateTo($"/pets/edit/{Id}");
+    }
+
+    private async Task DeleteProfile()
+    {
+        if (await ConfirmDelete())
+        {
+            await PetProfileService.DeleteProfileAsync(Id);
+            Navigation.NavigateTo("/pets");
+        }
+    }
+
+    private async Task<bool> ConfirmDelete()
+    {
+        // Simple confirmation for now - could be enhanced with a modal dialog
+        return await Task.FromResult(true); // In a real app, this would show a confirmation dialog
+    }
+
+    private string GetAge(DateTime birthDate)
+    {
+        var today = DateTime.Today;
+        var age = today.Year - birthDate.Year;
+        if (birthDate.Date > today.AddYears(-age)) age--;
+        
+        if (age == 0)
+        {
+            var months = (today.Year - birthDate.Year) * 12 + today.Month - birthDate.Month;
+            if (months <= 0)
+            {
+                var days = (today - birthDate).Days;
+                return days <= 1 ? "Less than 1 day" : $"{days} days";
+            }
+            return months <= 1 ? "Less than 1 month" : $"{months} months";
+        }
+        
+        return age == 1 ? "1 year old" : $"{age} years old";
+    }
+}
