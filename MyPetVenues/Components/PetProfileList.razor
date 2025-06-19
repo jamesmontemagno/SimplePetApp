@@ -68,7 +68,7 @@
                         <button class="btn btn-outline" @onclick="() => EditProfile(profile.Id)">
                             ✏️ Edit
                         </button>
-                        <button class="btn btn-danger" @onclick="() => DeleteProfile(profile.Id)">
+                        <button class="btn btn-danger" @onclick="() => ShowDeleteDialog(profile)">
                             🗑️ Delete
                         </button>
                     </div>
@@ -78,9 +78,17 @@
     }
 </div>
 
+<PetProfileDeleteDialog 
+    IsVisible="showDeleteDialog" 
+    PetName="@(profileToDelete?.Name ?? "")"
+    OnConfirm="ConfirmDelete"
+    OnCancel="CancelDelete" />
+
 @code {
     private List<PetProfile> profiles = [];
     private bool isLoading = true;
+    private bool showDeleteDialog = false;
+    private PetProfile? profileToDelete;
 
     protected override async Task OnInitializedAsync()
     {
@@ -115,19 +123,28 @@
         Navigation.NavigateTo($"/pets/edit/{id}");
     }
 
-    private async Task DeleteProfile(Guid id)
+    private void ShowDeleteDialog(PetProfile profile)
     {
-        if (await ConfirmDelete())
-        {
-            await PetProfileService.DeleteProfileAsync(id);
-            await LoadProfiles();
-        }
+        profileToDelete = profile;
+        showDeleteDialog = true;
     }
 
-    private async Task<bool> ConfirmDelete()
+    private async Task ConfirmDelete()
     {
-        // Simple confirmation for now - could be enhanced with a modal dialog
-        return await Task.FromResult(true); // In a real app, this would show a confirmation dialog
+        if (profileToDelete != null)
+        {
+            await PetProfileService.DeleteProfileAsync(profileToDelete.Id);
+            await LoadProfiles();
+        }
+        showDeleteDialog = false;
+        profileToDelete = null;
+    }
+
+    private Task CancelDelete()
+    {
+        showDeleteDialog = false;
+        profileToDelete = null;
+        return Task.CompletedTask;
     }
 
     private string GetAge(DateTime birthDate)

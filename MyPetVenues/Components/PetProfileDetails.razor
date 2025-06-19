@@ -31,7 +31,7 @@
                 <button class="btn btn-outline" @onclick="EditProfile">
                     ✏️ Edit
                 </button>
-                <button class="btn btn-danger" @onclick="DeleteProfile">
+                <button class="btn btn-danger" @onclick="ShowDeleteDialog">
                     🗑️ Delete
                 </button>
             </div>
@@ -92,11 +92,18 @@
     }
 </div>
 
+<PetProfileDeleteDialog 
+    IsVisible="showDeleteDialog" 
+    PetName="@(profile?.Name ?? "")"
+    OnConfirm="ConfirmDelete"
+    OnCancel="CancelDelete" />
+
 @code {
     [Parameter] public Guid Id { get; set; }
 
     private PetProfile? profile;
     private bool isLoading = true;
+    private bool showDeleteDialog = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,19 +133,21 @@
         Navigation.NavigateTo($"/pets/edit/{Id}");
     }
 
-    private async Task DeleteProfile()
+    private void ShowDeleteDialog()
     {
-        if (await ConfirmDelete())
-        {
-            await PetProfileService.DeleteProfileAsync(Id);
-            Navigation.NavigateTo("/pets");
-        }
+        showDeleteDialog = true;
     }
 
-    private async Task<bool> ConfirmDelete()
+    private async Task ConfirmDelete()
     {
-        // Simple confirmation for now - could be enhanced with a modal dialog
-        return await Task.FromResult(true); // In a real app, this would show a confirmation dialog
+        await PetProfileService.DeleteProfileAsync(Id);
+        Navigation.NavigateTo("/pets");
+    }
+
+    private Task CancelDelete()
+    {
+        showDeleteDialog = false;
+        return Task.CompletedTask;
     }
 
     private string GetAge(DateTime birthDate)

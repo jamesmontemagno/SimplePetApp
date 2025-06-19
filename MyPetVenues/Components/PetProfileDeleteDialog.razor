@@ -1,0 +1,41 @@
+@if (IsVisible)
+{
+    <div class="modal-backdrop" @onclick="Cancel">
+        <div class="modal-dialog" @onclick:stopPropagation="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🗑️ Delete Pet Profile</h3>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong>@PetName</strong>'s profile?</p>
+                    <p>This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" @onclick="Confirm">
+                        🗑️ Delete
+                    </button>
+                    <button class="btn btn-outline" @onclick="Cancel">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public string PetName { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private async Task Confirm()
+    {
+        await OnConfirm.InvokeAsync();
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+}
