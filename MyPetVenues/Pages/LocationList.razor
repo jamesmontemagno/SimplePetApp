@@ -1,0 +1,179 @@
+@page "/locations"
+@inject ILocationService LocationService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>Pet-Friendly Locations</PageTitle>
+
+<div class="location-list-container">
+    <header class="page-header">
+        <h1>🐾 Pet-Friendly Locations</h1>
+        <p>Discover amazing places to visit with your furry friends</p>
+    </header>
+
+    <div class="search-filters">
+        <div class="search-bar">
+            <input type="text" @bind="searchQuery" @oninput="OnSearchChanged" placeholder="Search locations..." class="search-input" />
+            <button class="search-btn" @onclick="SearchLocations">🔍</button>
+        </div>
+        
+        <div class="filter-buttons">
+            <button class="filter-btn @(selectedType == null ? "active" : "")" @onclick="() => FilterByType(null)">All</button>
+            @foreach (var type in Enum.GetValues<LocationType>())
+            {
+                <button class="filter-btn @(selectedType == type ? "active" : "")" 
+                        @onclick="() => FilterByType(type)">
+                    @GetTypeIcon(type) @type
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="view-toggle">
+        <button class="view-btn @(viewMode == "list" ? "active" : "")" @onclick='() => SetViewMode("list")'>
+            📋 List
+        </button>
+        <button class="view-btn @(viewMode == "map" ? "active" : "")" @onclick='() => SetViewMode("map")'>
+            🗺️ Map
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading locations...</p>
+        </div>
+    }
+    else if (viewMode == "list")
+    {
+        <div class="locations-grid">
+            @foreach (var location in filteredLocations)
+            {
+                <div class="location-card" @onclick="() => NavigateToDetails(location.Id)">
+                    <div class="location-image">
+                        <img src="@location.ImageUrl" alt="@location.Name" />
+                        <div class="location-type">@GetTypeIcon(location.Type)</div>
+                    </div>
+                    <div class="location-content">
+                        <h3>@location.Name</h3>
+                        <p class="location-description">@location.Description</p>
+                        <p class="location-address">📍 @location.Address</p>
+                        
+                        @if (location.Reviews.Any())
+                        {
+                            <div class="rating">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="star @(i <= location.AverageRating ? "filled" : "")">⭐</span>
+                                }
+                                <span class="rating-text">(@location.Reviews.Count reviews)</span>
+                            </div>
+                        }
+                        
+                        <div class="amenities">
+                            @foreach (var amenity in location.Amenities.Take(3))
+                            {
+                                <span class="amenity">@amenity.Icon @amenity.Name</span>
+                            }
+                            @if (location.Amenities.Count > 3)
+                            {
+                                <span class="amenity">+@(location.Amenities.Count - 3) more</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        @if (!filteredLocations.Any())
+        {
+            <div class="no-results">
+                <h3>🔍 No locations found</h3>
+                <p>Try adjusting your search or filters</p>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="map-container">
+            <div id="map" class="map"></div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Location> allLocations = new();
+    private List<Location> filteredLocations = new();
+    private string searchQuery = string.Empty;
+    private LocationType? selectedType = null;
+    private bool isLoading = true;
+    private string viewMode = "list";
+
+    protected override async Task OnInitializedAsync()
+    {
+        allLocations = await LocationService.GetLocationsAsync();
+        filteredLocations = allLocations;
+        isLoading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && viewMode == "map")
+        {
+            await InitializeMap();
+        }
+    }
+
+    private async Task OnSearchChanged(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+        await SearchLocations();
+    }
+
+    private async Task SearchLocations()
+    {
+        isLoading = true;
+        filteredLocations = await LocationService.SearchLocationsAsync(searchQuery, selectedType);
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task FilterByType(LocationType? type)
+    {
+        selectedType = type;
+        await SearchLocations();
+    }
+
+    private async Task SetViewMode(string mode)
+    {
+        viewMode = mode;
+        if (mode == "map")
+        {
+            StateHasChanged();
+            await Task.Delay(100); // Give the DOM time to render
+            await InitializeMap();
+        }
+    }
+
+    private async Task InitializeMap()
+    {
+        await JS.InvokeVoidAsync("initializeMap", filteredLocations);
+    }
+
+    private void NavigateToDetails(int locationId)
+    {
+        Navigation.NavigateTo($"/locations/{locationId}");
+    }
+
+    private string GetTypeIcon(LocationType type) => type switch
+    {
+        LocationType.Park => "🏞️",
+        LocationType.Cafe => "☕",
+        LocationType.Hotel => "🏨",
+        LocationType.Store => "🏪",
+        LocationType.Restaurant => "🍽️",
+        LocationType.Veterinary => "🏥",
+        _ => "📍"
+    };
+}

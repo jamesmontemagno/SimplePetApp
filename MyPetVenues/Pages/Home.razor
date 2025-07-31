@@ -11,6 +11,8 @@
 			<a href="#features">Features</a>
 			<a href="#community">Community</a>
 			<a href="#venues">Venues</a>
+			<a href="/locations">Browse Locations</a>
+			<a href="/map">Map View</a>
 			<a href="#footer">Contact</a>
 		</nav>
 		<button class="theme-toggle" @onclick="ToggleTheme">@(_isDark ? "🌙" : "☀️")</button>
@@ -21,7 +23,10 @@
 		<div class="hero-content">
 			<h1>Find <span class="gradient-text">Pet-Friendly</span> Places Near You! 🐶🐱</h1>
 			<p class="subtitle">Discover, review, and share the best spots for you and your furry friends. Community-powered, fun, and always welcoming! 🦴</p>
-			<a class="cta-btn" href="#features">Explore Features</a>
+			<div class="hero-buttons">
+				<a class="cta-btn primary" href="/locations">Find Locations</a>
+				<a class="cta-btn secondary" href="/map">View Map</a>
+			</div>
 		</div>
 		<div class="hero-images">
 			<img src="images/pets/dog1.png" alt="Dog" class="pet-img pet-img-1" />

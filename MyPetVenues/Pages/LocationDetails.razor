@@ -1,0 +1,225 @@
+@page "/locations/{id:int}"
+@inject ILocationService LocationService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>@(location?.Name ?? "Location Details")</PageTitle>
+
+<div class="location-details-container">
+    @if (isLoading)
+    {
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading location details...</p>
+        </div>
+    }
+    else if (location == null)
+    {
+        <div class="not-found">
+            <h2>🔍 Location Not Found</h2>
+            <p>Sorry, we couldn't find the location you're looking for.</p>
+            <button class="back-btn" @onclick="GoBack">← Back to Locations</button>
+        </div>
+    }
+    else
+    {
+        <div class="location-header">
+            <button class="back-btn" @onclick="GoBack">← Back to Locations</button>
+            <div class="header-content">
+                <div class="location-image">
+                    <img src="@location.ImageUrl" alt="@location.Name" />
+                    <div class="location-type">@GetTypeIcon(location.Type)</div>
+                </div>
+                <div class="location-info">
+                    <h1>@location.Name</h1>
+                    <p class="location-type-text">@location.Type</p>
+                    <p class="location-address">📍 @location.Address</p>
+                    
+                    @if (location.Reviews.Any())
+                    {
+                        <div class="rating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <span class="star @(i <= location.AverageRating ? "filled" : "")">⭐</span>
+                            }
+                            <span class="rating-text">@location.AverageRating.ToString("F1") (@location.Reviews.Count reviews)</span>
+                        </div>
+                    }
+                    
+                    <div class="contact-info">
+                        @if (!string.IsNullOrEmpty(location.Phone))
+                        {
+                            <p>📞 @location.Phone</p>
+                        }
+                        @if (!string.IsNullOrEmpty(location.Website))
+                        {
+                            <p>🌐 <a href="@location.Website" target="_blank">Visit Website</a></p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="location-content">
+            <div class="main-content">
+                <section class="description-section">
+                    <h2>About This Location</h2>
+                    <p>@location.Description</p>
+                </section>
+
+                <section class="amenities-section">
+                    <h2>🎯 Amenities</h2>
+                    <div class="amenities-grid">
+                        @foreach (var amenity in location.Amenities)
+                        {
+                            <div class="amenity-card">
+                                <span class="amenity-icon">@amenity.Icon</span>
+                                <span class="amenity-name">@amenity.Name</span>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <section class="policy-section">
+                    <h2>🐾 Pet Policy</h2>
+                    <div class="policy-card">
+                        <p>@location.PetPolicy</p>
+                    </div>
+                </section>
+
+                <section class="reviews-section">
+                    <h2>⭐ Reviews (@location.Reviews.Count)</h2>
+                    <div class="reviews-list">
+                        @foreach (var review in location.Reviews.OrderByDescending(r => r.Date))
+                        {
+                            <div class="review-card">
+                                <div class="review-header">
+                                    <div class="reviewer-info">
+                                        <span class="reviewer-name">@review.UserName</span>
+                                        <span class="pet-type">with @review.PetType</span>
+                                    </div>
+                                    <div class="review-meta">
+                                        <div class="review-rating">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <span class="star @(i <= review.Rating ? "filled" : "")">⭐</span>
+                                            }
+                                        </div>
+                                        <span class="review-date">@review.Date.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                </div>
+                                <p class="review-comment">@review.Comment</p>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="add-review">
+                        <h3>Write a Review</h3>
+                        <button class="review-btn" @onclick="ShowReviewForm">📝 Add Your Review</button>
+                    </div>
+                </section>
+            </div>
+
+            <div class="sidebar">
+                <div class="hours-card">
+                    <h3>🕒 Hours</h3>
+                    @if (location.Hours.Any())
+                    {
+                        @foreach (var hours in location.Hours)
+                        {
+                            <p>@hours</p>
+                        }
+                    }
+                    else
+                    {
+                        <p>Hours not available</p>
+                    }
+                </div>
+
+                <div class="map-card">
+                    <h3>📍 Location</h3>
+                    <div class="mini-map">
+                        <div class="map-placeholder">
+                            <p>🗺️ Map View</p>
+                            <p>@location.Address</p>
+                        </div>
+                    </div>
+                    <button class="directions-btn" @onclick="GetDirections">Get Directions</button>
+                </div>
+
+                <div class="actions-card">
+                    <h3>Actions</h3>
+                    <button class="action-btn" @onclick="ShareLocation">🔗 Share Location</button>
+                    <button class="action-btn" @onclick="SaveToFavorites">❤️ Save to Favorites</button>
+                    <button class="action-btn" @onclick="ReportIssue">⚠️ Report Issue</button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    
+    private Location? location;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        location = await LocationService.GetLocationByIdAsync(Id);
+        isLoading = false;
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/locations");
+    }
+
+    private void ShowReviewForm()
+    {
+        JS.InvokeVoidAsync("alert", "Review form would open here");
+    }
+
+    private void GetDirections()
+    {
+        if (location != null)
+        {
+            var url = $"https://maps.google.com/maps?q={location.Latitude},{location.Longitude}";
+            JS.InvokeVoidAsync("open", url, "_blank");
+        }
+    }
+
+    private void ShareLocation()
+    {
+        if (location != null)
+        {
+            JS.InvokeVoidAsync("navigator.share", new
+            {
+                title = location.Name,
+                text = location.Description,
+                url = $"{JS.InvokeAsync<string>("location.href")}"
+            });
+        }
+    }
+
+    private void SaveToFavorites()
+    {
+        JS.InvokeVoidAsync("alert", "Added to favorites!");
+    }
+
+    private void ReportIssue()
+    {
+        JS.InvokeVoidAsync("alert", "Report issue form would open here");
+    }
+
+    private string GetTypeIcon(LocationType type) => type switch
+    {
+        LocationType.Park => "🏞️",
+        LocationType.Cafe => "☕",
+        LocationType.Hotel => "🏨",
+        LocationType.Store => "🏪",
+        LocationType.Restaurant => "🍽️",
+        LocationType.Veterinary => "🏥",
+        _ => "📍"
+    };
+}

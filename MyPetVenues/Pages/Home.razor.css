@@ -672,3 +672,37 @@
 [data-theme="light"] .footer-copy {
 	color: #222a;
 }
+
+/* Hero button styles */
+.hero-buttons {
+display: flex;
+gap: 1rem;
+margin-top: 1rem;
+flex-wrap: wrap;
+}
+
+.cta-btn.secondary {
+background: rgba(255, 255, 255, 0.2);
+color: #fff;
+border: 2px solid rgba(255, 255, 255, 0.3);
+backdrop-filter: blur(10px);
+}
+
+.cta-btn.secondary:hover {
+background: rgba(255, 255, 255, 0.3);
+transform: scale(1.05);
+}
+
+@media (max-width: 480px) {
+.hero-buttons {
+flex-direction: column;
+align-items: center;
+gap: 0.75rem;
+}
+
+.cta-btn {
+width: 100%;
+text-align: center;
+max-width: 250px;
+}
+}

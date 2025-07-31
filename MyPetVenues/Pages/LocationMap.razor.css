@@ -1,0 +1,578 @@
+.map-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #fff0f6 0%, #ffe0ec 100%);
+}
+
+.map-header {
+    background: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.map-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #2d1b69;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.map-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.search-bar {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #ff69b4;
+}
+
+.search-btn {
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #ff69b4, #ff1493);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s;
+}
+
+.search-btn:hover {
+    transform: scale(1.05);
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e0e0e0;
+    background: white;
+    border-radius: 2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    min-width: 60px;
+}
+
+.filter-btn:hover {
+    border-color: #ff69b4;
+    background: #fff0f6;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #ff69b4, #ff1493);
+    color: white;
+    border-color: #ff1493;
+}
+
+.list-view-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s;
+}
+
+.list-view-btn:hover {
+    transform: scale(1.05);
+}
+
+.map-main {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+.map-area {
+    flex: 1;
+    position: relative;
+}
+
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #ff69b4;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.interactive-map {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.map-background {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #e8f5e8 25%, transparent 25%),
+                linear-gradient(-45deg, #e8f5e8 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #e8f5e8 75%),
+                linear-gradient(-45deg, transparent 75%, #e8f5e8 75%);
+    background-size: 40px 40px;
+    background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
+    position: relative;
+}
+
+.map-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.map-marker:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+    z-index: 20;
+}
+
+.marker-icon {
+    display: inline-block;
+    font-size: 2rem;
+    background: white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 3px solid #ff69b4;
+}
+
+.marker-label {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.map-marker:hover .marker-label {
+    opacity: 1;
+}
+
+.map-legend {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+.map-legend h4 {
+    margin: 0 0 0.5rem 0;
+    color: #2d1b69;
+    font-size: 1rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.25rem 0;
+}
+
+.legend-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.legend-text {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.location-sidebar {
+    width: 0;
+    background: white;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+    transition: width 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.location-sidebar.expanded {
+    width: 400px;
+}
+
+.location-details {
+    padding: 1.5rem;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #666;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.close-btn:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.location-image {
+    width: 100%;
+    height: 200px;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.location-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.location-info h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2d1b69;
+    margin-bottom: 0.5rem;
+}
+
+.location-type {
+    color: #ff69b4;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.location-address {
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.star {
+    font-size: 1rem;
+    opacity: 0.3;
+}
+
+.star.filled {
+    opacity: 1;
+}
+
+.rating-text {
+    font-size: 0.9rem;
+    color: #666;
+    margin-left: 0.5rem;
+}
+
+.description {
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.amenity {
+    background: #f0f8ff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    color: #555;
+    border: 1px solid #e0e0e0;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    padding: 0.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.2s;
+}
+
+.action-btn:hover {
+    transform: scale(1.02);
+}
+
+.action-btn.primary {
+    background: linear-gradient(135deg, #ff69b4, #ff1493);
+    color: white;
+}
+
+.action-btn.secondary {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    color: #555;
+}
+
+.action-btn.secondary:hover {
+    background: #e9ecef;
+}
+
+.sidebar-placeholder {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    width: 350px;
+}
+
+.placeholder-content {
+    text-align: center;
+}
+
+.placeholder-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.placeholder-content h3 {
+    color: #2d1b69;
+    margin-bottom: 0.5rem;
+}
+
+.placeholder-content p {
+    color: #666;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+.quick-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ff69b4;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Dark theme support */
+[data-theme="dark"] .map-container {
+    background: linear-gradient(135deg, #1a0a2e 0%, #16213e 100%);
+}
+
+[data-theme="dark"] .map-header,
+[data-theme="dark"] .location-sidebar,
+[data-theme="dark"] .map-legend {
+    background: #2a2a2a;
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .map-header h1,
+[data-theme="dark"] .location-info h3,
+[data-theme="dark"] .placeholder-content h3,
+[data-theme="dark"] .map-legend h4 {
+    color: #ff69b4;
+}
+
+[data-theme="dark"] .search-input {
+    background: #3a3a3a;
+    border-color: #555;
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .filter-btn,
+[data-theme="dark"] .action-btn.secondary,
+[data-theme="dark"] .close-btn {
+    background: #3a3a3a;
+    border-color: #555;
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .filter-btn:hover,
+[data-theme="dark"] .close-btn:hover {
+    background: #4a4a4a;
+}
+
+[data-theme="dark"] .amenity {
+    background: #3a3a3a;
+    border-color: #555;
+    color: #ccc;
+}
+
+[data-theme="dark"] .map-background {
+    background: linear-gradient(45deg, #2a2a3a 25%, transparent 25%),
+                linear-gradient(-45deg, #2a2a3a 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #2a2a3a 75%),
+                linear-gradient(-45deg, transparent 75%, #2a2a3a 75%);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .map-header {
+        padding: 1rem;
+    }
+    
+    .map-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .map-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .search-bar {
+        max-width: 100%;
+    }
+    
+    .filter-buttons {
+        justify-content: center;
+    }
+    
+    .location-sidebar.expanded {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+    }
+    
+    .sidebar-placeholder {
+        width: 100%;
+        padding: 1rem;
+    }
+    
+    .map-legend {
+        position: absolute;
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        top: auto;
+    }
+    
+    .marker-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.5rem;
+    }
+    
+    .marker-label {
+        top: 50px;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .map-header {
+        padding: 0.5rem;
+    }
+    
+    .location-details {
+        padding: 1rem;
+    }
+    
+    .quick-stats {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .filter-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}

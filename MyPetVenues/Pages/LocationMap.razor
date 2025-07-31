@@ -1,0 +1,250 @@
+@page "/map"
+@inject ILocationService LocationService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>Location Map</PageTitle>
+
+<div class="map-container">
+    <header class="map-header">
+        <h1>🗺️ Pet-Friendly Locations Map</h1>
+        <div class="map-controls">
+            <div class="search-bar">
+                <input type="text" @bind="searchQuery" @oninput="OnSearchChanged" 
+                       placeholder="Search locations..." class="search-input" />
+                <button class="search-btn" @onclick="SearchLocations">🔍</button>
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn @(selectedType == null ? "active" : "")" @onclick="() => FilterByType(null)">
+                    All
+                </button>
+                @foreach (var type in Enum.GetValues<LocationType>())
+                {
+                    <button class="filter-btn @(selectedType == type ? "active" : "")" 
+                            @onclick="() => FilterByType(type)">
+                        @GetTypeIcon(type)
+                    </button>
+                }
+            </div>
+            
+            <button class="list-view-btn" @onclick="GoToListView">
+                📋 List View
+            </button>
+        </div>
+    </header>
+
+    <div class="map-main">
+        <div class="map-area">
+            @if (isLoading)
+            {
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading map...</p>
+                </div>
+            }
+            else
+            {
+                <div id="pet-map" class="interactive-map">
+                    <!-- Map placeholder with visual elements -->
+                    <div class="map-background">
+                        @foreach (var location in filteredLocations)
+                        {
+                            <div class="map-marker" 
+                                 style="left: @(GetMapX(location))%; top: @(GetMapY(location))%;"
+                                 @onclick="() => SelectLocation(location)"
+                                 title="@location.Name">
+                                <span class="marker-icon">@GetTypeIcon(location.Type)</span>
+                                <span class="marker-label">@location.Name</span>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="map-legend">
+                        <h4>Legend</h4>
+                        @foreach (var type in Enum.GetValues<LocationType>())
+                        {
+                            <div class="legend-item">
+                                <span class="legend-icon">@GetTypeIcon(type)</span>
+                                <span class="legend-text">@type</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="location-sidebar @(selectedLocation != null ? "expanded" : "")">
+            @if (selectedLocation != null)
+            {
+                <div class="location-details">
+                    <button class="close-btn" @onclick="() => selectedLocation = null">×</button>
+                    
+                    <div class="location-image">
+                        <img src="@selectedLocation.ImageUrl" alt="@selectedLocation.Name" />
+                    </div>
+                    
+                    <div class="location-info">
+                        <h3>@selectedLocation.Name</h3>
+                        <p class="location-type">@GetTypeIcon(selectedLocation.Type) @selectedLocation.Type</p>
+                        <p class="location-address">📍 @selectedLocation.Address</p>
+                        
+                        @if (selectedLocation.Reviews.Any())
+                        {
+                            <div class="rating">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="star @(i <= selectedLocation.AverageRating ? "filled" : "")">⭐</span>
+                                }
+                                <span class="rating-text">@selectedLocation.AverageRating.ToString("F1") (@selectedLocation.Reviews.Count)</span>
+                            </div>
+                        }
+                        
+                        <p class="description">@selectedLocation.Description</p>
+                        
+                        <div class="amenities">
+                            @foreach (var amenity in selectedLocation.Amenities.Take(3))
+                            {
+                                <span class="amenity">@amenity.Icon @amenity.Name</span>
+                            }
+                            @if (selectedLocation.Amenities.Count > 3)
+                            {
+                                <span class="amenity">+@(selectedLocation.Amenities.Count - 3) more</span>
+                            }
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="action-btn primary" @onclick="() => ViewDetails(selectedLocation.Id)">
+                                View Details
+                            </button>
+                            <button class="action-btn secondary" @onclick="() => GetDirections(selectedLocation)">
+                                Directions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="sidebar-placeholder">
+                    <div class="placeholder-content">
+                        <span class="placeholder-icon">📍</span>
+                        <h3>Select a Location</h3>
+                        <p>Click on any marker on the map to view location details</p>
+                        
+                        <div class="quick-stats">
+                            <div class="stat">
+                                <span class="stat-number">@filteredLocations.Count</span>
+                                <span class="stat-label">Locations</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">@filteredLocations.Where(l => l.Type == LocationType.Park).Count()</span>
+                                <span class="stat-label">Parks</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">@filteredLocations.Where(l => l.Type == LocationType.Cafe).Count()</span>
+                                <span class="stat-label">Cafes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Location> allLocations = new();
+    private List<Location> filteredLocations = new();
+    private Location? selectedLocation;
+    private string searchQuery = string.Empty;
+    private LocationType? selectedType = null;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        allLocations = await LocationService.GetLocationsAsync();
+        filteredLocations = allLocations;
+        isLoading = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitializeMap();
+        }
+    }
+
+    private async Task OnSearchChanged(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+        await SearchLocations();
+    }
+
+    private async Task SearchLocations()
+    {
+        isLoading = true;
+        filteredLocations = await LocationService.SearchLocationsAsync(searchQuery, selectedType);
+        selectedLocation = null; // Clear selection when filtering
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task FilterByType(LocationType? type)
+    {
+        selectedType = type;
+        await SearchLocations();
+    }
+
+    private void SelectLocation(Location location)
+    {
+        selectedLocation = location;
+        StateHasChanged();
+    }
+
+    private void ViewDetails(int locationId)
+    {
+        Navigation.NavigateTo($"/locations/{locationId}");
+    }
+
+    private void GetDirections(Location location)
+    {
+        var url = $"https://maps.google.com/maps?q={location.Latitude},{location.Longitude}";
+        JS.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private void GoToListView()
+    {
+        Navigation.NavigateTo("/locations");
+    }
+
+    private async Task InitializeMap()
+    {
+        await JS.InvokeVoidAsync("console.log", "Map initialized");
+    }
+
+    // Simple positioning for demo - in real app would use actual coordinates
+    private double GetMapX(Location location)
+    {
+        // Normalize longitude to percentage (demo values)
+        return 20 + (location.Id % 5) * 15;
+    }
+
+    private double GetMapY(Location location)
+    {
+        // Normalize latitude to percentage (demo values)
+        return 15 + (location.Id % 4) * 20;
+    }
+
+    private string GetTypeIcon(LocationType type) => type switch
+    {
+        LocationType.Park => "🏞️",
+        LocationType.Cafe => "☕",
+        LocationType.Hotel => "🏨",
+        LocationType.Store => "🏪",
+        LocationType.Restaurant => "🍽️",
+        LocationType.Veterinary => "🏥",
+        _ => "📍"
+    };
+}
