@@ -3,6 +3,10 @@ window.setTheme = function(theme) {
     localStorage.setItem('theme', theme);
 }
 
+window.getTheme = function() {
+    return localStorage.getItem('theme') || 'dark';
+}
+
 // On load, set theme from localStorage
 document.addEventListener('DOMContentLoaded', function() {
     var theme = localStorage.getItem('theme') || 'dark';

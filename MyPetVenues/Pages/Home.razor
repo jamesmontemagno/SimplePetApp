@@ -111,6 +111,13 @@
 @code {
 	private bool _isDark = false;
 
+	protected override async Task OnInitializedAsync()
+	{
+		// Get the current theme from localStorage via JavaScript
+		var currentTheme = await JS.InvokeAsync<string>("getTheme");
+		_isDark = currentTheme == "dark";
+	}
+
 	private void ToggleTheme()
 	{
 		_isDark = !_isDark;
