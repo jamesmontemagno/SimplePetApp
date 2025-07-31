@@ -1,0 +1,320 @@
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@implements IDisposable
+@inject INotificationService NotificationService
+
+<div class="notifications-container @(_isExpanded ? "expanded" : "")">
+    <!-- Notification Bell/Toggle -->
+    <div class="notification-toggle" @onclick="ToggleNotifications">
+        <span class="notification-icon">🔔</span>
+        @if (unreadCount > 0)
+        {
+            <span class="notification-badge">@unreadCount</span>
+        }
+    </div>
+
+    <!-- Notifications Panel -->
+    @if (_isExpanded)
+    {
+        <div class="notifications-panel">
+            <div class="notifications-header">
+                <h3>Notifications</h3>
+                <div class="notifications-actions">
+                    @if (unreadCount > 0)
+                    {
+                        <button class="btn-small" @onclick="MarkAllAsRead">Mark All Read</button>
+                    }
+                    <button class="btn-small" @onclick="ClearAll">Clear All</button>
+                    <button class="btn-small" @onclick="SendTestNotification">Test</button>
+                    <button class="close-btn" @onclick="CloseNotifications">✕</button>
+                </div>
+            </div>
+
+            <!-- Permission Status -->
+            @if (permissionState != null && (!permissionState.LocationPermissionGranted || !permissionState.PushNotificationPermissionGranted))
+            {
+                <div class="permissions-section">
+                    <h4>🔒 Permissions</h4>
+                    @if (!permissionState.LocationPermissionGranted)
+                    {
+                        <div class="permission-item">
+                            <span>📍 Location Access</span>
+                            <button class="btn-small" @onclick="RequestLocationPermission">Allow</button>
+                        </div>
+                    }
+                    @if (!permissionState.PushNotificationPermissionGranted)
+                    {
+                        <div class="permission-item">
+                            <span>🔔 Push Notifications</span>
+                            <button class="btn-small" @onclick="RequestPushPermission">Allow</button>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Location Monitoring -->
+            <div class="location-section">
+                <h4>📍 Location Alerts</h4>
+                <div class="location-controls">
+                    @if (_isLocationMonitoring)
+                    {
+                        <button class="btn-small active" @onclick="StopLocationMonitoring">
+                            🟢 Monitoring Active
+                        </button>
+                        @if (currentLocation != null)
+                        {
+                            <span class="location-info">
+                                Updated @currentLocation.LastUpdated.ToString("HH:mm")
+                            </span>
+                        }
+                    }
+                    else
+                    {
+                        <button class="btn-small" @onclick="StartLocationMonitoring">
+                            ⚪ Start Monitoring
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <!-- Notifications List -->
+            <div class="notifications-list">
+                @if (allNotifications.Any())
+                {
+                    @foreach (var notification in allNotifications.Take(10))
+                    {
+                        <div class="notification-item @(notification.IsRead ? "read" : "unread")" @onclick="() => MarkAsRead(notification.Id)">
+                            <div class="notification-content">
+                                <div class="notification-header">
+                                    <span class="notification-type">@GetNotificationIcon(notification)</span>
+                                    <span class="notification-title">@GetNotificationTitle(notification)</span>
+                                    <span class="notification-time">@GetRelativeTime(GetNotificationTime(notification))</span>
+                                </div>
+                                <div class="notification-message">@GetNotificationMessage(notification)</div>
+                                @if (IsLocationAlert(notification))
+                                {
+                                    var alert = notification as LocationAlert;
+                                    <div class="location-details">
+                                        <span class="venue-type">@alert!.VenueType</span>
+                                        <span class="distance">@FormatDistance(alert.DistanceInKm)</span>
+                                    </div>
+                                }
+                            </div>
+                            <button class="delete-btn" @onclick:stopPropagation="true" @onclick="() => DeleteNotification(notification.Id)">
+                                🗑️
+                            </button>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="no-notifications">
+                        <span class="empty-icon">🔕</span>
+                        <p>No notifications yet</p>
+                        <button class="btn-small" @onclick="AddSampleData">Add Sample Data</button>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool _isExpanded = false;
+    private bool _isLocationMonitoring = false;
+    private int unreadCount = 0;
+    private List<INotificationItem> allNotifications = new();
+    private NotificationPermissionState? permissionState;
+    private UserLocation? currentLocation;
+
+    protected override async Task OnInitializedAsync()
+    {
+        NotificationService.NotificationsChanged += OnNotificationsChanged;
+        NotificationService.NotificationReceived += OnNotificationReceived;
+        NotificationService.LocationAlertReceived += OnLocationAlertReceived;
+
+        await RefreshNotifications();
+        await RefreshPermissionState();
+    }
+
+    private async Task RefreshNotifications()
+    {
+        var notifications = await NotificationService.GetNotificationsAsync();
+        var locationAlerts = await NotificationService.GetLocationAlertsAsync();
+        
+        allNotifications = notifications.Cast<INotificationItem>()
+            .Concat(locationAlerts.Cast<INotificationItem>())
+            .OrderByDescending(n => n.CreatedAt)
+            .ToList();
+
+        unreadCount = await NotificationService.GetUnreadCountAsync();
+        StateHasChanged();
+    }
+
+    private async Task RefreshPermissionState()
+    {
+        permissionState = await NotificationService.GetPermissionStateAsync();
+        StateHasChanged();
+    }
+
+    private void OnNotificationsChanged()
+    {
+        InvokeAsync(RefreshNotifications);
+    }
+
+    private void OnNotificationReceived(ActivityNotification notification)
+    {
+        InvokeAsync(RefreshNotifications);
+    }
+
+    private void OnLocationAlertReceived(LocationAlert alert)
+    {
+        InvokeAsync(RefreshNotifications);
+    }
+
+    private void ToggleNotifications()
+    {
+        _isExpanded = !_isExpanded;
+    }
+
+    private void CloseNotifications()
+    {
+        _isExpanded = false;
+    }
+
+    private async Task MarkAsRead(string notificationId)
+    {
+        await NotificationService.MarkAsReadAsync(notificationId);
+    }
+
+    private async Task MarkAllAsRead()
+    {
+        await NotificationService.MarkAllAsReadAsync();
+    }
+
+    private async Task DeleteNotification(string notificationId)
+    {
+        await NotificationService.DeleteNotificationAsync(notificationId);
+    }
+
+    private async Task ClearAll()
+    {
+        await NotificationService.ClearAllNotificationsAsync();
+    }
+
+    private async Task SendTestNotification()
+    {
+        await NotificationService.SendTestNotificationAsync();
+    }
+
+    private async Task AddSampleData()
+    {
+        await NotificationService.AddSampleDataAsync();
+    }
+
+    private async Task RequestLocationPermission()
+    {
+        await NotificationService.RequestLocationPermissionAsync();
+        await RefreshPermissionState();
+    }
+
+    private async Task RequestPushPermission()
+    {
+        await NotificationService.RequestPushNotificationPermissionAsync();
+        await RefreshPermissionState();
+    }
+
+    private async Task StartLocationMonitoring()
+    {
+        currentLocation = await NotificationService.GetCurrentLocationAsync();
+        await NotificationService.StartLocationMonitoringAsync();
+        _isLocationMonitoring = true;
+        StateHasChanged();
+    }
+
+    private async Task StopLocationMonitoring()
+    {
+        await NotificationService.StopLocationMonitoringAsync();
+        _isLocationMonitoring = false;
+        StateHasChanged();
+    }
+
+    private string GetNotificationIcon(INotificationItem notification)
+    {
+        return notification switch
+        {
+            ActivityNotification activity => activity.Icon ?? GetTypeIcon(activity.Type),
+            LocationAlert => "📍",
+            _ => "🔔"
+        };
+    }
+
+    private string GetTypeIcon(NotificationType type)
+    {
+        return type switch
+        {
+            NotificationType.Review => "⭐",
+            NotificationType.Message => "💬",
+            NotificationType.Event => "🎉",
+            NotificationType.LocationAlert => "📍",
+            _ => "🔔"
+        };
+    }
+
+    private string GetNotificationTitle(INotificationItem notification)
+    {
+        return notification switch
+        {
+            ActivityNotification activity => activity.Title,
+            LocationAlert alert => alert.Title,
+            _ => "Notification"
+        };
+    }
+
+    private string GetNotificationMessage(INotificationItem notification)
+    {
+        return notification switch
+        {
+            ActivityNotification activity => activity.Message,
+            LocationAlert alert => alert.Description,
+            _ => ""
+        };
+    }
+
+    private DateTime GetNotificationTime(INotificationItem notification)
+    {
+        return notification.CreatedAt;
+    }
+
+    private bool IsLocationAlert(INotificationItem notification)
+    {
+        return notification is LocationAlert;
+    }
+
+    private string FormatDistance(double distanceInKm)
+    {
+        if (distanceInKm < 1)
+            return $"{(int)(distanceInKm * 1000)}m";
+        return $"{distanceInKm:F1}km";
+    }
+
+    private string GetRelativeTime(DateTime dateTime)
+    {
+        var timeSpan = DateTime.UtcNow - dateTime;
+        
+        if (timeSpan.TotalMinutes < 1)
+            return "just now";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes}m ago";
+        if (timeSpan.TotalMinutes < 1440)
+            return $"{(int)timeSpan.TotalHours}h ago";
+        return dateTime.ToString("MMM dd");
+    }
+
+    public void Dispose()
+    {
+        NotificationService.NotificationsChanged -= OnNotificationsChanged;
+        NotificationService.NotificationReceived -= OnNotificationReceived;
+        NotificationService.LocationAlertReceived -= OnLocationAlertReceived;
+    }
+}
