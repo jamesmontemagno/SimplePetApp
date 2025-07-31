@@ -1,3 +1,4 @@
+./* Base Validation Styles */
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }
@@ -10,6 +11,7 @@
     color: red;
 }
 
+/* Blazor Error UI */
 #blazor-error-ui {
     color-scheme: light only;
     background: lightyellow;
@@ -41,6 +43,7 @@
         content: "An error has occurred."
     }
 
+/* Loading Progress */
 .loading-progress {
     position: relative;
     display: block;
@@ -74,10 +77,12 @@
         content: var(--blazor-load-percentage-text, "Loading");
     }
 
+/* Code Styling */
 code {
     color: #c02d76;
 }
 
+/* Form Controls */
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
     color: var(--bs-secondary-color);
     text-align: end;
