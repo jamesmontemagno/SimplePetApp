@@ -1,0 +1,304 @@
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    background: linear-gradient(135deg, #fff0f6 0%, #ffe0ec 100%);
+    min-height: 100vh;
+}
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    border-radius: 2rem;
+    box-shadow: 0 4px 20px rgba(255, 95, 143, 0.1);
+}
+
+.profile-header h1 {
+    color: #ff5f8f;
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.profile-content {
+    display: grid;
+    gap: 2rem;
+}
+
+.profile-section, .pets-section {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    border-radius: 2rem;
+    box-shadow: 0 4px 20px rgba(255, 95, 143, 0.1);
+}
+
+.profile-section h2, .pets-section h2 {
+    color: #ff5f8f;
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.profile-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: rgba(255, 240, 246, 0.5);
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+}
+
+.profile-info p {
+    margin: 0.5rem 0;
+    color: #333;
+}
+
+.status-public {
+    background: #4caf50;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-private {
+    background: #ff9800;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.pets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.add-pet-form {
+    background: rgba(255, 240, 246, 0.5);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.add-pet-form h3 {
+    color: #ff5f8f;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-weight: 600;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 1rem;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #ff7eb3;
+    box-shadow: 0 0 0 3px rgba(255, 126, 179, 0.2);
+}
+
+.privacy-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.pets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.pet-card {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 16px rgba(255, 95, 143, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pet-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(255, 95, 143, 0.2);
+}
+
+.pet-photo {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+}
+
+.pet-info h3 {
+    color: #ff5f8f;
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.pet-info p {
+    margin: 0.25rem 0;
+    color: #666;
+}
+
+.pet-description {
+    font-style: italic;
+    margin-top: 0.5rem;
+}
+
+.pet-privacy {
+    margin: 1rem 0;
+}
+
+.pet-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, #ff7eb3 0%, #ff5f8f 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.form-actions {
+    margin-top: 1.5rem;
+}
+
+.no-pets {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+    font-style: italic;
+}
+
+.auth-required {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #fff0f6 0%, #ffe0ec 100%);
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-required h2 {
+    color: #ff5f8f;
+    margin-bottom: 1rem;
+}
+
+.auth-required a {
+    color: #ff5f8f;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-required a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .profile-container {
+        padding: 1rem;
+    }
+    
+    .profile-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .profile-header h1 {
+        font-size: 2rem;
+    }
+    
+    .profile-card {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .pets-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .pets-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .pet-actions {
+        flex-direction: column;
+    }
+}

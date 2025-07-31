@@ -1,0 +1,53 @@
+@inject IPetService PetService
+
+<div class="pet-profile-container">
+    <h2>🐾 Community Pet Profiles</h2>
+    <p>Discover adorable pets from our community members!</p>
+
+    <div class="pets-grid">
+        @if (_publicPets.Any())
+        {
+            @foreach (var pet in _publicPets)
+            {
+                <div class="pet-card">
+                    @if (!string.IsNullOrEmpty(pet.PhotoPath))
+                    {
+                        <img src="images/pets/@pet.PhotoPath" alt="@pet.Name" class="pet-photo" />
+                    }
+                    <div class="pet-info">
+                        <h3>@pet.Name</h3>
+                        <p class="pet-species"><strong>@pet.Species</strong> @(!string.IsNullOrEmpty(pet.Breed) ? $"• {pet.Breed}" : "")</p>
+                        <p class="pet-age"><strong>Age:</strong> @pet.Age @(pet.Age == 1 ? "year" : "years") old</p>
+                        @if (!string.IsNullOrEmpty(pet.Description))
+                        {
+                            <p class="pet-description">@pet.Description</p>
+                        }
+                        <p class="pet-date">Added @pet.CreatedAt.ToString("MMM dd, yyyy")</p>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-pets">
+                <p>No public pet profiles available yet. Be the first to share your pet!</p>
+                <a href="/register" class="btn btn-primary">Join the Community</a>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private IEnumerable<Pet> _publicPets = new List<Pet>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _publicPets = await PetService.GetPublicPetsAsync();
+    }
+
+    public async Task RefreshAsync()
+    {
+        _publicPets = await PetService.GetPublicPetsAsync();
+        StateHasChanged();
+    }
+}

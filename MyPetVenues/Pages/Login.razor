@@ -1,0 +1,91 @@
+@page "/login"
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Login - PetVenues</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">
+        <h2>Welcome Back!</h2>
+        <p>Sign in to access your pet profiles and connect with the community.</p>
+
+        @if (!string.IsNullOrEmpty(_message))
+        {
+            <div class="alert @(_isError ? "alert-error" : "alert-success")">
+                @_message
+            </div>
+        }
+
+        <EditForm Model="_loginRequest" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <InputText id="email" @bind-Value="_loginRequest.Email" class="form-control" type="email" />
+                <ValidationMessage For="() => _loginRequest.Email" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText id="password" @bind-Value="_loginRequest.Password" class="form-control" type="password" />
+                <ValidationMessage For="() => _loginRequest.Password" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" disabled="@_isSubmitting">
+                    @if (_isSubmitting)
+                    {
+                        <span>Signing In...</span>
+                    }
+                    else
+                    {
+                        <span>Sign In</span>
+                    }
+                </button>
+            </div>
+        </EditForm>
+
+        <div class="auth-links">
+            Don't have an account? <a href="/register">Create one here</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginRequest _loginRequest = new();
+    private string _message = string.Empty;
+    private bool _isError = false;
+    private bool _isSubmitting = false;
+
+    private async Task HandleLogin()
+    {
+        _isSubmitting = true;
+        _message = string.Empty;
+
+        try
+        {
+            var result = await AuthService.LoginAsync(_loginRequest);
+            
+            if (result.Success)
+            {
+                _isError = false;
+                _message = result.Message;
+                Navigation.NavigateTo("/profile");
+            }
+            else
+            {
+                _isError = true;
+                _message = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            _isError = true;
+            _message = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

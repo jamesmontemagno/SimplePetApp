@@ -1,0 +1,103 @@
+@page "/register"
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Register - PetVenues</PageTitle>
+
+<div class="register-container">
+    <div class="register-card">
+        <h2>Create Your Account</h2>
+        <p>Join the PetVenues community and start exploring!</p>
+
+        @if (!string.IsNullOrEmpty(_message))
+        {
+            <div class="alert @(_isError ? "alert-error" : "alert-success")">
+                @_message
+            </div>
+        }
+
+        <EditForm Model="_registerRequest" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
+            
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <InputText id="name" @bind-Value="_registerRequest.Name" class="form-control" />
+                <ValidationMessage For="() => _registerRequest.Name" />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <InputText id="email" @bind-Value="_registerRequest.Email" class="form-control" type="email" />
+                <ValidationMessage For="() => _registerRequest.Email" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText id="password" @bind-Value="_registerRequest.Password" class="form-control" type="password" />
+                <ValidationMessage For="() => _registerRequest.Password" />
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <InputText id="confirmPassword" @bind-Value="_registerRequest.ConfirmPassword" class="form-control" type="password" />
+                <ValidationMessage For="() => _registerRequest.ConfirmPassword" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary" disabled="@_isSubmitting">
+                    @if (_isSubmitting)
+                    {
+                        <span>Creating Account...</span>
+                    }
+                    else
+                    {
+                        <span>Create Account</span>
+                    }
+                </button>
+            </div>
+        </EditForm>
+
+        <div class="auth-links">
+            Already have an account? <a href="/login">Sign in here</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterRequest _registerRequest = new();
+    private string _message = string.Empty;
+    private bool _isError = false;
+    private bool _isSubmitting = false;
+
+    private async Task HandleRegister()
+    {
+        _isSubmitting = true;
+        _message = string.Empty;
+
+        try
+        {
+            var result = await AuthService.RegisterAsync(_registerRequest);
+            
+            if (result.Success)
+            {
+                _isError = false;
+                _message = result.Message;
+                Navigation.NavigateTo("/profile");
+            }
+            else
+            {
+                _isError = true;
+                _message = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            _isError = true;
+            _message = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

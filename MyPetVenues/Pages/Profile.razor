@@ -1,0 +1,270 @@
+@page "/profile"
+@inject IAuthService AuthService
+@inject IPetService PetService
+@inject NavigationManager Navigation
+
+<PageTitle>Profile - PetVenues</PageTitle>
+
+@if (_currentUser == null)
+{
+    <div class="auth-required">
+        <h2>Authentication Required</h2>
+        <p>Please <a href="/login">sign in</a> to access your profile.</p>
+    </div>
+}
+else
+{
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>Welcome, @_currentUser.Name!</h1>
+            <div class="profile-actions">
+                <button class="btn btn-secondary" @onclick="HandleLogout">Logout</button>
+            </div>
+        </div>
+
+        <div class="profile-content">
+            <!-- User Profile Section -->
+            <div class="profile-section">
+                <h2>Your Profile</h2>
+                <div class="profile-card">
+                    <div class="profile-info">
+                        <p><strong>Name:</strong> @_currentUser.Name</p>
+                        <p><strong>Email:</strong> @_currentUser.Email</p>
+                        <p><strong>Member since:</strong> @_currentUser.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                        <p><strong>Profile Visibility:</strong> 
+                            @if (_currentUser.IsPublicProfile)
+                            {
+                                <span class="status-public">Public</span>
+                            }
+                            else
+                            {
+                                <span class="status-private">Private</span>
+                            }
+                        </p>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn btn-primary" @onclick="ToggleProfileVisibility">
+                            @if (_currentUser.IsPublicProfile)
+                            {
+                                <span>Make Private</span>
+                            }
+                            else
+                            {
+                                <span>Make Public</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pets Section -->
+            <div class="pets-section">
+                <div class="pets-header">
+                    <h2>Your Pets (@_userPets.Count())</h2>
+                    <button class="btn btn-primary" @onclick="ToggleAddPetForm">
+                        @if (_showAddPetForm)
+                        {
+                            <span>Cancel</span>
+                        }
+                        else
+                        {
+                            <span>Add Pet</span>
+                        }
+                    </button>
+                </div>
+
+                @if (_showAddPetForm)
+                {
+                    <div class="add-pet-form">
+                        <h3>Add New Pet</h3>
+                        <EditForm Model="_newPet" OnValidSubmit="HandleAddPet">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Name</label>
+                                    <InputText @bind-Value="_newPet.Name" class="form-control" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Species</label>
+                                    <InputSelect @bind-Value="_newPet.Species" class="form-control">
+                                        <option value="">Select species...</option>
+                                        <option value="Dog">Dog</option>
+                                        <option value="Cat">Cat</option>
+                                        <option value="Bird">Bird</option>
+                                        <option value="Rabbit">Rabbit</option>
+                                        <option value="Other">Other</option>
+                                    </InputSelect>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Breed</label>
+                                    <InputText @bind-Value="_newPet.Breed" class="form-control" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Age</label>
+                                    <InputNumber @bind-Value="_newPet.Age" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <InputTextArea @bind-Value="_newPet.Description" class="form-control" rows="3" />
+                            </div>
+                            <div class="form-group">
+                                <label>Photo</label>
+                                <InputSelect @bind-Value="_newPet.PhotoPath" class="form-control">
+                                    <option value="">Select a photo...</option>
+                                    @foreach (var photo in _availablePhotos)
+                                    {
+                                        <option value="@photo">@photo</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="form-group">
+                                <label class="privacy-control">
+                                    <InputCheckbox @bind-Value="_newPet.IsPublic" />
+                                    Make this pet profile public
+                                </label>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Add Pet</button>
+                            </div>
+                        </EditForm>
+                    </div>
+                }
+
+                <div class="pets-grid">
+                    @if (_userPets.Any())
+                    {
+                        @foreach (var pet in _userPets)
+                        {
+                            <div class="pet-card">
+                                @if (!string.IsNullOrEmpty(pet.PhotoPath))
+                                {
+                                    <img src="images/pets/@pet.PhotoPath" alt="@pet.Name" class="pet-photo" />
+                                }
+                                <div class="pet-info">
+                                    <h3>@pet.Name</h3>
+                                    <p><strong>@pet.Species</strong> @(!string.IsNullOrEmpty(pet.Breed) ? $"• {pet.Breed}" : "")</p>
+                                    <p><strong>Age:</strong> @pet.Age @(pet.Age == 1 ? "year" : "years") old</p>
+                                    @if (!string.IsNullOrEmpty(pet.Description))
+                                    {
+                                        <p class="pet-description">@pet.Description</p>
+                                    }
+                                    <div class="pet-privacy">
+                                        @if (pet.IsPublic)
+                                        {
+                                            <span class="status-public">Public</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-private">Private</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="pet-actions">
+                                    <button class="btn btn-sm btn-secondary" @onclick="() => TogglePetVisibility(pet)">
+                                        @if (pet.IsPublic)
+                                        {
+                                            <span>Make Private</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Make Public</span>
+                                        }
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => DeletePet(pet)">Delete</button>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-pets">
+                            <p>You haven't added any pets yet. Click "Add Pet" to get started!</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private User? _currentUser;
+    private IEnumerable<Pet> _userPets = new List<Pet>();
+    private bool _showAddPetForm = false;
+    private Pet _newPet = new();
+    
+    private readonly List<string> _availablePhotos = new()
+    {
+        "dog1.png", "dog3.jpg", "dog4.png", "dog5.jpg", "dog6.png", "dog7.jpg", "dog8.jpg",
+        "cat1.jpg", "cat2.jpg", "cat3.jpg",
+        "bunny.jpg", "hedgehog.jpg"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentUser = await AuthService.GetCurrentUserAsync();
+        if (_currentUser != null)
+        {
+            await LoadUserPets();
+        }
+    }
+
+    private async Task LoadUserPets()
+    {
+        if (_currentUser != null)
+        {
+            _userPets = await PetService.GetUserPetsAsync(_currentUser.Id);
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/");
+    }
+
+    private void ToggleProfileVisibility()
+    {
+        if (_currentUser != null)
+        {
+            _currentUser.IsPublicProfile = !_currentUser.IsPublicProfile;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleAddPet()
+    {
+        if (_currentUser != null)
+        {
+            _newPet.UserId = _currentUser.Id;
+            await PetService.AddPetAsync(_newPet);
+            await LoadUserPets();
+            _newPet = new Pet();
+            _showAddPetForm = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task TogglePetVisibility(Pet pet)
+    {
+        pet.IsPublic = !pet.IsPublic;
+        await PetService.UpdatePetAsync(pet);
+        await LoadUserPets();
+        StateHasChanged();
+    }
+
+    private async Task DeletePet(Pet pet)
+    {
+        await PetService.DeletePetAsync(pet.Id);
+        await LoadUserPets();
+        StateHasChanged();
+    }
+
+    private void ToggleAddPetForm()
+    {
+        _showAddPetForm = !_showAddPetForm;
+        StateHasChanged();
+    }
+}

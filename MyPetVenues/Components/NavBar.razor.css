@@ -1,0 +1,130 @@
+.main-nav {
+    background: rgba(255, 240, 246, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 126, 179, 0.2);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(255, 95, 143, 0.1);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #ff5f8f;
+    font-size: 1.5rem;
+    font-weight: 700;
+    transition: transform 0.2s;
+}
+
+.nav-brand:hover {
+    transform: scale(1.05);
+}
+
+.brand-icon {
+    font-size: 1.8rem;
+}
+
+.brand-text {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.nav-link {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    transition: all 0.2s;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.nav-link:hover {
+    background: rgba(255, 126, 179, 0.1);
+    color: #ff5f8f;
+    transform: translateY(-2px);
+}
+
+.btn-register {
+    background: linear-gradient(90deg, #ff7eb3 0%, #ff5f8f 100%);
+    color: white !important;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 2px 8px rgba(255, 95, 143, 0.2);
+}
+
+.btn-register:hover {
+    background: linear-gradient(90deg, #ff5f8f 0%, #ff7eb3 100%);
+    box-shadow: 0 4px 16px rgba(255, 95, 143, 0.3);
+    transform: translateY(-2px);
+}
+
+.btn-logout {
+    background: #6c757d;
+    color: white !important;
+    font-weight: 500;
+}
+
+.btn-logout:hover {
+    background: #5a6268;
+    color: white !important;
+}
+
+@media (max-width: 768px) {
+    .nav-container {
+        padding: 0 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .nav-links {
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-register {
+        padding: 0.5rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .nav-brand {
+        font-size: 1.25rem;
+    }
+    
+    .brand-icon {
+        font-size: 1.5rem;
+    }
+}

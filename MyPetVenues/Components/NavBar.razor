@@ -1,0 +1,51 @@
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<nav class="main-nav">
+    <div class="nav-container">
+        <a href="/" class="nav-brand">
+            <span class="brand-icon">🐾</span>
+            <span class="brand-text">PetVenues</span>
+        </a>
+        
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/pets" class="nav-link">Pet Profiles</a>
+            
+            @if (AuthService.IsLoggedIn)
+            {
+                <a href="/profile" class="nav-link">My Profile</a>
+                <button class="nav-link btn-logout" @onclick="HandleLogout">Logout</button>
+            }
+            else
+            {
+                <a href="/login" class="nav-link">Login</a>
+                <a href="/register" class="nav-link btn-register">Register</a>
+            }
+        </div>
+    </div>
+</nav>
+
+@code {
+    protected override void OnInitialized()
+    {
+        AuthService.OnAuthStateChanged += OnAuthStateChanged;
+    }
+
+    private void OnAuthStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/");
+    }
+
+    public void Dispose()
+    {
+        AuthService.OnAuthStateChanged -= OnAuthStateChanged;
+    }
+}
