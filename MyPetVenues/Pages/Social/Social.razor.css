@@ -1,0 +1,248 @@
+.social-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem 1rem;
+    color: #fff;
+}
+
+.social-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.social-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, #ff6b9d, #ffd700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2rem;
+}
+
+.location-context {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    margin: 2rem auto;
+    max-width: 600px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.location-context h2 {
+    margin-bottom: 0.5rem;
+    color: #ffd700;
+}
+
+.location-context p {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+}
+
+.social-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.nav-btn {
+    padding: 1rem 2rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 2rem;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.nav-btn:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
+}
+
+.nav-btn.active {
+    border-color: #ff6b9d;
+    background: linear-gradient(135deg, #ff6b9d, #c44569);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(255, 107, 157, 0.4);
+}
+
+.social-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-bottom: 4rem;
+}
+
+.tab-content {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.community-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 3rem auto;
+    max-width: 800px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2rem;
+    border-radius: 1rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(255, 107, 157, 0.3);
+    border-color: rgba(255, 107, 157, 0.5);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #ffd700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.community-guidelines {
+    max-width: 1000px;
+    margin: 4rem auto 0;
+    text-align: center;
+}
+
+.community-guidelines h3 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: #ffd700;
+}
+
+.guidelines-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.guideline-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.guideline-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.guideline-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.guideline-card h4 {
+    color: #fff;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.guideline-card p {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .social-page {
+        padding: 1rem 0.5rem;
+    }
+    
+    .social-header h1 {
+        font-size: 2rem;
+    }
+    
+    .social-navigation {
+        gap: 0.5rem;
+    }
+    
+    .nav-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .community-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .guidelines-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .guideline-card {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .social-navigation {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .nav-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .community-stats {
+        grid-template-columns: 1fr;
+    }
+}

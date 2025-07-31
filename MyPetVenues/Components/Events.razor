@@ -1,0 +1,318 @@
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@inject IEventService EventService
+
+<div class="events-container">
+    <h3>🎉 Pet Events & Meetups</h3>
+    
+    <div class="event-actions">
+        <button class="btn btn-primary" @onclick="ShowCreateEvent">
+            ➕ Organize Event
+        </button>
+        <div class="event-filters">
+            <select @bind="SelectedEventType" @bind:after="FilterEvents" class="form-control">
+                <option value="">All Events</option>
+                @foreach (var type in Enum.GetValues<EventType>())
+                {
+                    <option value="@type">@type</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    @if (ShowCreateForm)
+    {
+        <div class="create-event-form">
+            <h4>Create New Event</h4>
+            <EditForm Model="@NewEvent" OnValidSubmit="@CreateEvent">
+                <DataAnnotationsValidator />
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="event-title">Event Title:</label>
+                        <InputText id="event-title" @bind-Value="NewEvent.Title" class="form-control" placeholder="Dog Park Meetup" />
+                        <ValidationMessage For="() => NewEvent.Title" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="event-type">Event Type:</label>
+                        <InputSelect id="event-type" @bind-Value="NewEvent.Type" class="form-control">
+                            @foreach (var type in Enum.GetValues<EventType>())
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="event-description">Description:</label>
+                    <InputTextArea id="event-description" @bind-Value="NewEvent.Description" class="form-control" rows="3" placeholder="Tell people about your event..." />
+                    <ValidationMessage For="() => NewEvent.Description" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="start-date">Start Date & Time:</label>
+                        <input id="start-date" type="datetime-local" @bind="NewEvent.StartDate" class="form-control" />
+                        <ValidationMessage For="() => NewEvent.StartDate" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="end-date">End Date & Time:</label>
+                        <input id="end-date" type="datetime-local" @bind="NewEvent.EndDate" class="form-control" />
+                        <ValidationMessage For="() => NewEvent.EndDate" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="max-attendees">Max Attendees (0 = unlimited):</label>
+                    <InputNumber id="max-attendees" @bind-Value="NewEvent.MaxAttendees" class="form-control" />
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" disabled="@IsSubmitting">
+                        @if (IsSubmitting)
+                        {
+                            <span>Creating...</span>
+                        }
+                        else
+                        {
+                            <span>Create Event</span>
+                        }
+                    </button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelCreate">Cancel</button>
+                </div>
+            </EditForm>
+        </div>
+    }
+
+    <div class="events-list">
+        @if (FilteredEvents.Any())
+        {
+            @foreach (var eventItem in FilteredEvents.OrderBy(e => e.StartDate))
+            {
+                <div class="event-card @GetEventStatusClass(eventItem)">
+                    <div class="event-header">
+                        <div class="event-type-badge">
+                            @GetEventTypeIcon(eventItem.Type) @eventItem.Type
+                        </div>
+                        <div class="event-status">
+                            @eventItem.Status
+                        </div>
+                    </div>
+                    
+                    <h4 class="event-title">@eventItem.Title</h4>
+                    <p class="event-description">@eventItem.Description</p>
+                    
+                    <div class="event-details">
+                        <div class="event-time">
+                            📅 @eventItem.StartDate.ToString("MMM dd, yyyy hh:mm tt")
+                            @if (eventItem.StartDate.Date != eventItem.EndDate.Date)
+                            {
+                                <span> - @eventItem.EndDate.ToString("MMM dd, yyyy hh:mm tt")</span>
+                            }
+                            else
+                            {
+                                <span> - @eventItem.EndDate.ToString("hh:mm tt")</span>
+                            }
+                        </div>
+                        
+                        @if (eventItem.MaxAttendees > 0)
+                        {
+                            <div class="event-capacity">
+                                👥 @GetAttendeeCount(eventItem.Id)/@eventItem.MaxAttendees attendees
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="event-capacity">
+                                👥 @GetAttendeeCount(eventItem.Id) attendees
+                            </div>
+                        }
+                        
+                        <div class="event-organizer">
+                            🧑‍💼 Organized by @(eventItem.Organizer?.DisplayName ?? "Anonymous")
+                        </div>
+                    </div>
+
+                    @if (eventItem.Status == EventStatus.Upcoming)
+                    {
+                        <div class="event-rsvp">
+                            <h5>RSVP:</h5>
+                            <div class="rsvp-buttons">
+                                <button class="btn-rsvp @(GetUserRsvpStatus(eventItem.Id) == RsvpStatus.Going ? "active" : "")" 
+                                        @onclick="() => RsvpToEvent(eventItem.Id, RsvpStatus.Going)">
+                                    ✅ Going
+                                </button>
+                                <button class="btn-rsvp @(GetUserRsvpStatus(eventItem.Id) == RsvpStatus.Maybe ? "active" : "")" 
+                                        @onclick="() => RsvpToEvent(eventItem.Id, RsvpStatus.Maybe)">
+                                    🤔 Maybe
+                                </button>
+                                <button class="btn-rsvp @(GetUserRsvpStatus(eventItem.Id) == RsvpStatus.NotGoing ? "active" : "")" 
+                                        @onclick="() => RsvpToEvent(eventItem.Id, RsvpStatus.NotGoing)">
+                                    ❌ Can't Go
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <p class="no-events">No events found. Be the first to organize a pet meetup!</p>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int LocationId { get; set; }
+    [Parameter] public int? CurrentUserId { get; set; }
+
+    private List<Event> EventsList = new();
+    private List<EventRsvp> AllRsvps = new();
+    private string? SelectedEventType = null;
+    private bool ShowCreateForm = false;
+    private bool IsSubmitting = false;
+
+    private Event NewEvent = new()
+    {
+        OrganizerId = 1,
+        LocationId = 1,
+        Title = "",
+        Description = "",
+        StartDate = DateTime.Now.AddDays(1),
+        EndDate = DateTime.Now.AddDays(1).AddHours(2),
+        Type = EventType.Meetup
+    };
+
+    private List<Event> FilteredEvents => string.IsNullOrEmpty(SelectedEventType) 
+        ? EventsList 
+        : EventsList.Where(e => e.Type.ToString() == SelectedEventType).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEvents();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (LocationId > 0)
+        {
+            NewEvent.LocationId = LocationId;
+            await LoadEvents();
+        }
+    }
+
+    private async Task LoadEvents()
+    {
+        if (LocationId > 0)
+        {
+            EventsList = await EventService.GetEventsByLocationAsync(LocationId);
+        }
+        else
+        {
+            EventsList = await EventService.GetEventsAsync();
+        }
+        
+        // Load RSVPs for all events
+        foreach (var eventItem in EventsList)
+        {
+            var rsvps = await EventService.GetEventAttendeesAsync(eventItem.Id);
+            AllRsvps.AddRange(rsvps);
+        }
+        
+        StateHasChanged();
+    }
+
+    private async Task CreateEvent()
+    {
+        if (IsSubmitting) return;
+        
+        IsSubmitting = true;
+        try
+        {
+            NewEvent.OrganizerId = CurrentUserId ?? 1;
+            await EventService.CreateEventAsync(NewEvent);
+            
+            NewEvent = new()
+            {
+                OrganizerId = CurrentUserId ?? 1,
+                LocationId = LocationId,
+                Title = "",
+                Description = "",
+                StartDate = DateTime.Now.AddDays(1),
+                EndDate = DateTime.Now.AddDays(1).AddHours(2),
+                Type = EventType.Meetup
+            };
+            
+            ShowCreateForm = false;
+            await LoadEvents();
+        }
+        finally
+        {
+            IsSubmitting = false;
+        }
+    }
+
+    private async Task RsvpToEvent(int eventId, RsvpStatus status)
+    {
+        await EventService.RsvpToEventAsync(eventId, CurrentUserId ?? 1, status);
+        await LoadEvents(); // Reload to update counts
+    }
+
+    private void ShowCreateEvent()
+    {
+        ShowCreateForm = true;
+    }
+
+    private void CancelCreate()
+    {
+        ShowCreateForm = false;
+        NewEvent = new()
+        {
+            OrganizerId = CurrentUserId ?? 1,
+            LocationId = LocationId,
+            Title = "",
+            Description = "",
+            StartDate = DateTime.Now.AddDays(1),
+            EndDate = DateTime.Now.AddDays(1).AddHours(2),
+            Type = EventType.Meetup
+        };
+    }
+
+    private void FilterEvents()
+    {
+        StateHasChanged();
+    }
+
+    private string GetEventTypeIcon(EventType type)
+    {
+        return type switch
+        {
+            EventType.Meetup => "🐾",
+            EventType.Training => "🎓",
+            EventType.Adoption => "❤️",
+            EventType.Social => "🎉",
+            EventType.Competition => "🏆",
+            _ => "📅"
+        };
+    }
+
+    private string GetEventStatusClass(Event eventItem)
+    {
+        return eventItem.Status.ToString().ToLower();
+    }
+
+    private int GetAttendeeCount(int eventId)
+    {
+        return AllRsvps.Count(r => r.EventId == eventId && r.Status == RsvpStatus.Going);
+    }
+
+    private RsvpStatus? GetUserRsvpStatus(int eventId)
+    {
+        var userRsvp = AllRsvps.FirstOrDefault(r => r.EventId == eventId && r.UserId == (CurrentUserId ?? 1));
+        return userRsvp?.Status;
+    }
+}

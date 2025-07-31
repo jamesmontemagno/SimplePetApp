@@ -1,0 +1,180 @@
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@inject IReviewService ReviewService
+
+<div class="reviews-container">
+    <h3>Reviews & Ratings</h3>
+    
+    @if (AverageRating > 0)
+    {
+        <div class="rating-summary">
+            <div class="stars">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <span class="star @(i <= AverageRating ? "filled" : "")">⭐</span>
+                }
+            </div>
+            <span class="rating-text">@AverageRating.ToString("F1") out of 5 (@ReviewsList.Count reviews)</span>
+        </div>
+    }
+
+    @if (CanWriteReview)
+    {
+        <div class="write-review">
+            <h4>Write a Review</h4>
+            <EditForm Model="@NewReview" OnValidSubmit="@SubmitReview">
+                <DataAnnotationsValidator />
+                
+                <div class="form-group">
+                    <label>Rating:</label>
+                    <div class="star-rating">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            int starValue = i;
+                            <button type="button" class="star-btn @(starValue <= NewReview.Rating ? "active" : "")" 
+                                    @onclick="() => NewReview.Rating = starValue">⭐</button>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="review-title">Title:</label>
+                    <InputText id="review-title" @bind-Value="NewReview.Title" class="form-control" placeholder="Summarize your experience" />
+                    <ValidationMessage For="() => NewReview.Title" />
+                </div>
+
+                <div class="form-group">
+                    <label for="review-content">Review:</label>
+                    <InputTextArea id="review-content" @bind-Value="NewReview.Content" class="form-control" rows="4" placeholder="Share your experience..." />
+                    <ValidationMessage For="() => NewReview.Content" />
+                </div>
+
+                <button type="submit" class="btn btn-primary" disabled="@IsSubmitting">
+                    @if (IsSubmitting)
+                    {
+                        <span>Submitting...</span>
+                    }
+                    else
+                    {
+                        <span>Submit Review</span>
+                    }
+                </button>
+            </EditForm>
+        </div>
+    }
+
+    <div class="reviews-list">
+        @if (ReviewsList.Any())
+        {
+            @foreach (var review in ReviewsList.OrderByDescending(r => r.CreatedDate))
+            {
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <strong>@(review.User?.DisplayName ?? "Anonymous")</strong>
+                            <div class="review-stars">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="star @(i <= review.Rating ? "filled" : "")">⭐</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="review-date">
+                            @review.CreatedDate.ToString("MMM dd, yyyy")
+                        </div>
+                    </div>
+                    
+                    <h5 class="review-title">@review.Title</h5>
+                    <p class="review-content">@review.Content</p>
+                    
+                    <div class="review-actions">
+                        <button class="btn-helpful" @onclick="() => VoteHelpful(review.Id)">
+                            👍 Helpful (@review.HelpfulVotes)
+                        </button>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="no-reviews">No reviews yet. Be the first to share your experience!</p>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int LocationId { get; set; }
+    [Parameter] public int? CurrentUserId { get; set; }
+    [Parameter] public bool CanWriteReview { get; set; } = true;
+
+    private List<Review> ReviewsList = new();
+    private double AverageRating = 0;
+    private bool IsSubmitting = false;
+    
+    private Review NewReview = new()
+    {
+        UserId = 1, // Mock user ID
+        LocationId = 1,
+        Rating = 5,
+        Title = "",
+        Content = ""
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReviews();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (LocationId > 0)
+        {
+            NewReview.LocationId = LocationId;
+            await LoadReviews();
+        }
+    }
+
+    private async Task LoadReviews()
+    {
+        if (LocationId > 0)
+        {
+            ReviewsList = await ReviewService.GetReviewsByLocationAsync(LocationId);
+            AverageRating = await ReviewService.GetAverageRatingAsync(LocationId);
+            StateHasChanged();
+        }
+    }
+
+    private async Task SubmitReview()
+    {
+        if (IsSubmitting) return;
+        
+        IsSubmitting = true;
+        try
+        {
+            NewReview.UserId = CurrentUserId ?? 1; // Use current user or fallback
+            await ReviewService.CreateReviewAsync(NewReview);
+            
+            // Reset form
+            NewReview = new()
+            {
+                UserId = CurrentUserId ?? 1,
+                LocationId = LocationId,
+                Rating = 5,
+                Title = "",
+                Content = ""
+            };
+            
+            await LoadReviews();
+        }
+        finally
+        {
+            IsSubmitting = false;
+        }
+    }
+
+    private async Task VoteHelpful(int reviewId)
+    {
+        await ReviewService.VoteHelpfulAsync(reviewId, CurrentUserId ?? 1);
+        await LoadReviews();
+    }
+}

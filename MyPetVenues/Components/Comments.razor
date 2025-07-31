@@ -1,0 +1,289 @@
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@inject ICommentService CommentService
+
+<div class="comments-container">
+    <h3>Community Q&A & Comments</h3>
+    
+    <div class="comment-types">
+        <button class="type-btn @(SelectedType == CommentType.General ? "active" : "")" 
+                @onclick="() => SelectedType = CommentType.General">💬 General</button>
+        <button class="type-btn @(SelectedType == CommentType.Question ? "active" : "")" 
+                @onclick="() => SelectedType = CommentType.Question">❓ Questions</button>
+        <button class="type-btn @(SelectedType == CommentType.Tip ? "active" : "")" 
+                @onclick="() => SelectedType = CommentType.Tip">💡 Tips</button>
+    </div>
+
+    <div class="new-comment">
+        <EditForm Model="@NewComment" OnValidSubmit="@SubmitComment">
+            <DataAnnotationsValidator />
+            
+            <div class="form-group">
+                <label>Type:</label>
+                <InputSelect @bind-Value="NewComment.Type" class="form-control">
+                    <option value="@CommentType.General">💬 General Comment</option>
+                    <option value="@CommentType.Question">❓ Ask a Question</option>
+                    <option value="@CommentType.Tip">💡 Share a Tip</option>
+                </InputSelect>
+            </div>
+
+            <div class="form-group">
+                <label for="comment-content">
+                    @(NewComment.Type == CommentType.Question ? "Your Question:" : 
+                      NewComment.Type == CommentType.Tip ? "Your Tip:" : "Your Comment:")
+                </label>
+                <InputTextArea id="comment-content" @bind-Value="NewComment.Content" 
+                              class="form-control" rows="3" 
+                              placeholder="@GetPlaceholderText()" />
+                <ValidationMessage For="() => NewComment.Content" />
+            </div>
+
+            <button type="submit" class="btn btn-primary" disabled="@IsSubmitting">
+                @if (IsSubmitting)
+                {
+                    <span>Posting...</span>
+                }
+                else
+                {
+                    <span>@(NewComment.Type == CommentType.Question ? "Ask Question" : "Post Comment")</span>
+                }
+            </button>
+        </EditForm>
+    </div>
+
+    <div class="comments-list">
+        @foreach (var comment in FilteredComments.OrderByDescending(c => c.CreatedDate))
+        {
+            <div class="comment-card @GetCommentTypeClass(comment.Type)">
+                <div class="comment-header">
+                    <div class="commenter-info">
+                        <span class="type-icon">@GetTypeIcon(comment.Type)</span>
+                        <strong>@(comment.User?.DisplayName ?? "Anonymous")</strong>
+                        @if (comment.Type == CommentType.Question)
+                        {
+                            <span class="question-badge">Question</span>
+                        }
+                        else if (comment.Type == CommentType.Tip)
+                        {
+                            <span class="tip-badge">Tip</span>
+                        }
+                    </div>
+                    <div class="comment-date">
+                        @comment.CreatedDate.ToString("MMM dd, yyyy")
+                    </div>
+                </div>
+                
+                <p class="comment-content">@comment.Content</p>
+                
+                <div class="comment-actions">
+                    <button class="btn-like" @onclick="() => LikeComment(comment.Id)">
+                        👍 @comment.LikesCount
+                    </button>
+                    <button class="btn-reply" @onclick="() => ToggleReply(comment.Id)">
+                        💬 Reply
+                    </button>
+                </div>
+
+                @if (ReplyingTo == comment.Id)
+                {
+                    <div class="reply-form">
+                        <EditForm Model="@ReplyComment" OnValidSubmit="() => SubmitReply(comment.Id)">
+                            <div class="form-group">
+                                <InputTextArea @bind-Value="ReplyComment.Content" 
+                                              class="form-control" rows="2" 
+                                              placeholder="Write your reply..." />
+                            </div>
+                            <div class="reply-actions">
+                                <button type="submit" class="btn btn-sm btn-primary">Reply</button>
+                                <button type="button" class="btn btn-sm btn-secondary" @onclick="CancelReply">Cancel</button>
+                            </div>
+                        </EditForm>
+                    </div>
+                }
+
+                @if (comment.Replies.Any())
+                {
+                    <div class="replies">
+                        @foreach (var reply in comment.Replies.OrderBy(r => r.CreatedDate))
+                        {
+                            <div class="reply-card">
+                                <div class="reply-header">
+                                    <strong>@(reply.User?.DisplayName ?? "Anonymous")</strong>
+                                    <span class="reply-date">@reply.CreatedDate.ToString("MMM dd, yyyy")</span>
+                                </div>
+                                <p class="reply-content">@reply.Content</p>
+                                <button class="btn-like-small" @onclick="() => LikeComment(reply.Id)">
+                                    👍 @reply.LikesCount
+                                </button>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        @if (!FilteredComments.Any())
+        {
+            <p class="no-comments">
+                @(SelectedType == CommentType.Question ? "No questions yet. Ask the first one!" :
+                  SelectedType == CommentType.Tip ? "No tips yet. Share your knowledge!" :
+                  "No comments yet. Start the conversation!")
+            </p>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int LocationId { get; set; }
+    [Parameter] public int? CurrentUserId { get; set; }
+
+    private List<Comment> CommentsList = new();
+    private CommentType SelectedType = CommentType.General;
+    private bool IsSubmitting = false;
+    private int? ReplyingTo = null;
+
+    private Comment NewComment = new()
+    {
+        UserId = 1,
+        LocationId = 1,
+        Content = "",
+        Type = CommentType.General
+    };
+
+    private Comment ReplyComment = new()
+    {
+        UserId = 1,
+        LocationId = 1,
+        Content = ""
+    };
+
+    private List<Comment> FilteredComments => SelectedType == CommentType.General 
+        ? CommentsList 
+        : CommentsList.Where(c => c.Type == SelectedType).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadComments();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (LocationId > 0)
+        {
+            NewComment.LocationId = LocationId;
+            ReplyComment.LocationId = LocationId;
+            await LoadComments();
+        }
+    }
+
+    private async Task LoadComments()
+    {
+        if (LocationId > 0)
+        {
+            CommentsList = await CommentService.GetCommentsByLocationAsync(LocationId);
+            
+            // Load replies for each comment
+            foreach (var comment in CommentsList)
+            {
+                comment.Replies = await CommentService.GetRepliesAsync(comment.Id);
+            }
+            
+            StateHasChanged();
+        }
+    }
+
+    private async Task SubmitComment()
+    {
+        if (IsSubmitting || string.IsNullOrWhiteSpace(NewComment.Content)) return;
+        
+        IsSubmitting = true;
+        try
+        {
+            NewComment.UserId = CurrentUserId ?? 1;
+            await CommentService.CreateCommentAsync(NewComment);
+            
+            NewComment = new()
+            {
+                UserId = CurrentUserId ?? 1,
+                LocationId = LocationId,
+                Content = "",
+                Type = CommentType.General
+            };
+            
+            await LoadComments();
+        }
+        finally
+        {
+            IsSubmitting = false;
+        }
+    }
+
+    private async Task SubmitReply(int parentCommentId)
+    {
+        if (string.IsNullOrWhiteSpace(ReplyComment.Content)) return;
+
+        ReplyComment.UserId = CurrentUserId ?? 1;
+        ReplyComment.ParentCommentId = parentCommentId;
+        
+        await CommentService.CreateCommentAsync(ReplyComment);
+        
+        ReplyComment = new()
+        {
+            UserId = CurrentUserId ?? 1,
+            LocationId = LocationId,
+            Content = ""
+        };
+        
+        ReplyingTo = null;
+        await LoadComments();
+    }
+
+    private async Task LikeComment(int commentId)
+    {
+        await CommentService.LikeCommentAsync(commentId, CurrentUserId ?? 1);
+        await LoadComments();
+    }
+
+    private void ToggleReply(int commentId)
+    {
+        ReplyingTo = ReplyingTo == commentId ? null : commentId;
+    }
+
+    private void CancelReply()
+    {
+        ReplyingTo = null;
+        ReplyComment.Content = "";
+    }
+
+    private string GetPlaceholderText()
+    {
+        return NewComment.Type switch
+        {
+            CommentType.Question => "What would you like to know about this place?",
+            CommentType.Tip => "Share a helpful tip for other pet owners...",
+            _ => "Share your thoughts about this place..."
+        };
+    }
+
+    private string GetTypeIcon(CommentType type)
+    {
+        return type switch
+        {
+            CommentType.Question => "❓",
+            CommentType.Answer => "✅",
+            CommentType.Tip => "💡",
+            _ => "💬"
+        };
+    }
+
+    private string GetCommentTypeClass(CommentType type)
+    {
+        return type switch
+        {
+            CommentType.Question => "question",
+            CommentType.Answer => "answer",
+            CommentType.Tip => "tip",
+            _ => ""
+        };
+    }
+}

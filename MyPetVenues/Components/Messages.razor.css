@@ -1,0 +1,305 @@
+.messages-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.messages-container h3 {
+    color: #fff;
+    margin-bottom: 1.5rem;
+}
+
+.message-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.compose-message,
+.privacy-settings {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.compose-message h4,
+.privacy-settings h4 {
+    color: #fff;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #fff;
+    font-weight: 500;
+}
+
+.checkbox-label {
+    display: flex !important;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0.25rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-family: inherit;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #ff6b9d;
+    box-shadow: 0 0 0 2px rgba(255, 107, 157, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff6b9d, #c44569);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.message-filters {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    border-color: #ff6b9d;
+    background: rgba(255, 107, 157, 0.2);
+    color: #fff;
+}
+
+.messages-list {
+    margin-top: 2rem;
+}
+
+.message-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s;
+}
+
+.message-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 107, 157, 0.2);
+}
+
+.message-card.unread {
+    border-left: 4px solid #ff6b9d;
+    background: rgba(255, 107, 157, 0.1);
+}
+
+.message-card.sent {
+    border-left: 4px solid #4CAF50;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.message-participants {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.participant {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+.message-type-badge {
+    background: rgba(255, 107, 157, 0.2);
+    color: #ff6b9d;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.message-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.message-date {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.unread-indicator {
+    color: #ff6b9d;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.message-subject {
+    color: #fff;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.message-content {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    word-wrap: break-word;
+}
+
+.message-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.btn-action:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-action.delete {
+    border-color: rgba(244, 67, 54, 0.5);
+    color: rgba(244, 67, 54, 0.8);
+}
+
+.btn-action.delete:hover {
+    border-color: #f44336;
+    color: #f44336;
+    background: rgba(244, 67, 54, 0.1);
+}
+
+.no-messages {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+}
+
+.validation-message {
+    color: #ff6b9d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .message-actions {
+        flex-direction: column;
+    }
+    
+    .message-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .message-meta {
+        align-self: flex-end;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-action {
+        flex: 1;
+        text-align: center;
+    }
+}

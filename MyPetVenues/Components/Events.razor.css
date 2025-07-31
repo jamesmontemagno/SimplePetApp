@@ -1,0 +1,271 @@
+.events-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.events-container h3 {
+    color: #fff;
+    margin-bottom: 1.5rem;
+}
+
+.event-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.event-filters select {
+    min-width: 150px;
+}
+
+.create-event-form {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.create-event-form h4 {
+    color: #fff;
+    margin-bottom: 1.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #fff;
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0.25rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-family: inherit;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #ff6b9d;
+    box-shadow: 0 0 0 2px rgba(255, 107, 157, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff6b9d, #c44569);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.events-list {
+    margin-top: 2rem;
+}
+
+.event-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(255, 107, 157, 0.2);
+}
+
+.event-card.upcoming {
+    border-left: 4px solid #4CAF50;
+}
+
+.event-card.completed {
+    border-left: 4px solid #9E9E9E;
+    opacity: 0.8;
+}
+
+.event-card.cancelled {
+    border-left: 4px solid #f44336;
+    opacity: 0.7;
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.event-type-badge {
+    background: rgba(255, 107, 157, 0.2);
+    color: #ff6b9d;
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.event-status {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    text-transform: capitalize;
+}
+
+.event-title {
+    color: #fff;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+}
+
+.event-description {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.event-details {
+    margin-bottom: 1.5rem;
+}
+
+.event-details > div {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.event-time {
+    font-weight: 500;
+}
+
+.event-rsvp {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 1rem;
+}
+
+.event-rsvp h5 {
+    color: #fff;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.rsvp-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-rsvp {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.btn-rsvp:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.btn-rsvp.active {
+    background: linear-gradient(135deg, #ff6b9d, #c44569);
+    color: white;
+    border-color: #ff6b9d;
+}
+
+.no-events {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+}
+
+.validation-message {
+    color: #ff6b9d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .event-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .rsvp-buttons {
+        justify-content: center;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,158 @@
+@page "/social"
+@page "/social/{locationId:int}"
+@using MyPetVenues.Components
+
+<PageTitle>Community & Social - PetVenues</PageTitle>
+
+<div class="social-page">
+    <div class="social-header">
+        <h1>🐾 Community & Social Hub</h1>
+        <p class="subtitle">Connect with fellow pet lovers, share experiences, and organize meetups!</p>
+        
+        @if (LocationId.HasValue)
+        {
+            <div class="location-context">
+                <h2>📍 Location: Sample Pet Park</h2>
+                <p>Community features for this specific location</p>
+            </div>
+        }
+    </div>
+
+    <div class="social-navigation">
+        <button class="nav-btn @(ActiveTab == "reviews" ? "active" : "")" @onclick='() => SetActiveTab("reviews")'>
+            ⭐ Reviews & Ratings
+        </button>
+        <button class="nav-btn @(ActiveTab == "comments" ? "active" : "")" @onclick='() => SetActiveTab("comments")'>
+            💬 Community Q&A
+        </button>
+        <button class="nav-btn @(ActiveTab == "events" ? "active" : "")" @onclick='() => SetActiveTab("events")'>
+            🎉 Events & Meetups
+        </button>
+        <button class="nav-btn @(ActiveTab == "messages" ? "active" : "")" @onclick='() => SetActiveTab("messages")'>
+            📫 Messages
+        </button>
+    </div>
+
+    <div class="social-content">
+        @if (ActiveTab == "reviews")
+        {
+            <div class="tab-content">
+                <CascadingValue Value="@CurrentUser">
+                    <Reviews LocationId="@(LocationId ?? 1)" CurrentUserId="@CurrentUser.Id" />
+                </CascadingValue>
+            </div>
+        }
+        else if (ActiveTab == "comments")
+        {
+            <div class="tab-content">
+                <CascadingValue Value="@CurrentUser">
+                    <Comments LocationId="@(LocationId ?? 1)" CurrentUserId="@CurrentUser.Id" />
+                </CascadingValue>
+            </div>
+        }
+        else if (ActiveTab == "events")
+        {
+            <div class="tab-content">
+                <CascadingValue Value="@CurrentUser">
+                    <Events LocationId="@(LocationId ?? 1)" CurrentUserId="@CurrentUser.Id" />
+                </CascadingValue>
+            </div>
+        }
+        else if (ActiveTab == "messages")
+        {
+            <div class="tab-content">
+                <CascadingValue Value="@CurrentUser">
+                    <Messages CurrentUserId="@CurrentUser.Id" />
+                </CascadingValue>
+            </div>
+        }
+    </div>
+
+    <div class="community-stats">
+        <div class="stat-card">
+            <div class="stat-number">@ReviewCount</div>
+            <div class="stat-label">Reviews</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@CommentCount</div>
+            <div class="stat-label">Comments</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@EventCount</div>
+            <div class="stat-label">Events</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">@ActiveUsers</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+    </div>
+
+    <div class="community-guidelines">
+        <h3>🤝 Community Guidelines</h3>
+        <div class="guidelines-grid">
+            <div class="guideline-card">
+                <span class="guideline-icon">🐕</span>
+                <h4>Be Pet-Friendly</h4>
+                <p>Share experiences that help other pet owners make informed decisions.</p>
+            </div>
+            <div class="guideline-card">
+                <span class="guideline-icon">💖</span>
+                <h4>Stay Respectful</h4>
+                <p>Treat fellow community members with kindness and respect.</p>
+            </div>
+            <div class="guideline-card">
+                <span class="guideline-icon">📸</span>
+                <h4>Share Responsibly</h4>
+                <p>Only share photos and information that you have permission to post.</p>
+            </div>
+            <div class="guideline-card">
+                <span class="guideline-icon">🛡️</span>
+                <h4>Privacy Matters</h4>
+                <p>Respect privacy settings and personal boundaries.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int? LocationId { get; set; }
+    
+    private string ActiveTab = "reviews";
+    private User CurrentUser = new() 
+    { 
+        Id = 1, 
+        Username = "demo_user", 
+        Email = "demo@petvenuse.com", 
+        DisplayName = "Demo User" 
+    };
+
+    // Mock statistics - in real app these would come from services
+    private int ReviewCount = 42;
+    private int CommentCount = 127;
+    private int EventCount = 8;
+    private int ActiveUsers = 156;
+
+    protected override void OnInitialized()
+    {
+        // Initialize with reviews tab if no specific tab requested
+        ActiveTab = "reviews";
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Update stats based on location if provided
+        if (LocationId.HasValue)
+        {
+            // In a real app, you would fetch location-specific stats here
+            ReviewCount = 15;
+            CommentCount = 34;
+            EventCount = 3;
+        }
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        ActiveTab = tab;
+        StateHasChanged();
+    }
+}
