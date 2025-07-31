@@ -1,7 +1,123 @@
-﻿@page "/"
+﻿
+@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Pet Friendly Locations</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="landing-root">
+	<!-- Navigation Bar -->
+	<header class="navbar">
+		<div class="logo">🐾 <span>PetVenues</span></div>
+		<nav>
+			<a href="#features">Features</a>
+			<a href="#community">Community</a>
+			<a href="#venues">Venues</a>
+			<a href="#footer">Contact</a>
+		</nav>
+		<button class="theme-toggle" @onclick="ToggleTheme">@(_isDark ? "🌙" : "☀️")</button>
+	</header>
 
-Welcome to your new app.
+	<!-- Hero Section -->
+	<section class="hero">
+		<div class="hero-content">
+			<h1>Find <span class="gradient-text">Pet-Friendly</span> Places Near You! 🐶🐱</h1>
+			<p class="subtitle">Discover, review, and share the best spots for you and your furry friends. Community-powered, fun, and always welcoming! 🦴</p>
+			<a class="cta-btn" href="#features">Explore Features</a>
+		</div>
+		<div class="hero-images">
+			<img src="images/pets/dog1.png" alt="Dog" class="pet-img pet-img-1" />
+			<img src="images/pets/cat1.jpg" alt="Cat" class="pet-img pet-img-2" />
+			<img src="images/pets/hedgehog.jpg" alt="Hedgehog" class="pet-img pet-img-3" />
+		</div>
+	</section>
+
+	<!-- Features Section -->
+	<section id="features" class="features">
+		<h2>✨ Key Features</h2>
+		<div class="features-list">
+			<div class="feature-card">
+				<span class="feature-emoji">👤</span>
+				<h3>User & Pet Profiles</h3>
+				<p>Manage your profile and add all your pets with cute photos and details!</p>
+			</div>
+			<div class="feature-card">
+				<span class="feature-emoji">📍</span>
+				<h3>Location Discovery</h3>
+				<p>Find parks, cafes, hotels, and more. Filter by amenities and pet policies.</p>
+			</div>
+			<div class="feature-card">
+				<span class="feature-emoji">⭐</span>
+				<h3>Reviews & Ratings</h3>
+				<p>Share your experiences and help others with honest reviews and ratings.</p>
+			</div>
+			<div class="feature-card">
+				<span class="feature-emoji">🎉</span>
+				<h3>Events & Meetups</h3>
+				<p>Organize or join pet meetups and events in your area!</p>
+			</div>
+			<div class="feature-card">
+				<span class="feature-emoji">🔔</span>
+				<h3>Notifications</h3>
+				<p>Stay updated with activity alerts, messages, and event reminders.</p>
+			</div>
+		</div>
+	</section>
+
+	<!-- Community Section -->
+	<section id="community" class="community">
+		<h2>🐾 Join the Community</h2>
+		<p>Connect with other pet lovers, share stories, and make new friends!</p>
+		<div class="community-gallery">
+			<img src="images/pets/dog3.jpg" alt="Dog" />
+			<img src="images/pets/cat2.jpg" alt="Cat" />
+			<img src="images/pets/bunny.jpg" alt="Bunny" />
+			<img src="images/pets/dog8.jpg" alt="Dog" />
+		</div>
+	</section>
+
+	<!-- Venues Section -->
+	<section id="venues" class="venues">
+		<h2>🏞️ Featured Venues</h2>
+		<div class="venues-list">
+			<div class="venue-card">
+				<img src="images/venues/park1.jpg" alt="Park" />
+				<h3>Central Bark Park</h3>
+				<p>Spacious, clean, and perfect for a game of fetch!</p>
+			</div>
+			<div class="venue-card">
+				<img src="images/venues/cafe1.jpg" alt="Cafe" />
+				<h3>Paws & Coffee</h3>
+				<p>Enjoy a latte while your pet gets a treat. 🥐</p>
+			</div>
+			<div class="venue-card">
+				<img src="images/venues/hotel1.jpg" alt="Hotel" />
+				<h3>PetStay Hotel</h3>
+				<p>Traveling? Stay at the best pet-friendly hotel in town.</p>
+			</div>
+		</div>
+	</section>
+
+	<!-- Footer -->
+	<footer id="footer" class="footer">
+		<div class="footer-links">
+			<a href="#">About</a>
+			<a href="#">Privacy</a>
+			<a href="#">Terms</a>
+			<a href="#">Contact</a>
+		</div>
+		<div class="footer-copy">© @DateTime.Now.Year PetVenues. All rights reserved.</div>
+	</footer>
+</div>
+
+@code {
+	private bool _isDark = false;
+
+	private void ToggleTheme()
+	{
+		_isDark = !_isDark;
+		var theme = _isDark ? "dark" : "light";
+		JS.InvokeVoidAsync("setTheme", theme);
+	}
+
+	[Inject] private IJSRuntime JS { get; set; } = default!;
+}
+	
