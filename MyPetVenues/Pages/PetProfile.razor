@@ -1,0 +1,364 @@
+@page "/pets"
+@inject IAuthService AuthService
+@inject IPetService PetService
+@inject IFileUploadService FileUploadService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>My Pets - PetVenues</PageTitle>
+
+@if (_currentUser != null)
+{
+    <div class="pets-container">
+        <div class="pets-header">
+            <h1>🐾 My Pets</h1>
+            <div class="header-actions">
+                <button class="add-pet-btn" @onclick="ShowAddPetForm">Add New Pet</button>
+                <a href="/profile" class="back-btn">Back to Profile</a>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_message))
+        {
+            <div class="@(_isError ? "error-message" : "success-message")">
+                @_message
+            </div>
+        }
+
+        @if (_showAddForm || _editingPet != null)
+        {
+            <div class="pet-form-container">
+                <div class="pet-form-card">
+                    <h2>@(_editingPet != null ? "Edit Pet" : "Add New Pet")</h2>
+                    
+                    <EditForm Model="_petForm" OnValidSubmit="SavePet" class="pet-form">
+                        <DataAnnotationsValidator />
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Pet Name</label>
+                                <InputText id="name" @bind-Value="_petForm.Name" placeholder="What's your pet's name?" />
+                                <ValidationMessage For="@(() => _petForm.Name)" />
+                            </div>
+                            <div class="form-group">
+                                <label for="type">Pet Type</label>
+                                <InputSelect id="type" @bind-Value="_petForm.Type">
+                                    <option value="">Select type</option>
+                                    <option value="Dog">Dog</option>
+                                    <option value="Cat">Cat</option>
+                                    <option value="Bird">Bird</option>
+                                    <option value="Rabbit">Rabbit</option>
+                                    <option value="Hamster">Hamster</option>
+                                    <option value="Fish">Fish</option>
+                                    <option value="Reptile">Reptile</option>
+                                    <option value="Other">Other</option>
+                                </InputSelect>
+                                <ValidationMessage For="@(() => _petForm.Type)" />
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="breed">Breed</label>
+                                <InputText id="breed" @bind-Value="_petForm.Breed" placeholder="What breed is your pet?" />
+                                <ValidationMessage For="@(() => _petForm.Breed)" />
+                            </div>
+                            <div class="form-group">
+                                <label for="age">Age</label>
+                                <InputNumber id="age" @bind-Value="_petForm.Age" placeholder="Pet's age" />
+                                <ValidationMessage For="@(() => _petForm.Age)" />
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="gender">Gender</label>
+                                <InputSelect id="gender" @bind-Value="_petForm.Gender">
+                                    <option value="">Select gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </InputSelect>
+                                <ValidationMessage For="@(() => _petForm.Gender)" />
+                            </div>
+                            <div class="form-group">
+                                <label for="photo">Pet Photo</label>
+                                <InputFile id="photo" OnChange="HandlePhotoUpload" accept="image/*" />
+                                @if (_uploading)
+                                {
+                                    <p class="upload-status">Uploading...</p>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <InputTextArea id="description" @bind-Value="_petForm.Description" rows="3" placeholder="Tell us about your pet..." />
+                            <ValidationMessage For="@(() => _petForm.Description)" />
+                        </div>
+
+                        <h4>Privacy Settings</h4>
+                        <div class="privacy-settings">
+                            <div class="form-group checkbox-group">
+                                <InputCheckbox id="isPublic" @bind-Value="_petForm.IsPublic" />
+                                <label for="isPublic">Make this pet profile public</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <InputCheckbox id="showInSearch" @bind-Value="_petForm.ShowInSearchResults" />
+                                <label for="showInSearch">Show in search results</label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="save-btn" disabled="@_saving">
+                                @if (_saving) { <span>Saving...</span> } else { <span>@(_editingPet != null ? "Update Pet" : "Add Pet")</span> }
+                            </button>
+                            <button type="button" class="cancel-btn" @onclick="CancelPetForm">Cancel</button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        }
+
+        <div class="pets-grid">
+            @if (_pets.Any())
+            {
+                @foreach (var pet in _pets)
+                {
+                    <div class="pet-card">
+                        <div class="pet-photo">
+                            @if (!string.IsNullOrEmpty(pet.PhotoPath))
+                            {
+                                <img src="@pet.PhotoPath" alt="@pet.Name" />
+                            }
+                            else
+                            {
+                                <div class="photo-placeholder">
+                                    @GetPetEmoji(pet.Type)
+                                </div>
+                            }
+                        </div>
+                        <div class="pet-info">
+                            <h3>@pet.Name</h3>
+                            <p class="pet-type">@pet.Type @(!string.IsNullOrEmpty(pet.Breed) ? $"• {pet.Breed}" : "")</p>
+                            @if (pet.Age.HasValue)
+                            {
+                                <p class="pet-age">@pet.Age year@(pet.Age == 1 ? "" : "s") old</p>
+                            }
+                            @if (!string.IsNullOrEmpty(pet.Description))
+                            {
+                                <p class="pet-description">@pet.Description</p>
+                            }
+                            <div class="pet-privacy">
+                                @if (pet.IsPublic)
+                                {
+                                    <span class="privacy-badge public">Public</span>
+                                }
+                                else
+                                {
+                                    <span class="privacy-badge private">Private</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="pet-actions">
+                            <button class="edit-pet-btn" @onclick="() => EditPet(pet)">Edit</button>
+                            <button class="delete-pet-btn" @onclick="() => DeletePet(pet.Id)">Delete</button>
+                        </div>
+                    </div>
+                }
+            }
+            else if (!_showAddForm)
+            {
+                <div class="no-pets">
+                    <h3>No pets added yet!</h3>
+                    <p>Add your first pet to get started.</p>
+                    <button class="add-first-pet-btn" @onclick="ShowAddPetForm">Add Your First Pet</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="not-authenticated">
+        <h2>Please sign in to manage your pets</h2>
+        <p><a href="/login">Sign in here</a></p>
+    </div>
+}
+
+@code {
+    private User? _currentUser;
+    private List<Pet> _pets = new();
+    private Pet _petForm = new();
+    private Pet? _editingPet;
+    private bool _showAddForm = false;
+    private bool _saving = false;
+    private bool _uploading = false;
+    private string _message = string.Empty;
+    private bool _isError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentUser = await AuthService.GetCurrentUserAsync();
+        
+        if (_currentUser == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        await LoadPets();
+    }
+
+    private async Task LoadPets()
+    {
+        if (_currentUser != null)
+        {
+            _pets = await PetService.GetPetsByUserIdAsync(_currentUser.Id);
+        }
+    }
+
+    private void ShowAddPetForm()
+    {
+        _petForm = new Pet { UserId = _currentUser!.Id };
+        _editingPet = null;
+        _showAddForm = true;
+        _message = string.Empty;
+    }
+
+    private void EditPet(Pet pet)
+    {
+        _petForm = new Pet
+        {
+            Id = pet.Id,
+            UserId = pet.UserId,
+            Name = pet.Name,
+            Type = pet.Type,
+            Breed = pet.Breed,
+            Age = pet.Age,
+            Gender = pet.Gender,
+            Description = pet.Description,
+            PhotoPath = pet.PhotoPath,
+            IsPublic = pet.IsPublic,
+            ShowInSearchResults = pet.ShowInSearchResults,
+            CreatedAt = pet.CreatedAt
+        };
+        _editingPet = pet;
+        _showAddForm = false;
+        _message = string.Empty;
+    }
+
+    private void CancelPetForm()
+    {
+        _showAddForm = false;
+        _editingPet = null;
+        _petForm = new();
+        _message = string.Empty;
+    }
+
+    private async Task SavePet()
+    {
+        _saving = true;
+        _message = string.Empty;
+        
+        try
+        {
+            bool success;
+            
+            if (_editingPet != null)
+            {
+                success = await PetService.UpdatePetAsync(_petForm);
+                _message = success ? "Pet updated successfully!" : "Failed to update pet.";
+            }
+            else
+            {
+                success = await PetService.AddPetAsync(_petForm);
+                _message = success ? "Pet added successfully!" : "Failed to add pet.";
+            }
+
+            _isError = !success;
+            
+            if (success)
+            {
+                await LoadPets();
+                CancelPetForm();
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = $"Error: {ex.Message}";
+            _isError = true;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task HandlePhotoUpload(InputFileChangeEventArgs e)
+    {
+        if (e.File == null) return;
+
+        _uploading = true;
+        _message = string.Empty;
+
+        try
+        {
+            var photoPath = await FileUploadService.UploadPetImageAsync(e.File, _petForm.Id);
+            _petForm.PhotoPath = photoPath;
+            _message = "Photo uploaded successfully!";
+            _isError = false;
+        }
+        catch (Exception ex)
+        {
+            _message = $"Photo upload failed: {ex.Message}";
+            _isError = true;
+        }
+        finally
+        {
+            _uploading = false;
+        }
+    }
+
+    private async Task DeletePet(string petId)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this pet?"))
+        {
+            try
+            {
+                var success = await PetService.DeletePetAsync(petId);
+                
+                if (success)
+                {
+                    await LoadPets();
+                    _message = "Pet deleted successfully.";
+                    _isError = false;
+                }
+                else
+                {
+                    _message = "Failed to delete pet.";
+                    _isError = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _message = $"Error deleting pet: {ex.Message}";
+                _isError = true;
+            }
+        }
+    }
+
+    private static string GetPetEmoji(string petType)
+    {
+        return petType.ToLowerInvariant() switch
+        {
+            "dog" => "🐶",
+            "cat" => "🐱",
+            "bird" => "🐦",
+            "rabbit" => "🐰",
+            "hamster" => "🐹",
+            "fish" => "🐠",
+            "reptile" => "🦎",
+            _ => "🐾"
+        };
+    }
+}

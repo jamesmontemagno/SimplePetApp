@@ -11,6 +11,16 @@
 			<a href="#features">Features</a>
 			<a href="#community">Community</a>
 			<a href="#venues">Venues</a>
+			@if (_currentUser != null)
+			{
+				<a href="/profile">Profile</a>
+				<a href="/pets">My Pets</a>
+			}
+			else
+			{
+				<a href="/login">Login</a>
+				<a href="/register">Register</a>
+			}
 			<a href="#footer">Contact</a>
 		</nav>
 		<button class="theme-toggle" @onclick="ToggleTheme">@(_isDark ? "🌙" : "☀️")</button>
@@ -110,6 +120,12 @@
 
 @code {
 	private bool _isDark = false;
+	private User? _currentUser;
+
+	protected override async Task OnInitializedAsync()
+	{
+		_currentUser = await AuthService.GetCurrentUserAsync();
+	}
 
 	private void ToggleTheme()
 	{
@@ -119,5 +135,6 @@
 	}
 
 	[Inject] private IJSRuntime JS { get; set; } = default!;
+	[Inject] private IAuthService AuthService { get; set; } = default!;
 }
 	

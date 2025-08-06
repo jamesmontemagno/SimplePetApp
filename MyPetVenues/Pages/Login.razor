@@ -1,0 +1,88 @@
+@page "/login"
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Login - PetVenues</PageTitle>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>🐾 Welcome Back</h1>
+            <p>Sign in to continue your pet journey!</p>
+        </div>
+
+        <EditForm Model="_loginRequest" OnValidSubmit="HandleLogin" class="auth-form">
+            <DataAnnotationsValidator />
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="error-message">
+                    @_errorMessage
+                </div>
+            }
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <InputText id="username" @bind-Value="_loginRequest.Username" placeholder="Enter your username" />
+                <ValidationMessage For="@(() => _loginRequest.Username)" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText id="password" type="password" @bind-Value="_loginRequest.Password" placeholder="Enter your password" />
+                <ValidationMessage For="@(() => _loginRequest.Password)" />
+            </div>
+
+            <button type="submit" class="auth-btn" disabled="@_isLoading">
+                @if (_isLoading)
+                {
+                    <span>Signing In...</span>
+                }
+                else
+                {
+                    <span>Sign In</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="/register">Create one here</a></p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginRequest _loginRequest = new();
+    private string _errorMessage = string.Empty;
+    private bool _isLoading = false;
+
+    private async Task HandleLogin()
+    {
+        _isLoading = true;
+        _errorMessage = string.Empty;
+        
+        try
+        {
+            var result = await AuthService.LoginAsync(_loginRequest);
+            
+            if (result.IsSuccess)
+            {
+                // Navigate to profile page after successful login
+                Navigation.NavigateTo("/profile");
+            }
+            else
+            {
+                _errorMessage = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Login failed: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

@@ -1,0 +1,113 @@
+@page "/register"
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Register - PetVenues</PageTitle>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>🐾 Join PetVenues</h1>
+            <p>Create your account and start connecting with pet lovers!</p>
+        </div>
+
+        <EditForm Model="_registerRequest" OnValidSubmit="HandleRegister" class="auth-form">
+            <DataAnnotationsValidator />
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="error-message">
+                    @_errorMessage
+                </div>
+            }
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <InputText id="username" @bind-Value="_registerRequest.Username" placeholder="Choose a username" />
+                <ValidationMessage For="@(() => _registerRequest.Username)" />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <InputText id="email" type="email" @bind-Value="_registerRequest.Email" placeholder="your@email.com" />
+                <ValidationMessage For="@(() => _registerRequest.Email)" />
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <InputText id="firstName" @bind-Value="_registerRequest.FirstName" placeholder="First name" />
+                    <ValidationMessage For="@(() => _registerRequest.FirstName)" />
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <InputText id="lastName" @bind-Value="_registerRequest.LastName" placeholder="Last name" />
+                    <ValidationMessage For="@(() => _registerRequest.LastName)" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText id="password" type="password" @bind-Value="_registerRequest.Password" placeholder="Enter your password" />
+                <ValidationMessage For="@(() => _registerRequest.Password)" />
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <InputText id="confirmPassword" type="password" @bind-Value="_registerRequest.ConfirmPassword" placeholder="Confirm your password" />
+                <ValidationMessage For="@(() => _registerRequest.ConfirmPassword)" />
+            </div>
+
+            <button type="submit" class="auth-btn" disabled="@_isLoading">
+                @if (_isLoading)
+                {
+                    <span>Creating Account...</span>
+                }
+                else
+                {
+                    <span>Create Account</span>
+                }
+            </button>
+        </EditForm>
+
+        <div class="auth-footer">
+            <p>Already have an account? <a href="/login">Sign in here</a></p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterRequest _registerRequest = new();
+    private string _errorMessage = string.Empty;
+    private bool _isLoading = false;
+
+    private async Task HandleRegister()
+    {
+        _isLoading = true;
+        _errorMessage = string.Empty;
+        
+        try
+        {
+            var result = await AuthService.RegisterAsync(_registerRequest);
+            
+            if (result.IsSuccess)
+            {
+                // Navigate to profile page after successful registration
+                Navigation.NavigateTo("/profile");
+            }
+            else
+            {
+                _errorMessage = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Registration failed: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}
