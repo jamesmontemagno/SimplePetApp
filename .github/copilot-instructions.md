@@ -1,33 +1,47 @@
-# GitHub Copilot Instructions - Blazor WebAssembly App (.NET 9)
-
-## Project Overview
-This is a Blazor WebAssembly application built with .NET 9. 
-
 it is located on https://github.com/jamesmontemagno/SimplePetApp
 
-The application follows modern best practices for Blazor WASM development.
+# GitHub Copilot Instructions – SimplePetApp (Blazor WebAssembly, .NET 9)
 
-All code for the frontend is loctated in the MyPetVenues folder
+## Project Overview
 
-## Coding Standards
-- Use C# 12 features where appropriate
-- Implement component-based architecture
-- Follow SOLID principles
-- Use nullable reference types
-- Prefer async/await for asynchronous operations
+- This is a Blazor WebAssembly app using .NET 9, located in the `MyPetVenues` folder.
+- The app is component-based, with all UI and logic in `MyPetVenues/`.
+- The entry point is `App.razor`, using `MainLayout.razor` for layout.
+- The main page is `Pages/Home.razor`.
 
-## Blazor WebAssembly Best Practices
-- Use CSS isolation for components
-- Implement proper dependency injection
-- Use `IHttpClientFactory` for HTTP requests
-- Leverage Blazor's component parameters and cascading parameters
-- Use `@key` directive for optimized rendering of lists
-- Implement efficient state management
-- Use JS interop only when necessary
+## Architecture & Patterns
 
-## Performance Considerations
-- Minimize initial download size
-- Use lazy loading for routes
-- Implement efficient rendering techniques
-- Consider using pre-rendering where appropriate
-- Implement proper cancellation token handling
+- **Component Structure:** All UI is in Razor components under `Pages/` and `Layout/`.
+- **Styling:** Uses CSS isolation (`.razor.css` files) and global styles in `wwwroot/css/app.css`.
+- **Theme Handling:** Light/dark mode is managed via `wwwroot/js/theme.js` (sets `data-theme` on `<html>` and persists in `localStorage`). Update UI or add toggles by calling `window.setTheme('light'|'dark')` via JS interop.
+- **HTTP/Data:** Use dependency-injected `HttpClient` for API/data access (`Program.cs`).
+- **State:** No global state container; use cascading/component parameters for state sharing.
+
+## Developer Workflows
+
+- **Run the app:** Use the VS Code task "Run Blazor App" or:
+	```
+	dotnet watch run --project MyPetVenues
+	```
+- **Hot reload:** Supported via `dotnet watch`.
+- **Debugging:** Use browser dev tools; set breakpoints in C# via VS Code.
+- **Build output:** Located in `MyPetVenues/bin/Debug/net9.0/`.
+
+## Project Conventions
+
+- Use C# 12 features and nullable reference types.
+- Prefer async/await for all async work.
+- Use `@key` in Razor for list rendering performance.
+- Use JS interop only for browser APIs (e.g., theme switching).
+- All static assets (images, JS, CSS) are in `wwwroot/`.
+
+## Integration Points
+
+- **Theme toggle:** Update or debug theme logic in `wwwroot/js/theme.js` and ensure CSS uses `[data-theme]` selectors.
+- **External APIs:** Add new services via DI in `Program.cs`.
+- **Routing:** Add new pages in `Pages/` and update `App.razor` if needed.
+
+## Examples
+
+- To add a new page: create `Pages/Foo.razor`, add a route, and optionally a `Foo.razor.css`.
+- To add a theme toggle: call `window.setTheme('light')` or `window.setTheme('dark')` from a component using JS interop.

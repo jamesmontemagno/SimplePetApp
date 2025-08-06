@@ -1,0 +1,240 @@
+@page "/profile"
+@inject IAuthService AuthService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Profile - PetVenues</PageTitle>
+
+@if (_currentUser != null)
+{
+    <div class="profile-container">
+        <div class="profile-header">
+            <h1>👤 My Profile</h1>
+            <button class="logout-btn" @onclick="HandleLogout">Logout</button>
+        </div>
+
+        <div class="profile-content">
+            <div class="profile-card">
+                <div class="profile-info">
+                    <div class="profile-avatar">
+                        @if (!string.IsNullOrEmpty(_currentUser.ProfileImagePath))
+                        {
+                            <img src="@_currentUser.ProfileImagePath" alt="Profile" />
+                        }
+                        else
+                        {
+                            <div class="avatar-placeholder">
+                                @(_currentUser.FirstName.FirstOrDefault().ToString().ToUpper())@(_currentUser.LastName.FirstOrDefault().ToString().ToUpper())
+                            </div>
+                        }
+                    </div>
+                    <div class="profile-details">
+                        <h2>@_currentUser.FirstName @_currentUser.LastName</h2>
+                        <p class="username">@@@_currentUser.Username</p>
+                        @if (_currentUser.ShowEmail || _editMode)
+                        {
+                            <p class="email">@_currentUser.Email</p>
+                        }
+                        @if (!string.IsNullOrEmpty(_currentUser.Bio))
+                        {
+                            <p class="bio">@_currentUser.Bio</p>
+                        }
+                        <p class="join-date">Member since @_currentUser.CreatedAt.ToString("MMMM yyyy")</p>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    @if (!_editMode)
+                    {
+                        <button class="edit-btn" @onclick="EnableEditMode">Edit Profile</button>
+                        <a href="/pets" class="pets-btn">Manage Pets</a>
+                    }
+                    else
+                    {
+                        <button class="save-btn" @onclick="SaveProfile" disabled="@_saving">
+                            @if (_saving) { <span>Saving...</span> } else { <span>Save Changes</span> }
+                        </button>
+                        <button class="cancel-btn" @onclick="CancelEdit">Cancel</button>
+                    }
+                </div>
+            </div>
+
+            @if (_editMode)
+            {
+                <div class="edit-form">
+                    <EditForm Model="_editUser" OnValidSubmit="SaveProfile" class="profile-edit-form">
+                        <DataAnnotationsValidator />
+
+                        @if (!string.IsNullOrEmpty(_message))
+                        {
+                            <div class="@(_isError ? "error-message" : "success-message")">
+                                @_message
+                            </div>
+                        }
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <InputText id="firstName" @bind-Value="_editUser.FirstName" />
+                                <ValidationMessage For="@(() => _editUser.FirstName)" />
+                            </div>
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <InputText id="lastName" @bind-Value="_editUser.LastName" />
+                                <ValidationMessage For="@(() => _editUser.LastName)" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <InputText id="username" @bind-Value="_editUser.Username" />
+                            <ValidationMessage For="@(() => _editUser.Username)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <InputText id="email" type="email" @bind-Value="_editUser.Email" />
+                            <ValidationMessage For="@(() => _editUser.Email)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bio">Bio</label>
+                            <InputTextArea id="bio" @bind-Value="_editUser.Bio" rows="3" placeholder="Tell us about yourself..." />
+                            <ValidationMessage For="@(() => _editUser.Bio)" />
+                        </div>
+
+                        <h3>Privacy Settings</h3>
+                        <div class="privacy-settings">
+                            <div class="form-group checkbox-group">
+                                <InputCheckbox id="isPublic" @bind-Value="_editUser.IsProfilePublic" />
+                                <label for="isPublic">Make my profile public</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <InputCheckbox id="showEmail" @bind-Value="_editUser.ShowEmail" />
+                                <label for="showEmail">Show my email address</label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <InputCheckbox id="showPets" @bind-Value="_editUser.ShowPets" />
+                                <label for="showPets">Show my pets in search results</label>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="not-authenticated">
+        <h2>Please sign in to view your profile</h2>
+        <p><a href="/login">Sign in here</a></p>
+    </div>
+}
+
+@code {
+    private User? _currentUser;
+    private User _editUser = new();
+    private bool _editMode = false;
+    private bool _saving = false;
+    private string _message = string.Empty;
+    private bool _isError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentUser = await AuthService.GetCurrentUserAsync();
+        
+        if (_currentUser == null)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        // Initialize edit form with current user data
+        _editUser = new User
+        {
+            Id = _currentUser.Id,
+            Username = _currentUser.Username,
+            Email = _currentUser.Email,
+            FirstName = _currentUser.FirstName,
+            LastName = _currentUser.LastName,
+            Bio = _currentUser.Bio,
+            ProfileImagePath = _currentUser.ProfileImagePath,
+            IsProfilePublic = _currentUser.IsProfilePublic,
+            ShowEmail = _currentUser.ShowEmail,
+            ShowPets = _currentUser.ShowPets,
+            CreatedAt = _currentUser.CreatedAt
+        };
+    }
+
+    private void EnableEditMode()
+    {
+        _editMode = true;
+        _message = string.Empty;
+    }
+
+    private void CancelEdit()
+    {
+        _editMode = false;
+        _message = string.Empty;
+        
+        // Reset edit form to original values
+        if (_currentUser != null)
+        {
+            _editUser = new User
+            {
+                Id = _currentUser.Id,
+                Username = _currentUser.Username,
+                Email = _currentUser.Email,
+                FirstName = _currentUser.FirstName,
+                LastName = _currentUser.LastName,
+                Bio = _currentUser.Bio,
+                ProfileImagePath = _currentUser.ProfileImagePath,
+                IsProfilePublic = _currentUser.IsProfilePublic,
+                ShowEmail = _currentUser.ShowEmail,
+                ShowPets = _currentUser.ShowPets,
+                CreatedAt = _currentUser.CreatedAt
+            };
+        }
+    }
+
+    private async Task SaveProfile()
+    {
+        _saving = true;
+        _message = string.Empty;
+        
+        try
+        {
+            var success = await UserService.UpdateUserAsync(_editUser);
+            
+            if (success)
+            {
+                _currentUser = _editUser;
+                _editMode = false;
+                _message = "Profile updated successfully!";
+                _isError = false;
+            }
+            else
+            {
+                _message = "Failed to update profile. Please try again.";
+                _isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            _message = $"Error updating profile: {ex.Message}";
+            _isError = true;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/");
+    }
+}
