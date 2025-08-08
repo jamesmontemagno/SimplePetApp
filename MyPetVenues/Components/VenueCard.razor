@@ -1,0 +1,72 @@
+@using MyPetVenues.Models
+
+<div class="venue-card">
+    @if (Venue.IsFeatured)
+    {
+        <div class="featured-ribbon" aria-label="Featured venue">⭐</div>
+    }
+    
+    <div class="venue-image">
+        <img src="@Venue.HeroImage" alt="@($"{Venue.Name} - {Venue.Category} in {Venue.City}")" loading="lazy" />
+    </div>
+    
+    <div class="venue-content">
+        <div class="venue-header">
+            <h3 class="venue-name">@Venue.Name</h3>
+            <span class="venue-category">@Venue.Category</span>
+        </div>
+        
+        <div class="venue-location">
+            <span class="location-icon" aria-hidden="true">📍</span>
+            @Venue.City
+        </div>
+        
+        <div class="pet-types" role="list" aria-label="Allowed pet types">
+            @{
+                var displayPets = Venue.PetTypesAllowed.Take(3).ToList();
+                var remainingCount = Venue.PetTypesAllowed.Count - 3;
+            }
+            @foreach (var petType in displayPets)
+            {
+                <span class="pet-badge" role="listitem">@petType</span>
+            }
+            @if (remainingCount > 0)
+            {
+                <span class="pet-badge overflow" role="listitem">+@remainingCount</span>
+            }
+        </div>
+        
+        @if (Venue.Rating.HasValue)
+        {
+            <div class="venue-rating" aria-label="Rating @Venue.Rating.Value.ToString("F1") stars">
+                <span class="stars" aria-hidden="true">⭐</span>
+                <span class="rating-value">@Venue.Rating.Value.ToString("F1")</span>
+                <span class="review-count">(@Venue.ReviewsCount reviews)</span>
+            </div>
+        }
+        
+        <p class="venue-description">@GetTruncatedDescription()</p>
+        
+        @if (!string.IsNullOrWhiteSpace(Venue.Restrictions))
+        {
+            <div class="venue-restrictions">
+                <span class="restriction-icon" aria-hidden="true">⚠️</span>
+                <span class="restriction-text">@Venue.Restrictions</span>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public Venue Venue { get; set; } = default!;
+    
+    private string GetTruncatedDescription()
+    {
+        if (Venue.ShortDescription.Length <= 110)
+            return Venue.ShortDescription;
+        
+        var truncated = Venue.ShortDescription.Substring(0, 107);
+        var lastSpace = truncated.LastIndexOf(' ');
+        return lastSpace > 0 ? truncated.Substring(0, lastSpace) + "..." : truncated + "...";
+    }
+}
