@@ -1,0 +1,70 @@
+<header class="site-header">
+    <nav class="nav-bar" aria-label="Main Navigation">
+        <div class="logo" @onclick="NavigateToHome" tabindex="0" role="button" aria-label="OctoPets Home">
+            🐾 <span>OctoPets Venues</span>
+        </div>
+        <button class="nav-toggle" @onclick="ToggleMobileNav" aria-label="Toggle navigation" aria-expanded="@_mobileNavOpen">☰</button>
+        <ul class="nav-links @(_mobileNavOpen ? "open" : null)">
+            <li><a href="/" class="@GetActiveClass("/")">Home</a></li>
+            <li><a href="/venues" class="@GetActiveClass("/venues")">Venues</a></li>
+            @if (ShowHomeAnchors)
+            {
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how">How It Works</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#mvp">MVP Scope</a></li>
+                <li><a href="#cta" class="primary-btn">Get Started</a></li>
+            }
+        </ul>
+        <div class="mode-toggle">
+            <input id="themeToggle" type="checkbox" @onchange="ToggleTheme" checked="@_darkMode" aria-label="Toggle dark mode" />
+            <label for="themeToggle">@(_darkMode ? "🌙" : "☀️")</label>
+        </div>
+    </nav>
+</header>
+
+@code {
+    [Parameter] public bool ShowHomeAnchors { get; set; } = false;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
+    private bool _darkMode = true;
+    private bool _mobileNavOpen;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize dark mode from localStorage or default
+        try
+        {
+            _darkMode = await JSRuntime.InvokeAsync<bool>("themeToggle.isDark");
+        }
+        catch
+        {
+            // Fallback to default if JS not available
+            _darkMode = true;
+        }
+    }
+
+    private async void ToggleTheme(ChangeEventArgs e)
+    {
+        _darkMode = (bool?)e.Value ?? false;
+        await JSRuntime.InvokeVoidAsync("themeToggle.apply", _darkMode);
+    }
+
+    private void ToggleMobileNav() => _mobileNavOpen = !_mobileNavOpen;
+
+    private void NavigateToHome()
+    {
+        NavigationManager.NavigateTo("/");
+        if (ShowHomeAnchors)
+        {
+            JSRuntime.InvokeVoidAsync("themeToggle.scrollTop");
+        }
+    }
+
+    private string GetActiveClass(string path)
+    {
+        var currentPath = new Uri(NavigationManager.Uri).AbsolutePath;
+        return currentPath.Equals(path, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    }
+}

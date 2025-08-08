@@ -1,0 +1,178 @@
+@page "/venues"
+@inject IVenueService VenueService
+
+<PageTitle>Venues - OctoPets</PageTitle>
+
+<Navigation ShowHomeAnchors="false" />
+
+<main class="venues-page">
+    <div class="page-header">
+        <div class="header-content">
+            <h1><span class="gradient-text">Pet-Friendly Venues</span> 🏢</h1>
+            <p class="page-subtitle">Discover amazing places where you and your pets can enjoy together</p>
+        </div>
+    </div>
+
+    <div class="venues-container">
+        <div class="filter-bar">
+            <div class="search-input">
+                <input type="text" 
+                       @bind="_searchTerm" 
+                       @bind:event="oninput"
+                       @onkeyup="OnSearchChanged"
+                       placeholder="Search venues..."
+                       aria-label="Search venues by name, city, or description" />
+                <span class="search-icon" aria-hidden="true">🔍</span>
+            </div>
+
+            <div class="filter-selects">
+                <select @bind="SelectedCategory" aria-label="Filter by category">
+                    <option value="">All Categories</option>
+                    @foreach (var category in _categories)
+                    {
+                        <option value="@category">@category</option>
+                    }
+                </select>
+
+                <select @bind="SelectedPetType" aria-label="Filter by pet type">
+                    <option value="">All Pet Types</option>
+                    @foreach (var petType in _petTypes)
+                    {
+                        <option value="@petType">@petType</option>
+                    }
+                </select>
+
+                <button class="clear-button" @onclick="ClearFilters" aria-label="Clear all filters">
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="loading-shimmer" aria-label="Loading venues">
+                @for (int i = 0; i < 6; i++)
+                {
+                    <div class="shimmer-card" aria-hidden="true">
+                        <div class="shimmer-image"></div>
+                        <div class="shimmer-content">
+                            <div class="shimmer-line short"></div>
+                            <div class="shimmer-line medium"></div>
+                            <div class="shimmer-line long"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else if (_filteredVenues.Any())
+        {
+            <div class="venues-grid" role="list" aria-label="Venue results">
+                @foreach (var venue in _filteredVenues)
+                {
+                    <div role="listitem" @key="venue.Id">
+                        <VenueCard Venue="venue" />
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state" role="status" aria-live="polite">
+                <div class="empty-content">
+                    <div class="empty-icon" aria-hidden="true">🏢</div>
+                    <h2>No venues found</h2>
+                    <p>Try adjusting your search criteria or clearing the filters to see more venues.</p>
+                    <button class="secondary-btn" @onclick="ClearFilters">Clear Filters</button>
+                </div>
+            </div>
+        }
+    </div>
+</main>
+
+@code {
+    private List<Venue> _allVenues = new();
+    private List<Venue> _filteredVenues = new();
+    private List<string> _categories = new();
+    private List<string> _petTypes = new();
+    
+    private string _searchTerm = string.Empty;
+    private bool _isLoading = true;
+
+    private System.Timers.Timer? _debounceTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVenuesAsync();
+        await Task.Delay(800); // Simulate loading for shimmer effect
+        _isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadVenuesAsync()
+    {
+        _allVenues = (await VenueService.GetAllAsync()).ToList();
+        _filteredVenues = _allVenues;
+        
+        _categories = _allVenues.Select(v => v.Category).Distinct().OrderBy(c => c).ToList();
+        _petTypes = _allVenues.SelectMany(v => v.PetTypesAllowed).Distinct().OrderBy(p => p).ToList();
+    }
+
+    private void OnSearchChanged(KeyboardEventArgs e)
+    {
+        _debounceTimer?.Stop();
+        _debounceTimer = new System.Timers.Timer(300);
+        _debounceTimer.Elapsed += async (sender, e) =>
+        {
+            _debounceTimer.Stop();
+            await InvokeAsync(ApplyFiltersAsync);
+        };
+        _debounceTimer.Start();
+    }
+
+    private async Task OnFiltersChanged(ChangeEventArgs e)
+    {
+        await ApplyFiltersAsync();
+    }
+    
+    private string _selectedCategory = string.Empty;
+    private string _selectedPetType = string.Empty;
+    
+    private string SelectedCategory
+    {
+        get => _selectedCategory;
+        set
+        {
+            _selectedCategory = value;
+            _ = ApplyFiltersAsync();
+        }
+    }
+    
+    private string SelectedPetType
+    {
+        get => _selectedPetType;
+        set
+        {
+            _selectedPetType = value;
+            _ = ApplyFiltersAsync();
+        }
+    }
+
+    private async Task ApplyFiltersAsync()
+    {
+        _filteredVenues = (await VenueService.SearchAsync(_searchTerm, _selectedCategory, _selectedPetType)).ToList();
+        StateHasChanged();
+    }
+
+    private async Task ClearFilters()
+    {
+        _searchTerm = string.Empty;
+        _selectedCategory = string.Empty;
+        _selectedPetType = string.Empty;
+        await ApplyFiltersAsync();
+    }
+
+    public void Dispose()
+    {
+        _debounceTimer?.Dispose();
+    }
+}

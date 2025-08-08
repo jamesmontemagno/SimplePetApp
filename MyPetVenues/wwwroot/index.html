@@ -22,6 +22,9 @@
                     const prefers = stored ? stored === '1' : window.matchMedia('(prefers-color-scheme: dark)').matches;
                     this.apply(prefers);
                 },
+                isDark: function () {
+                    return document.documentElement.classList.contains('dark-mode');
+                },
                 scrollTop: function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }
             };
             window.themeToggle.init();
