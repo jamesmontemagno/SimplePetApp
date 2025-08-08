@@ -1,7 +1,208 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Pet-Friendly Venues</PageTitle>
 
-<h1>Hello, world!</h1>
+<header class="site-header">
+	<nav class="nav-bar" aria-label="Main Navigation">
+		<div class="logo" @onclick="ScrollToTop" tabindex="0" role="button" aria-label="OctoPets Home">
+			🐾 <span>OctoPets Venues</span>
+		</div>
+		<button class="nav-toggle" @onclick="ToggleMobileNav" aria-label="Toggle navigation" aria-expanded="@_mobileNavOpen">☰</button>
+		<ul class="nav-links @( _mobileNavOpen ? "open" : null)">
+			<li><a href="#features">Features</a></li>
+			<li><a href="#how">How It Works</a></li>
+			<li><a href="#gallery">Gallery</a></li>
+			<li><a href="#mvp">MVP Scope</a></li>
+			<li><a href="#cta" class="primary-btn">Get Started</a></li>
+		</ul>
+		<div class="mode-toggle">
+			<input id="themeToggle" type="checkbox" @onchange="ToggleTheme" checked="@_darkMode" aria-label="Toggle dark mode" />
+			<label for="themeToggle">@(_darkMode ? "🌙" : "☀️")</label>
+		</div>
+	</nav>
+</header>
 
-Welcome to your new app.
+<main>
+	<section class="hero" id="top">
+		<div class="hero-content">
+			<h1><span class="gradient-text">Find Pet-Friendly Places</span> 🐶🐱</h1>
+			<p class="tagline">Discover cafés, parks, hotels & more that welcome every member of your furry (or spiky, hoppy, scaly) family.</p>
+			<div class="hero-actions">
+				<a href="#features" class="primary-btn large">Explore Features →</a>
+				<a href="#how" class="secondary-btn large">How It Works</a>
+			</div>
+			<div class="hero-stats" aria-label="Early platform stats (sample)">
+				<div><strong>250+</strong><span>Seed Venues</span></div>
+				<div><strong>15</strong><span>Pet Types</span></div>
+				<div><strong>∞</strong><span>Adventures</span></div>
+			</div>
+		</div>
+		<div class="hero-media" role="img" aria-label="Collage of pets and venues">
+			<div class="pet-stack">
+				<img src="images/pets/dog1.png" alt="Happy dog" />
+				<img src="images/pets/cat1.jpg" alt="Curious cat" />
+				<img src="images/pets/bunny.jpg" alt="Bunny" />
+				<img src="images/pets/hedgehog.jpg" alt="Hedgehog" />
+			</div>
+			<div class="venue-stack">
+				<img src="images/venues/cafe1.jpg" alt="Pet friendly cafe" />
+				<img src="images/venues/park1.jpg" alt="Sunny park" />
+				<img src="images/venues/hotel1.jpg" alt="Cozy hotel" />
+			</div>
+		</div>
+	</section>
+
+	<section id="features" class="features">
+		<h2>Core <span class="gradient-text">MVP Features</span> 🚀</h2>
+		<p class="section-intro">Everything you need in Phase 1 to explore confidently and contribute meaningfully.</p>
+		<div class="feature-grid">
+			@foreach (var f in _features)
+			{
+				<div class="feature-card" @key="f.Title">
+					<div class="icon" aria-hidden="true">@f.Emoji</div>
+					<h3>@f.Title</h3>
+					<p>@f.Description</p>
+				</div>
+			}
+		</div>
+	</section>
+
+	<section id="how" class="how-it-works">
+		<h2>How It <span class="gradient-text">Works</span> 🧭</h2>
+		<ol class="steps" aria-label="Basic usage steps">
+			<li>
+				<h3>1. Search & Filter 🔍</h3>
+				<p>Browse venues by category, location & pet type to plan your outing.</p>
+			</li>
+			<li>
+				<h3>2. Evaluate Policies 📋</h3>
+				<p>See structured details: allowed species, restrictions, amenities & real pet-experience reviews.</p>
+			</li>
+			<li>
+				<h3>3. Contribute & Save 💾</h3>
+				<p>Add venues, review experiences & favorite places for future adventures.</p>
+			</li>
+			<li>
+				<h3>4. Keep It Accurate ✅</h3>
+				<p>Flag outdated info so moderators & owners can verify changes quickly.</p>
+			</li>
+		</ol>
+	</section>
+
+	<section id="gallery" class="gallery">
+		<h2>Community <span class="gradient-text">Vibes</span> 📸</h2>
+		<div class="masonry" aria-label="Sample pet & venue photos">
+			@foreach (var img in _gallery)
+			{
+				<figure class="shot" @key="img.Src">
+					<img src="@img.Src" alt="@img.Alt" loading="lazy" />
+					<figcaption>@img.Caption</figcaption>
+				</figure>
+			}
+		</div>
+	</section>
+
+	<section id="mvp" class="mvp-scope">
+		<h2>Phase 1 Scope ✅</h2>
+		<ul class="scope-list">
+			<li>Accounts & basic profiles</li>
+			<li>Venue discovery & structured detail pages</li>
+			<li>Community pet-experience reviews</li>
+			<li>Photo contributions</li>
+			<li>Add new venue workflow (moderated)</li>
+			<li>Flag inaccurate info</li>
+			<li>Favorites / saved venues</li>
+			<li>Core taxonomy (categories, pet types, restrictions, amenities)</li>
+		</ul>
+		<p class="note">Future goodies like claiming, verification badges & advanced filters are coming in later phases. 🌟</p>
+	</section>
+
+	<section id="cta" class="cta">
+		<div class="cta-inner">
+			<h2>Ready to Explore? 🗺️</h2>
+			<p>Be among the first to help shape the trusted pet-friendly venue platform.</p>
+			<div class="cta-actions">
+				<a href="#" class="primary-btn large" aria-label="Sign up (placeholder)">Sign Up Free</a>
+				<a href="#features" class="secondary-btn large">Review Features</a>
+			</div>
+		</div>
+	</section>
+</main>
+
+<footer class="site-footer" aria-label="Footer">
+	<div class="footer-grid">
+		<div>
+			<h3>OctoPets Venues</h3>
+			<p>Your trusted companion for pet-inclusive adventures.</p>
+		</div>
+		<div>
+			<h4>Product</h4>
+			<ul>
+				<li><a href="#features">Features</a></li>
+				<li><a href="#mvp">MVP Scope</a></li>
+				<li><a href="#how">How it Works</a></li>
+			</ul>
+		</div>
+		<div>
+			<h4>Community</h4>
+			<ul>
+				<li><a href="#gallery">Gallery</a></li>
+				<li><a href="#" aria-disabled="true">Moderation (Soon)</a></li>
+				<li><a href="#" aria-disabled="true">Guidelines</a></li>
+			</ul>
+		</div>
+		<div>
+			<h4>Legal</h4>
+			<ul>
+				<li><a href="#" aria-disabled="true">Privacy</a></li>
+				<li><a href="#" aria-disabled="true">Terms</a></li>
+				<li><a href="#" aria-disabled="true">Accessibility</a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="foot-note">© @DateTime.Now.Year OctoPets Venues • Built for pet people 🐾</div>
+</footer>
+
+@code {
+	private bool _darkMode = true;
+	private bool _mobileNavOpen;
+
+	private record Feature(string Title, string Description, string Emoji);
+	private record Shot(string Src, string Alt, string Caption);
+
+	private readonly List<Feature> _features = new()
+	{
+		new("Venue Discovery", "Search & browse pet-friendly cafés, parks, hotels & more.", "🗺️"),
+		new("Structured Policies", "Clear allowed pets, restrictions & amenities at a glance.", "📋"),
+		new("Pet-Centric Reviews", "Read & share experiences focused on pet comfort & safety.", "🐾"),
+		new("Add New Venues", "Contribute missing places to grow the community knowledge base.", "➕"),
+		new("Photo Sharing", "Upload real photos that showcase pet suitability.", "📸"),
+		new("Flag Inaccuracies", "Help keep info trustworthy with quick reporting.", "⚠️"),
+		new("Moderation Workflow", "Lightweight checks maintain quality & respect.", "🛡️"),
+		new("Favorites", "Save and plan future visits effortlessly.", "⭐")
+	};
+
+	private readonly List<Shot> _gallery = new()
+	{
+		new("images/pets/dog3.jpg", "Dog relaxing at cafe", "Chill cafe companion ☕"),
+		new("images/pets/cat2.jpg", "Cat looking out window", "Scoping the next adventure 👀"),
+		new("images/pets/dog5.jpg", "Dog at park", "Park day joy 🌳"),
+		new("images/pets/dog7.jpg", "Dog on trail", "Trail explorer 🥾"),
+		new("images/pets/cat3.jpg", "Cat lounging", "Sunbeam nap master ☀️"),
+		new("images/pets/dog8.jpg", "Dog posing", "Ready for the next outing!"),
+		new("images/venues/park1.jpg", "Park path", "Shady paths & open space"),
+		new("images/venues/cafe1.jpg", "Cafe patio", "Cozy patio seating"),
+		new("images/venues/hotel1.jpg", "Hotel lobby", "Pet-welcoming lobby")
+	};
+
+	private async void ToggleTheme(ChangeEventArgs e)
+	{
+		_darkMode = (bool?)e.Value ?? false;
+		await JSRuntime.InvokeVoidAsync("themeToggle.apply", _darkMode);
+	}
+
+	private void ToggleMobileNav() => _mobileNavOpen = !_mobileNavOpen;
+	private void ScrollToTop() => JSRuntime.InvokeVoidAsync("themeToggle.scrollTop");
+
+	[Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+}

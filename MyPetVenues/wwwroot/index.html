@@ -8,6 +8,24 @@
     <base href="/" />
     <link rel="stylesheet" href="css/app.css" />
     <link href="MyPetVenues.styles.css" rel="stylesheet" />
+        <script>
+            // Minimal JS utilities for theme toggling & scroll; inlined early for no flicker
+            window.themeToggle = {
+                apply: function (dark) {
+                    const cls = 'dark-mode';
+                    if (dark) document.documentElement.classList.add(cls); else document.documentElement.classList.remove(cls);
+                    localStorage.setItem('prefers-dark', dark ? '1' : '0');
+                    return cls;
+                },
+                init: function () {
+                    const stored = localStorage.getItem('prefers-dark');
+                    const prefers = stored ? stored === '1' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    this.apply(prefers);
+                },
+                scrollTop: function () { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+            };
+            window.themeToggle.init();
+        </script>
 </head>
 
 <body>
