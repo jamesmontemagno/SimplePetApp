@@ -1,0 +1,184 @@
+@page "/venues"
+@inject IVenueService VenueService
+
+<PageTitle>Browse Venues - Pet-Friendly Places</PageTitle>
+
+<div class="venues-page">
+    <header class="page-header">
+        <h1>🗺️ Browse Pet-Friendly Venues</h1>
+        <p>Discover amazing places that welcome you and your furry (or scaly, or feathery) friends!</p>
+    </header>
+
+    <div class="search-filters">
+        <div class="search-bar">
+            <input type="text" @bind="searchTerm" @onkeyup="HandleSearch" placeholder="Search venues..." class="search-input" />
+        </div>
+        
+        <div class="filters">
+            <select @bind="selectedCategory" @bind:after="HandleSearch" class="filter-select">
+                <option value="">All Categories</option>
+                @foreach (var category in Enum.GetValues<VenueCategory>())
+                {
+                    <option value="@category">@GetDisplayName(category)</option>
+                }
+            </select>
+
+            <select @bind="selectedPetType" @bind:after="HandleSearch" class="filter-select">
+                <option value="">All Pet Types</option>
+                @foreach (var petType in Enum.GetValues<PetType>())
+                {
+                    <option value="@petType">@GetDisplayName(petType)</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading">
+            <p>🔍 Finding great venues...</p>
+        </div>
+    }
+    else if (venues != null && venues.Count > 0)
+    {
+        <div class="venues-grid">
+            @foreach (var venue in venues)
+            {
+                <div class="venue-card" @key="venue.Id">
+                    <div class="venue-image">
+                        @if (!string.IsNullOrEmpty(venue.ImageUrl))
+                        {
+                            <img src="@venue.ImageUrl" alt="@venue.Name" loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="image-placeholder">@GetCategoryEmoji(venue.Category)</div>
+                        }
+                    </div>
+                    
+                    <div class="venue-content">
+                        <div class="venue-header">
+                            <h3><a href="/venues/@venue.Id">@venue.Name</a></h3>
+                            <div class="venue-rating">
+                                <span class="stars">@GenerateStars(venue.Rating)</span>
+                                <span class="rating-text">@venue.Rating.ToString("F1") (@venue.ReviewCount)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="venue-meta">
+                            <span class="category">@GetDisplayName(venue.Category)</span>
+                            <span class="location">📍 @venue.City, @venue.State</span>
+                        </div>
+                        
+                        <p class="venue-description">@venue.Description</p>
+                        
+                        <div class="pet-types">
+                            <strong>Welcomes:</strong>
+                            @foreach (var petType in venue.AllowedPetTypes)
+                            {
+                                <span class="pet-tag">@GetPetEmoji(petType) @GetDisplayName(petType)</span>
+                            }
+                        </div>
+                        
+                        @if (venue.Amenities.Count > 0)
+                        {
+                            <div class="amenities">
+                                <strong>Amenities:</strong>
+                                @foreach (var amenity in venue.Amenities.Take(3))
+                                {
+                                    <span class="amenity-tag">@amenity</span>
+                                }
+                                @if (venue.Amenities.Count > 3)
+                                {
+                                    <span class="more">+@(venue.Amenities.Count - 3) more</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="no-results">
+            <h3>🔍 No venues found</h3>
+            <p>Try adjusting your search criteria or browse all venues.</p>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Venue>? venues;
+    private bool isLoading = true;
+    private string searchTerm = string.Empty;
+    private string selectedCategory = string.Empty;
+    private string selectedPetType = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVenues();
+    }
+
+    private async Task LoadVenues()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        VenueCategory? category = string.IsNullOrEmpty(selectedCategory) ? null : Enum.Parse<VenueCategory>(selectedCategory);
+        PetType? petType = string.IsNullOrEmpty(selectedPetType) ? null : Enum.Parse<PetType>(selectedPetType);
+
+        venues = await VenueService.SearchVenuesAsync(searchTerm, category, petType);
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleSearch()
+    {
+        await LoadVenues();
+    }
+
+    private string GetDisplayName(Enum value)
+    {
+        var field = value.GetType().GetField(value.ToString());
+        var attribute = field?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false)
+                              .FirstOrDefault() as System.ComponentModel.DataAnnotations.DisplayAttribute;
+        return attribute?.Name ?? value.ToString();
+    }
+
+    private string GetCategoryEmoji(VenueCategory category) => category switch
+    {
+        VenueCategory.Cafe => "☕",
+        VenueCategory.Restaurant => "🍽️",
+        VenueCategory.Park => "🌳",
+        VenueCategory.Hotel => "🏨",
+        VenueCategory.Beach => "🏖️",
+        VenueCategory.Trail => "🥾",
+        VenueCategory.Shop => "🛍️",
+        VenueCategory.Grooming => "✂️",
+        VenueCategory.Veterinary => "🏥",
+        _ => "📍"
+    };
+
+    private string GetPetEmoji(PetType petType) => petType switch
+    {
+        PetType.Dog => "🐶",
+        PetType.Cat => "🐱",
+        PetType.Bird => "🐦",
+        PetType.Rabbit => "🐰",
+        PetType.Reptile => "🦎",
+        PetType.Fish => "🐠",
+        PetType.SmallAnimal => "🐹",
+        PetType.FarmAnimal => "🐎",
+        _ => "🐾"
+    };
+
+    private string GenerateStars(double rating)
+    {
+        var fullStars = (int)rating;
+        var hasHalfStar = rating - fullStars >= 0.5;
+        var stars = new string('★', fullStars);
+        if (hasHalfStar) stars += "☆";
+        return stars.PadRight(5, '☆');
+    }
+}

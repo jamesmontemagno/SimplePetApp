@@ -1,0 +1,235 @@
+@page "/venues/{Id:int}"
+@inject IVenueService VenueService
+@inject NavigationManager Navigation
+
+<PageTitle>@(venue?.Name ?? "Venue Details") - Pet-Friendly Places</PageTitle>
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="loading">
+            <p>🔍 Loading venue details...</p>
+        </div>
+    </div>
+}
+else if (venue == null)
+{
+    <div class="not-found">
+        <h2>🚫 Venue Not Found</h2>
+        <p>Sorry, we couldn't find the venue you're looking for.</p>
+        <a href="/venues" class="btn btn-primary">← Back to Browse Venues</a>
+    </div>
+}
+else
+{
+    <div class="venue-detail">
+        <div class="venue-hero">
+            @if (!string.IsNullOrEmpty(venue.ImageUrl))
+            {
+                <img src="@venue.ImageUrl" alt="@venue.Name" class="hero-image" />
+            }
+            else
+            {
+                <div class="hero-placeholder">@GetCategoryEmoji(venue.Category)</div>
+            }
+            
+            <div class="hero-content">
+                <div class="venue-breadcrumb">
+                    <a href="/venues">← Browse Venues</a>
+                </div>
+                
+                <h1>@venue.Name</h1>
+                <div class="venue-meta">
+                    <span class="category">@GetCategoryEmoji(venue.Category) @GetDisplayName(venue.Category)</span>
+                    <span class="location">📍 @venue.Address, @venue.City, @venue.State @venue.ZipCode</span>
+                </div>
+                
+                <div class="rating-section">
+                    <div class="stars">@GenerateStars(venue.Rating)</div>
+                    <span class="rating-text">@venue.Rating.ToString("F1") out of 5 (@venue.ReviewCount reviews)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="venue-details-content">
+            <div class="main-content">
+                <section class="description-section">
+                    <h2>About This Venue</h2>
+                    <p>@venue.Description</p>
+                </section>
+
+                <section class="pet-policy-section">
+                    <h2>🐾 Pet Policy</h2>
+                    <div class="pet-types-grid">
+                        <div class="allowed-pets">
+                            <h3>Welcomes:</h3>
+                            <div class="pet-types-list">
+                                @foreach (var petType in venue.AllowedPetTypes)
+                                {
+                                    <div class="pet-type-item">
+                                        <span class="pet-emoji">@GetPetEmoji(petType)</span>
+                                        <span>@GetDisplayName(petType)</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        
+                        @if (venue.Restrictions.Count > 0)
+                        {
+                            <div class="restrictions">
+                                <h3>⚠️ Important Notes:</h3>
+                                <ul>
+                                    @foreach (var restriction in venue.Restrictions)
+                                    {
+                                        <li>@restriction</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                @if (venue.Amenities.Count > 0)
+                {
+                    <section class="amenities-section">
+                        <h2>🌟 Amenities</h2>
+                        <div class="amenities-grid">
+                            @foreach (var amenity in venue.Amenities)
+                            {
+                                <div class="amenity-item">
+                                    <span class="amenity-icon">✅</span>
+                                    <span>@amenity</span>
+                                </div>
+                            }
+                        </div>
+                    </section>
+                }
+            </div>
+
+            <div class="sidebar">
+                <div class="contact-card">
+                    <h3>📞 Contact Information</h3>
+                    
+                    @if (!string.IsNullOrEmpty(venue.Phone))
+                    {
+                        <div class="contact-item">
+                            <strong>Phone:</strong>
+                            <a href="tel:@venue.Phone">@venue.Phone</a>
+                        </div>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(venue.Website))
+                    {
+                        <div class="contact-item">
+                            <strong>Website:</strong>
+                            <a href="@venue.Website" target="_blank" rel="noopener">Visit Website ↗</a>
+                        </div>
+                    }
+                    
+                    <div class="contact-item">
+                        <strong>Address:</strong>
+                        <div class="address">
+                            @venue.Address<br>
+                            @venue.City, @venue.State @venue.ZipCode
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="btn btn-primary" @onclick="ShareVenue">
+                        📤 Share This Venue
+                    </button>
+                    <button class="btn btn-secondary" @onclick="SaveToFavorites">
+                        ⭐ Save to Favorites
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private Venue? venue;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVenue();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (venue?.Id != Id)
+        {
+            await LoadVenue();
+        }
+    }
+
+    private async Task LoadVenue()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        venue = await VenueService.GetVenueByIdAsync(Id);
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private string GetDisplayName(Enum value)
+    {
+        var field = value.GetType().GetField(value.ToString());
+        var attribute = field?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false)
+                              .FirstOrDefault() as System.ComponentModel.DataAnnotations.DisplayAttribute;
+        return attribute?.Name ?? value.ToString();
+    }
+
+    private string GetCategoryEmoji(VenueCategory category) => category switch
+    {
+        VenueCategory.Cafe => "☕",
+        VenueCategory.Restaurant => "🍽️",
+        VenueCategory.Park => "🌳",
+        VenueCategory.Hotel => "🏨",
+        VenueCategory.Beach => "🏖️",
+        VenueCategory.Trail => "🥾",
+        VenueCategory.Shop => "🛍️",
+        VenueCategory.Grooming => "✂️",
+        VenueCategory.Veterinary => "🏥",
+        _ => "📍"
+    };
+
+    private string GetPetEmoji(PetType petType) => petType switch
+    {
+        PetType.Dog => "🐶",
+        PetType.Cat => "🐱",
+        PetType.Bird => "🐦",
+        PetType.Rabbit => "🐰",
+        PetType.Reptile => "🦎",
+        PetType.Fish => "🐠",
+        PetType.SmallAnimal => "🐹",
+        PetType.FarmAnimal => "🐎",
+        _ => "🐾"
+    };
+
+    private string GenerateStars(double rating)
+    {
+        var fullStars = (int)rating;
+        var hasHalfStar = rating - fullStars >= 0.5;
+        var stars = new string('★', fullStars);
+        if (hasHalfStar) stars += "☆";
+        return stars.PadRight(5, '☆');
+    }
+
+    private void ShareVenue()
+    {
+        // Placeholder for sharing functionality
+        Console.WriteLine($"Sharing venue: {venue?.Name}");
+    }
+
+    private void SaveToFavorites()
+    {
+        // Placeholder for favorites functionality
+        Console.WriteLine($"Saving to favorites: {venue?.Name}");
+    }
+}
