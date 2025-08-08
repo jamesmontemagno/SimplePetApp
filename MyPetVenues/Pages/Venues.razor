@@ -1,0 +1,344 @@
+@page "/venues"
+@implements IDisposable
+
+<PageTitle>Browse Venues</PageTitle>
+
+<main class="venues-page">
+    <div class="venues-container">
+        <h1>Browse Pet-Friendly Venues</h1>
+        
+        <div class="search-filters">
+            <div class="search-group">
+                <label for="search-input" class="visually-hidden">Search venues</label>
+                <input 
+                    id="search-input"
+                    type="text" 
+                    placeholder="Search venues..." 
+                    @bind="searchText" 
+                    @bind:event="oninput"
+                    class="search-input"
+                />
+            </div>
+            
+            <div class="filter-group">
+                <label for="category-filter">Category:</label>
+                <select id="category-filter" @bind="selectedCategory" class="category-select">
+                    <option value="">All Categories</option>
+                    @foreach (var category in Enum.GetValues<VenueCategory>())
+                    {
+                        <option value="@category">@category</option>
+                    }
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="pet-type-filter">Pet Type:</label>
+                <input 
+                    id="pet-type-filter"
+                    type="text" 
+                    placeholder="Dog, Cat, Rabbit..." 
+                    @bind="petTypeFilter" 
+                    @bind:event="oninput"
+                    class="pet-type-input"
+                    list="pet-suggestions"
+                />
+                <datalist id="pet-suggestions">
+                    <option value="Dog"></option>
+                    <option value="Cat"></option>
+                    <option value="Rabbit"></option>
+                    <option value="Hedgehog"></option>
+                </datalist>
+            </div>
+        </div>
+        
+        <div class="results-summary" aria-live="polite">
+            @if (isLoading)
+            {
+                <span>Searching...</span>
+            }
+            else
+            {
+                <span>@filteredVenues.Count() venues found</span>
+            }
+        </div>
+        
+        <div class="venues-grid">
+            @if (isLoading)
+            {
+                <div class="loading-placeholder">
+                    <div class="loading-spinner"></div>
+                    <p>Loading venues...</p>
+                </div>
+            }
+            else if (!filteredVenues.Any())
+            {
+                <div class="empty-state">
+                    <div class="empty-icon">🏪</div>
+                    <h3>No venues found</h3>
+                    <p>Try adjusting your search criteria or browse all venues.</p>
+                    @if (!string.IsNullOrWhiteSpace(_searchText) || !string.IsNullOrWhiteSpace(_selectedCategory) || !string.IsNullOrWhiteSpace(_petTypeFilter))
+                    {
+                        <button @onclick="ClearFilters" class="clear-filters-btn">Clear All Filters</button>
+                    }
+                </div>
+            }
+            else
+            {
+                @foreach (var venue in filteredVenues)
+                {
+                    <div class="venue-card" @key="venue.Id">
+                        <div class="venue-image">
+                            <img src="@venue.Image" alt="@venue.Name" loading="lazy" />
+                            @if (venue.IsVerified)
+                            {
+                                <div class="verified-badge" title="Verified venue">✅ Verified</div>
+                            }
+                        </div>
+                        
+                        <div class="venue-content">
+                            <div class="venue-header">
+                                <h3 class="venue-name">@venue.Name</h3>
+                                <span class="category-badge category-@venue.Category.ToString().ToLowerInvariant()">
+                                    @venue.Category
+                                </span>
+                            </div>
+                            
+                            <p class="venue-description">@TruncateDescription(venue.Description)</p>
+                            
+                            <div class="venue-pets">
+                                @foreach (var petType in venue.PetTypesAllowed)
+                                {
+                                    <span class="pet-icon" title="@petType allowed">@GetPetEmoji(petType)</span>
+                                }
+                            </div>
+                            
+                            <div class="venue-footer">
+                                <div class="venue-rating">
+                                    @if (venue.Rating.HasValue)
+                                    {
+                                        <span class="rating-stars">@GetRatingStars(venue.Rating.Value)</span>
+                                        <span class="rating-text">@venue.Rating.Value.ToString("F1") (@venue.ReviewsCount reviews)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="no-rating">No ratings yet</span>
+                                    }
+                                </div>
+                                
+                                <div class="venue-updated">
+                                    Updated @GetRelativeTime(venue.LastUpdated)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</main>
+
+@code {
+    [Inject] private IVenueService VenueService { get; set; } = default!;
+    
+    private string _searchText = string.Empty;
+    private string _selectedCategory = string.Empty;
+    private string _petTypeFilter = string.Empty;
+    
+    private string searchText 
+    { 
+        get => _searchText; 
+        set 
+        { 
+            _searchText = value; 
+            OnSearchInput(); 
+        } 
+    }
+    
+    private string selectedCategory 
+    { 
+        get => _selectedCategory; 
+        set 
+        { 
+            _selectedCategory = value; 
+            _ = PerformSearch(); 
+        } 
+    }
+    
+    private string petTypeFilter 
+    { 
+        get => _petTypeFilter; 
+        set 
+        { 
+            _petTypeFilter = value; 
+            OnFilterChange(); 
+        } 
+    }
+    
+    private IEnumerable<Venue> allVenues = new List<Venue>();
+    private IEnumerable<Venue> filteredVenues = new List<Venue>();
+    private bool isLoading = true;
+    
+    private Timer? searchTimer;
+    private CancellationTokenSource? searchCancellationTokenSource;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVenues();
+    }
+
+    private async Task LoadVenues()
+    {
+        isLoading = true;
+        StateHasChanged();
+        
+        try
+        {
+            allVenues = await VenueService.GetAllAsync();
+            filteredVenues = allVenues;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnSearchInput()
+    {
+        // Cancel previous search
+        searchTimer?.Dispose();
+        
+        // Debounce search by 300ms
+        searchTimer = new Timer(async _ => {
+            await InvokeAsync(async () => {
+                await PerformSearch();
+            });
+        }, null, 300, Timeout.Infinite);
+    }
+
+    private void OnFilterChange()
+    {
+        _ = PerformSearch();
+    }
+
+    private async Task PerformSearch()
+    {
+        // Cancel previous search
+        searchCancellationTokenSource?.Cancel();
+        searchCancellationTokenSource = new CancellationTokenSource();
+        
+        var token = searchCancellationTokenSource.Token;
+        
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+            
+            VenueCategory? categoryFilter = null;
+            if (!string.IsNullOrWhiteSpace(_selectedCategory))
+            {
+                categoryFilter = Enum.Parse<VenueCategory>(_selectedCategory);
+            }
+            
+            var petType = string.IsNullOrWhiteSpace(_petTypeFilter) ? null : _petTypeFilter;
+            
+            filteredVenues = await VenueService.SearchAsync(_searchText, categoryFilter, petType);
+            
+            if (!token.IsCancellationRequested)
+            {
+                isLoading = false;
+                StateHasChanged();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Search was cancelled, ignore
+        }
+        catch (Exception)
+        {
+            if (!token.IsCancellationRequested)
+            {
+                isLoading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private void ClearFilters()
+    {
+        _searchText = string.Empty;
+        _selectedCategory = string.Empty;
+        _petTypeFilter = string.Empty;
+        filteredVenues = allVenues;
+        StateHasChanged();
+    }
+
+    private string TruncateDescription(string description)
+    {
+        if (description.Length <= 120)
+            return description;
+        
+        var truncated = description.Substring(0, 120);
+        var lastSpace = truncated.LastIndexOf(' ');
+        if (lastSpace > 0)
+            truncated = truncated.Substring(0, lastSpace);
+        
+        return truncated + "...";
+    }
+
+    private string GetPetEmoji(string petType)
+    {
+        return petType.ToLowerInvariant() switch
+        {
+            "dog" => "🐶",
+            "cat" => "🐱",
+            "rabbit" => "🐰",
+            "hedgehog" => "🦔",
+            _ => "🐾"
+        };
+    }
+
+    private string GetRatingStars(double rating)
+    {
+        var fullStars = (int)rating;
+        var hasHalfStar = rating - fullStars >= 0.5;
+        var emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        
+        var stars = string.Empty;
+        for (int i = 0; i < fullStars; i++)
+            stars += "⭐";
+        
+        if (hasHalfStar)
+            stars += "✨";
+        
+        for (int i = 0; i < emptyStars; i++)
+            stars += "☆";
+        
+        return stars;
+    }
+
+    private string GetRelativeTime(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+        
+        if (timeSpan.TotalDays >= 365)
+            return $"{(int)(timeSpan.TotalDays / 365)}y ago";
+        if (timeSpan.TotalDays >= 30)
+            return $"{(int)(timeSpan.TotalDays / 30)}mo ago";
+        if (timeSpan.TotalDays >= 1)
+            return $"{(int)timeSpan.TotalDays}d ago";
+        if (timeSpan.TotalHours >= 1)
+            return $"{(int)timeSpan.TotalHours}h ago";
+        if (timeSpan.TotalMinutes >= 1)
+            return $"{(int)timeSpan.TotalMinutes}m ago";
+        
+        return "Just now";
+    }
+
+    public void Dispose()
+    {
+        searchTimer?.Dispose();
+        searchCancellationTokenSource?.Cancel();
+        searchCancellationTokenSource?.Dispose();
+    }
+}
