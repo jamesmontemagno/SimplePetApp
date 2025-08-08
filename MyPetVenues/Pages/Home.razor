@@ -2,26 +2,6 @@
 
 <PageTitle>Pet-Friendly Venues</PageTitle>
 
-<header class="site-header">
-	<nav class="nav-bar" aria-label="Main Navigation">
-		<div class="logo" @onclick="ScrollToTop" tabindex="0" role="button" aria-label="OctoPets Home">
-			🐾 <span>OctoPets Venues</span>
-		</div>
-		<button class="nav-toggle" @onclick="ToggleMobileNav" aria-label="Toggle navigation" aria-expanded="@_mobileNavOpen">☰</button>
-		<ul class="nav-links @( _mobileNavOpen ? "open" : null)">
-			<li><a href="#features">Features</a></li>
-			<li><a href="#how">How It Works</a></li>
-			<li><a href="#gallery">Gallery</a></li>
-			<li><a href="#mvp">MVP Scope</a></li>
-			<li><a href="#cta" class="primary-btn">Get Started</a></li>
-		</ul>
-		<div class="mode-toggle">
-			<input id="themeToggle" type="checkbox" @onchange="ToggleTheme" checked="@_darkMode" aria-label="Toggle dark mode" />
-			<label for="themeToggle">@(_darkMode ? "🌙" : "☀️")</label>
-		</div>
-	</nav>
-</header>
-
 <main>
 	<section class="hero" id="top">
 		<div class="hero-content">
@@ -164,9 +144,6 @@
 </footer>
 
 @code {
-	private bool _darkMode = true;
-	private bool _mobileNavOpen;
-
 	private record Feature(string Title, string Description, string Emoji);
 	private record Shot(string Src, string Alt, string Caption);
 
@@ -194,15 +171,4 @@
 		new("images/venues/cafe1.jpg", "Cafe patio", "Cozy patio seating"),
 		new("images/venues/hotel1.jpg", "Hotel lobby", "Pet-welcoming lobby")
 	};
-
-	private async void ToggleTheme(ChangeEventArgs e)
-	{
-		_darkMode = (bool?)e.Value ?? false;
-		await JSRuntime.InvokeVoidAsync("themeToggle.apply", _darkMode);
-	}
-
-	private void ToggleMobileNav() => _mobileNavOpen = !_mobileNavOpen;
-	private void ScrollToTop() => JSRuntime.InvokeVoidAsync("themeToggle.scrollTop");
-
-	[Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 }
