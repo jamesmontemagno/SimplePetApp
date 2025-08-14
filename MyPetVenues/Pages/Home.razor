@@ -1,7 +1,99 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<div class="landing-root" data-theme="@(IsDark ? "dark" : "light")">
+	<header class="nav">
+		<div class="brand">
+			<img src="/images/venues/venue-1.jpg" alt="logo" class="logo" />
+			<h1>Pet Venue Finder <span class="emoji">🐾</span></h1>
+		</div>
 
-<h1>Hello, world!</h1>
+		<nav class="nav-links">
+			<a href="#features">Features</a>
+			<a href="#how">How it works</a>
+			<a href="#download">Get started</a>
+			<button class="theme-toggle" @onclick="ToggleTheme" aria-label="Toggle theme">@(!IsDark ? "🌙" : "☀️")</button>
+		</nav>
+	</header>
 
-Welcome to your new app.
+	<section class="hero">
+		<div class="hero-content">
+			<h2>Find pet-friendly places fast — discover, review, and save your favorites 🌸</h2>
+			<p class="lead">Search by name, location or tags. Create pet profiles, leave reviews, and save places you love.</p>
+
+			<div class="cta-row">
+				<input class="search" placeholder="Search venues, tags, or location — try 'dog park'" />
+				<button class="btn primary">Search 🔎</button>
+				<button class="btn outline">Add Venue ➕</button>
+			</div>
+
+			<div class="quick-stats">
+				<div>✨ Mobile-first</div>
+				<div>🧭 Smart filters</div>
+				<div>❤️ Save favorites</div>
+			</div>
+		</div>
+
+		<div class="hero-gallery" aria-hidden="true">
+			<img src="/images/pets/pet-1.jpg" alt="pet" />
+			<img src="/images/venues/venue-2.jpg" alt="venue" />
+		</div>
+	</section>
+
+	<section id="features" class="features">
+		<h3>Key Features</h3>
+		<div class="feature-grid">
+			<div class="card">
+				<div class="icon">🔎</div>
+				<h4>Search & Filters</h4>
+				<p>Find venues by name, tag, or proximity with quick filters and sorting.</p>
+			</div>
+
+			<div class="card">
+				<div class="icon">📸</div>
+				<h4>Photos & Details</h4>
+				<p>Venue pages with photos, rules, hours, and reviews to help you decide.</p>
+			</div>
+
+			<div class="card">
+				<div class="icon">✍️</div>
+				<h4>Reviews & Ratings</h4>
+				<p>Rate venues from 1–5 stars and leave short reviews. See community feedback.</p>
+			</div>
+
+			<div class="card">
+				<div class="icon">🐶</div>
+				<h4>Pet Profiles</h4>
+				<p>Create small pet profiles (name, type, photo) and view favorites per profile.</p>
+			</div>
+		</div>
+	</section>
+
+	<section id="how" class="how">
+		<h3>How it works</h3>
+		<ol>
+			<li>Search or browse venues.</li>
+			<li>Open a venue to see photos, rules, and reviews.</li>
+			<li>Save to favorites or leave a review (UI flows included).</li>
+		</ol>
+	</section>
+
+	<footer class="footer">
+		<div class="footer-inner">
+			<div class="footer-brand">Pet Venue Finder © @DateTime.Now.Year</div>
+			<div class="footer-links">
+				<a href="#">Privacy</a>
+				<a href="#">Terms</a>
+				<a href="#">Contact</a>
+			</div>
+		</div>
+	</footer>
+</div>
+
+@code {
+	private bool IsDark { get; set; } = false;
+
+	private void ToggleTheme()
+	{
+		IsDark = !IsDark;
+	}
+}
