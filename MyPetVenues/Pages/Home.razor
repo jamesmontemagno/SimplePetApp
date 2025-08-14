@@ -3,7 +3,6 @@
 <div class="landing-root" data-theme="@(IsDark ? "dark" : "light")">
 	<header class="nav">
 		<div class="brand">
-			<img src="/images/venues/venue-1.jpg" alt="logo" class="logo" />
 			<h1>Pet Venue Finder <span class="emoji">🐾</span></h1>
 		</div>
 
@@ -34,8 +33,9 @@
 		</div>
 
 		<div class="hero-gallery" aria-hidden="true">
-			<img src="/images/pets/pet-1.jpg" alt="pet" />
-			<img src="/images/venues/venue-2.jpg" alt="venue" />
+			<img class="float-a" src="/images/pets/dog1.png" alt="dog" />
+			<img class="float-b" src="/images/pets/cat1.jpg" alt="cat" />
+			<img class="float-c" src="/images/venues/park1.jpg" alt="park" />
 		</div>
 	</section>
 
@@ -70,11 +70,25 @@
 
 	<section id="how" class="how">
 		<h3>How it works</h3>
-		<ol>
-			<li>Search or browse venues.</li>
-			<li>Open a venue to see photos, rules, and reviews.</li>
-			<li>Save to favorites or leave a review (UI flows included).</li>
-		</ol>
+		<div class="steps">
+			<div class="step-card">
+				<div class="step-emoji">🔎</div>
+				<h4>Search & Discover</h4>
+				<p>Quickly find pet-friendly places by name, tag, or location.</p>
+			</div>
+
+			<div class="step-card">
+				<div class="step-emoji">📸</div>
+				<h4>Open Details</h4>
+				<p>See photos, rules, hours, and honest reviews from others.</p>
+			</div>
+
+			<div class="step-card">
+				<div class="step-emoji">❤️</div>
+				<h4>Save & Share</h4>
+				<p>Save favorites, create pet profiles, and leave short reviews.</p>
+			</div>
+		</div>
 	</section>
 
 	<footer class="footer">
