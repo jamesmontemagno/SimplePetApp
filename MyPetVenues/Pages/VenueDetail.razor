@@ -1,0 +1,239 @@
+@page "/venue/{VenueId:int}"
+@inject IVenueService VenueService
+@inject IBookingService BookingService
+@inject NavigationManager Navigation
+
+<PageTitle>@(venue?.Name ?? "Venue Details")</PageTitle>
+
+@if (venue == null)
+{
+    <div class="loading">
+        <p>Loading venue details...</p>
+    </div>
+}
+else
+{
+    <div class="venue-detail">
+        <div class="venue-header">
+            <button class="back-btn" @onclick="GoBack">← Back to Venues</button>
+            
+            <div class="venue-hero">
+                <img src="@venue.ImageUrl" alt="@venue.Name" class="hero-image" />
+                <div class="hero-content">
+                    <h1>@venue.Name</h1>
+                    <p class="location">📍 @venue.Address, @venue.City</p>
+                    <div class="rating">
+                        <span class="stars">⭐ @venue.Rating.ToString("0.0")</span>
+                        <span class="review-count">(@venue.ReviewCount reviews)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="venue-content">
+            <div class="info-section">
+                <h2>About This Venue</h2>
+                <p>@venue.Description</p>
+                
+                <div class="tags">
+                    @foreach (var tag in venue.Tags)
+                    {
+                        <span class="tag">#@tag</span>
+                    }
+                </div>
+
+                <div class="contact-info">
+                    <h3>Contact Information</h3>
+                    <p>📧 @venue.ContactEmail</p>
+                    <p>📞 @venue.Phone</p>
+                </div>
+            </div>
+
+            <div class="booking-section">
+                <h2>Book Your Visit</h2>
+                
+                <div class="date-selector">
+                    <label for="selectedDate">Select Date:</label>
+                    <input type="date" 
+                           id="selectedDate" 
+                           @bind="selectedDate" 
+                           @bind:event="oninput"
+                           @onchange="LoadTimeSlots"
+                           min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                           max="@DateTime.Today.AddDays(7).ToString("yyyy-MM-dd")" />
+                </div>
+
+                @if (availableSlots != null && availableSlots.Any())
+                {
+                    <div class="time-slots">
+                        <h3>Available Time Slots</h3>
+                        <div class="slots-grid">
+                            @foreach (var slot in availableSlots)
+                            {
+                                <button class="time-slot @(selectedSlot?.Id == slot.Id ? "selected" : "")"
+                                        @onclick="() => SelectSlot(slot)">
+                                    <div class="slot-time">
+                                        @slot.StartTime.ToString("h:mm tt") - @slot.EndTime.ToString("h:mm tt")
+                                    </div>
+                                    @if (slot.Price > 0)
+                                    {
+                                        <div class="slot-price">$@slot.Price.ToString("0")</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="slot-price">Free</div>
+                                    }
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+                else if (availableSlots != null)
+                {
+                    <div class="no-slots">
+                        <p>No available time slots for this date. Please try another day.</p>
+                    </div>
+                }
+
+                @if (selectedSlot != null)
+                {
+                    <div class="booking-form">
+                        <h3>Book This Slot</h3>
+                        <form @onsubmit="SubmitBooking" @onsubmit:preventDefault="true">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="customerName">Your Name *</label>
+                                    <input type="text" id="customerName" @bind="bookingRequest.CustomerName" required />
+                                </div>
+                                <div class="form-group">
+                                    <label for="customerEmail">Email *</label>
+                                    <input type="email" id="customerEmail" @bind="bookingRequest.CustomerEmail" required />
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="customerPhone">Phone</label>
+                                    <input type="tel" id="customerPhone" @bind="bookingRequest.CustomerPhone" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="petType">Pet Type *</label>
+                                    <select id="petType" @bind="bookingRequest.PetType" required>
+                                        <option value="">Select pet type</option>
+                                        <option value="Dog">Dog</option>
+                                        <option value="Cat">Cat</option>
+                                        <option value="Bird">Bird</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="petName">Pet Name *</label>
+                                <input type="text" id="petName" @bind="bookingRequest.PetName" required />
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="specialRequests">Special Requests</label>
+                                <textarea id="specialRequests" @bind="bookingRequest.SpecialRequests" 
+                                          placeholder="Any special requirements or notes..."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn primary submit-btn" disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span>Submitting...</span>
+                                }
+                                else
+                                {
+                                    <span>Submit Booking Request</span>
+                                }
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (showSuccessMessage)
+{
+    <div class="success-overlay" @onclick="CloseSuccess">
+        <div class="success-modal">
+            <h3>🎉 Booking Request Submitted!</h3>
+            <p>Your booking request has been sent to @venue?.Name. You'll receive a confirmation email once it's approved.</p>
+            <button class="btn primary" @onclick="CloseSuccess">Close</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int VenueId { get; set; }
+    
+    private Venue? venue;
+    private List<TimeSlot>? availableSlots;
+    private TimeSlot? selectedSlot;
+    private DateTime selectedDate = DateTime.Today;
+    private BookingRequest bookingRequest = new();
+    private bool isSubmitting = false;
+    private bool showSuccessMessage = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        venue = await VenueService.GetVenueByIdAsync(VenueId);
+        await LoadTimeSlots();
+    }
+
+    private async Task LoadTimeSlots()
+    {
+        if (venue != null)
+        {
+            availableSlots = await VenueService.GetAvailableTimeSlotsAsync(venue.Id, selectedDate);
+            selectedSlot = null;
+        }
+    }
+
+    private void SelectSlot(TimeSlot slot)
+    {
+        selectedSlot = slot;
+        bookingRequest.VenueId = VenueId;
+        bookingRequest.TimeSlotId = slot.Id;
+    }
+
+    private async Task SubmitBooking()
+    {
+        if (selectedSlot == null || venue == null) return;
+
+        isSubmitting = true;
+        
+        try
+        {
+            await BookingService.CreateBookingRequestAsync(bookingRequest);
+            showSuccessMessage = true;
+            
+            // Reset form
+            bookingRequest = new() { VenueId = VenueId, TimeSlotId = selectedSlot.Id };
+            selectedSlot = null;
+        }
+        catch (Exception ex)
+        {
+            // In a real app, you'd show an error message
+            Console.WriteLine($"Error submitting booking: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void CloseSuccess()
+    {
+        showSuccessMessage = false;
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/venues");
+    }
+}
