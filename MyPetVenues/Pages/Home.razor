@@ -9,7 +9,7 @@
 		<nav class="nav-links">
 			<a href="#features">Features</a>
 			<a href="#how">How it works</a>
-			<a href="#download">Get started</a>
+			<a href="/venues">Browse Venues</a>
 			<button class="theme-toggle" @onclick="ToggleTheme" aria-label="Toggle theme">@(!IsDark ? "🌙" : "☀️")</button>
 		</nav>
 	</header>
@@ -22,7 +22,7 @@
 			<div class="cta-row">
 				<input class="search" placeholder="Search venues, tags, or location — try 'dog park'" />
 				<button class="btn primary">Search 🔎</button>
-				<button class="btn outline">Add Venue ➕</button>
+				<a href="/venues" class="btn outline">Browse Venues 🏢</a>
 			</div>
 
 			<div class="quick-stats">

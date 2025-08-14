@@ -1,0 +1,82 @@
+@page "/venues"
+@inject IVenueService VenueService
+
+<PageTitle>Pet Venues - Find & Book</PageTitle>
+
+<div class="venues-page">
+    <header class="page-header">
+        <h1>Pet-Friendly Venues</h1>
+        <p>Discover and book amazing places for you and your pet</p>
+    </header>
+
+    @if (venues == null)
+    {
+        <div class="loading">
+            <p>Loading venues...</p>
+        </div>
+    }
+    else
+    {
+        <div class="venues-grid">
+            @foreach (var venue in venues)
+            {
+                <div class="venue-card">
+                    <div class="venue-image">
+                        <img src="@venue.ImageUrl" alt="@venue.Name" />
+                        <div class="availability-badge">
+                            @if (HasAvailableSlots(venue))
+                            {
+                                <span class="available">Available Today</span>
+                            }
+                            else
+                            {
+                                <span class="unavailable">Fully Booked</span>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="venue-content">
+                        <h3>@venue.Name</h3>
+                        <p class="location">📍 @venue.City</p>
+                        <p class="description">@venue.Description</p>
+                        
+                        <div class="tags">
+                            @foreach (var tag in venue.Tags.Take(3))
+                            {
+                                <span class="tag">#@tag</span>
+                            }
+                        </div>
+                        
+                        <div class="venue-footer">
+                            <div class="rating">
+                                <span class="stars">⭐ @venue.Rating.ToString("0.0")</span>
+                                <span class="review-count">(@venue.ReviewCount reviews)</span>
+                            </div>
+                            
+                            <a href="/venue/@venue.Id" class="btn primary">
+                                View & Book
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Venue>? venues;
+
+    protected override async Task OnInitializedAsync()
+    {
+        venues = await VenueService.GetVenuesAsync();
+    }
+
+    private bool HasAvailableSlots(Venue venue)
+    {
+        return venue.AvailableSlots.Any(slot => 
+            slot.StartTime.Date == DateTime.Today && 
+            slot.IsAvailable && 
+            slot.CurrentBookings < slot.MaxCapacity);
+    }
+}
