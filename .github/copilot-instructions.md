@@ -17,7 +17,7 @@ All code for the frontend is loctated in the MyPetVenues folder
 - Prefer async/await for asynchronous operations
 
 ## Blazor WebAssembly Best Practices
-- Use CSS isolation for components
+- Use app.css for css styles
 - Implement proper dependency injection
 - Use `IHttpClientFactory` for HTTP requests
 - Leverage Blazor's component parameters and cascading parameters
