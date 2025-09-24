@@ -116,12 +116,12 @@ code {
 
 .theme-light {
     --bg: #ffffff;
-    --bg-alt: #faf7fa;
-    --bg-soft: #fff5fb;
+    --bg-alt: #fcfcfd;
+    --bg-soft: #f8fafc;
     --bg-gradient: var(--gradient-main);
-    --text: #2a0f23;
-    --text-soft: #5c3d55;
-    --border: #ffd5ec;
+    --text: #1e293b;
+    --text-soft: #64748b;
+    --border: #e2e8f0;
     --accent: var(--pink-600);
     --accent-hover: var(--pink-500);
     --accent-fg: #fff;
@@ -145,8 +145,8 @@ code {
 /* Base containers */
 .landing-page {
     font-family: var(--font-stack);
-    background: radial-gradient(circle at 20% 20%, hsl(330 80% 10% / .7), transparent 60%),
-                radial-gradient(circle at 80% 70%, hsl(330 70% 15% / .5), transparent 65%),
+    background: radial-gradient(circle at 20% 20%, hsl(330 60% 95% / .6), transparent 60%),
+                radial-gradient(circle at 80% 70%, hsl(210 60% 96% / .4), transparent 65%),
                 var(--bg);
     color: var(--text);
     min-height: 100dvh;
@@ -175,7 +175,7 @@ code {
     position: sticky;
     top: 0;
     backdrop-filter: blur(12px);
-    background: linear-gradient(90deg, var(--bg-alt) 0%, hsl(330 30% 8% / .4) 100%);
+    background: linear-gradient(90deg, var(--bg-alt) 0%, hsl(210 40% 96% / .8) 100%);
     border-bottom: 1px solid var(--border);
     z-index: 50;
 }
@@ -290,6 +290,19 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outlin
 .theme-dark .feature-card { background: linear-gradient(145deg, var(--bg-alt), var(--bg)); }
 .theme-dark .steps li { background: linear-gradient(145deg, var(--bg-alt), var(--bg)); }
 .theme-dark .gallery-item { background: var(--bg-alt); }
+
+/* Light-mode improvements */
+.theme-light .landing-page {
+    background: radial-gradient(circle at 20% 20%, hsl(330 40% 97% / .5), transparent 60%),
+                radial-gradient(circle at 80% 70%, hsl(210 50% 98% / .4), transparent 65%),
+                linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.theme-light .site-header {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+    backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
 
 /* Hover preference (avoid hover styles when device doesn't support) */
 @media (hover: hover) {
