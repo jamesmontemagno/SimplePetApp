@@ -1,7 +1,206 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Pet-Friendly Venue Finder</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="landing-page @(isDark ? "theme-dark" : "theme-light")">
+	<!-- Header / Navigation -->
+	<header class="site-header">
+		<div class="nav-inner">
+			<a href="#hero" class="logo" aria-label="Pet-Friendly Venue Finder Home">
+				<span class="logo-emoji" aria-hidden="true">🐾</span>
+				<span class="logo-text">Pet Venue Finder</span>
+			</a>
+			<nav class="main-nav" aria-label="Main navigation">
+				<a href="#features">Features</a>
+				<a href="#how">How It Works</a>
+				<a href="#gallery">Gallery</a>
+				<a href="#cta">Add Venue</a>
+			</nav>
+			<div class="nav-actions">
+				<button type="button" class="btn btn-theme-toggle" @onclick="ToggleTheme" aria-pressed="@isDark" aria-label="Toggle dark / light theme">
+					@(isDark ? "🌞 Light" : "🌙 Dark")
+				</button>
+			</div>
+		</div>
+	</header>
 
-Welcome to your new app.
+	<!-- Hero Section -->
+	<section id="hero" class="hero section">
+		<div class="hero-content">
+			<h1 class="hero-title gradient-text">Find & Share <span class="nowrap">Pet‑Friendly</span> Venues <span class="hero-emojis" aria-hidden="true">🐶🐱🦔</span></h1>
+			<p class="hero-tagline">Discover parks, cafés, trails, and stores that welcome your furry (or spiky) friends. Filter by amenities and help the community grow. ✨</p>
+			<div class="hero-ctas">
+				<a href="#features" class="btn btn-primary" aria-label="Learn more about features">Explore Features ➜</a>
+				<a href="#cta" class="btn btn-ghost" aria-label="Add a new venue">Add a Venue +</a>
+			</div>
+			<ul class="quick-stats" aria-label="Early value propositions">
+				<li><strong>Fast</strong> search & filters</li>
+				<li><strong>Real</strong> community reviews</li>
+				<li><strong>Structured</strong> amenity tags</li>
+			</ul>
+		</div>
+		<div class="hero-art" aria-hidden="true">
+			<div class="pulse-orb orb-a"></div>
+			<div class="pulse-orb orb-b"></div>
+			<div class="hero-image-stack">
+				<img src="images/pets/dog1.png" alt="Happy dog" loading="lazy" />
+				<img src="images/venues/park1.jpg" alt="Pet friendly park" loading="lazy" />
+				<img src="images/venues/cafe1.jpg" alt="Pet friendly cafe" loading="lazy" />
+			</div>
+		</div>
+	</section>
+
+	<!-- Features Section -->
+	<section id="features" class="features section">
+		<div class="section-head">
+			<h2 class="section-title">Core Features <span aria-hidden="true">🚀</span></h2>
+			<p class="section-lead">Everything you need to plan the perfect outing with your pet.</p>
+		</div>
+		<div class="feature-grid">
+			<article class="feature-card" aria-labelledby="f1-title">
+				<div class="feature-icon" aria-hidden="true">🔎</div>
+				<h3 id="f1-title">Smart Discovery</h3>
+				<p>Search by keyword & category, then refine with amenity filters (water, shade, indoor OK, off‑leash, waste stations).</p>
+			</article>
+			<article class="feature-card" aria-labelledby="f2-title">
+				<div class="feature-icon" aria-hidden="true">📝</div>
+				<h3 id="f2-title">Easy Contributions</h3>
+				<p>Add new venues in minutes with a streamlined form and amenity checklist. Help the map grow!</p>
+			</article>
+			<article class="feature-card" aria-labelledby="f3-title">
+				<div class="feature-icon" aria-hidden="true">⭐</div>
+				<h3 id="f3-title">Trusted Reviews</h3>
+				<p>Transparent ratings & recency signals build trust. See what matters—fast.</p>
+			</article>
+			<article class="feature-card" aria-labelledby="f4-title">
+				<div class="feature-icon" aria-hidden="true">⚡</div>
+				<h3 id="f4-title">Lightweight & Fast</h3>
+				<p>Optimized Blazor WebAssembly experience with progressive loading for snappy browsing.</p>
+			</article>
+			<article class="feature-card" aria-labelledby="f5-title">
+				<div class="feature-icon" aria-hidden="true">🛟</div>
+				<h3 id="f5-title">Report Inaccuracies</h3>
+				<p>Simple reporting keeps venue details fresh & reliable for everyone.</p>
+			</article>
+			<article class="feature-card" aria-labelledby="f6-title">
+				<div class="feature-icon" aria-hidden="true">🌱</div>
+				<h3 id="f6-title">Community Growth</h3>
+				<p>Your updates improve discovery and help new pet owners feel confident.</p>
+			</article>
+		</div>
+	</section>
+
+	<!-- How It Works Section -->
+	<section id="how" class="how section">
+		<div class="section-head">
+			<h2 class="section-title">How It Works <span aria-hidden="true">🧭</span></h2>
+			<p class="section-lead">Three simple steps to happier adventures.</p>
+		</div>
+		<ol class="steps" aria-label="How it works steps">
+			<li>
+				<h3>1. Discover</h3>
+				<p>Search or browse curated venues with scannable summaries.</p>
+			</li>
+			<li>
+				<h3>2. Contribute</h3>
+				<p>Add a new venue or review an existing one—keep info fresh.</p>
+			</li>
+			<li>
+				<h3>3. Explore</h3>
+				<p>Plan confident outings with structured amenity insights.</p>
+			</li>
+		</ol>
+	</section>
+
+	<!-- Gallery / Imagery -->
+	<section id="gallery" class="gallery section">
+		<div class="section-head">
+			<h2 class="section-title">Pet & Venue Vibes <span aria-hidden="true">📸</span></h2>
+			<p class="section-lead">A peek at the kinds of places & furry friends you might find.</p>
+		</div>
+		<div class="gallery-grid">
+			<figure class="gallery-item"><img src="images/pets/cat1.jpg" alt="Relaxed cat" loading="lazy" /><figcaption>Chill Spots</figcaption></figure>
+			<figure class="gallery-item"><img src="images/pets/dog3.jpg" alt="Playful dog" loading="lazy" /><figcaption>Play Time</figcaption></figure>
+			<figure class="gallery-item"><img src="images/venues/park1.jpg" alt="Green park" loading="lazy" /><figcaption>Parks</figcaption></figure>
+			<figure class="gallery-item"><img src="images/venues/store1.jpg" alt="Pet friendly store" loading="lazy" /><figcaption>Shops</figcaption></figure>
+			<figure class="gallery-item"><img src="images/venues/cafe1.jpg" alt="Outdoor cafe seating" loading="lazy" /><figcaption>Cafés</figcaption></figure>
+			<figure class="gallery-item"><img src="images/pets/hedgehog.jpg" alt="Hedgehog" loading="lazy" /><figcaption>All Friends</figcaption></figure>
+		</div>
+	</section>
+
+	<!-- Call To Action Section -->
+	<section id="cta" class="cta section">
+		<div class="cta-box">
+			<h2 class="cta-title gradient-text">Help Grow the Map <span aria-hidden="true">🌍</span></h2>
+			<p>Add a venue you love or review one you've visited. Your insight helps every pet parent.</p>
+			<div class="cta-actions">
+				<a href="#" class="btn btn-primary" aria-label="Add a venue">Add a Venue</a>
+				<a href="#hero" class="btn btn-ghost" aria-label="Back to top">Back to Top ↑</a>
+			</div>
+		</div>
+	</section>
+
+	<!-- Footer -->
+	<footer class="site-footer" aria-label="Footer">
+		<div class="footer-grid">
+			<div class="footer-brand">
+				<div class="logo-sm" aria-hidden="true">🐾</div>
+				<p class="small">Pet Venue Finder—community‑powered pet‑friendly discovery.</p>
+			</div>
+			<nav class="footer-nav" aria-label="Footer navigation">
+				<a href="#features">Features</a>
+				<a href="#how">How It Works</a>
+				<a href="#gallery">Gallery</a>
+				<a href="#cta">Contribute</a>
+			</nav>
+			<div class="footer-meta">
+				<a href="#" aria-label="About page (placeholder)">About</a>
+				<a href="#" aria-label="FAQ page (placeholder)">FAQ</a>
+				<a href="#" aria-label="Privacy policy (placeholder)">Privacy</a>
+				<a href="mailto:hello@example.com" aria-label="Contact us via email">Contact</a>
+			</div>
+		</div>
+		<div class="footer-bottom">&copy; @DateTime.Now.Year Pet Venue Finder. All rights reserved.</div>
+	</footer>
+</div>
+
+@code {
+	private bool isDark = true; // default dark for vibrant gradients
+
+	[Inject] private IJSRuntime JS { get; set; } = default!;
+
+	private const string ThemeStorageKey = "pvf-theme";
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			try
+			{
+				var stored = await JS.InvokeAsync<string?>("localStorage.getItem", ThemeStorageKey);
+				if (!string.IsNullOrWhiteSpace(stored))
+				{
+					isDark = stored == "dark";
+					StateHasChanged(); // reflect loaded preference
+				}
+			}
+			catch
+			{
+				// Swallow: localStorage may be unavailable (unlikely in WASM) or user blocked storage.
+			}
+		}
+	}
+
+	private async Task ToggleTheme()
+	{
+		isDark = !isDark;
+		try
+		{
+			await JS.InvokeVoidAsync("localStorage.setItem", ThemeStorageKey, isDark ? "dark" : "light");
+		}
+		catch
+		{
+			// Non-fatal if persistence fails.
+		}
+	}
+}
