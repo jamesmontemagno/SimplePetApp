@@ -11,12 +11,24 @@
                 <span class="logo-icon">🐾</span>
                 <span class="logo-text">PawSpots</span>
             </div>
-            <nav class="nav-links">
-                <a href="" class="nav-link">🏠 Home</a>
-                <a href="venues" class="nav-link">📍 Venues</a>
-                <a href="pets" class="nav-link">🐕 Pets</a>
+            
+            <!-- Hamburger Menu Button (Mobile Only) -->
+            <button class="hamburger-menu @(isMenuOpen ? "active" : "")" 
+                    @onclick="ToggleMenu" 
+                    aria-label="Toggle navigation menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <!-- Navigation (Desktop and Mobile when open) -->
+            <nav class="nav-links @(isMenuOpen ? "mobile-open" : "")">
+                <a href="" class="nav-link" @onclick="CloseMenu">🏠 Home</a>
+                <a href="venues" class="nav-link" @onclick="CloseMenu">📍 Venues</a>
+                <a href="pets" class="nav-link" @onclick="CloseMenu">🐕 Pets</a>
             </nav>
-            <div class="header-actions">
+            
+            <div class="header-actions @(isMenuOpen ? "mobile-open" : "")">
                 @if (AuthService.IsAuthenticated)
                 {
                     <span class="user-greeting">Hi, @AuthService.CurrentUser?.FirstName! 👋</span>
@@ -26,8 +38,8 @@
                 }
                 else
                 {
-                    <a href="login" class="nav-button nav-button-secondary">Login</a>
-                    <a href="register" class="nav-button nav-button-primary">Sign Up</a>
+                    <a href="login" class="nav-button nav-button-secondary" @onclick="CloseMenu">Login</a>
+                    <a href="register" class="nav-button nav-button-primary" @onclick="CloseMenu">Sign Up</a>
                 }
                 <button class="theme-toggle" @onclick="ToggleTheme" title="Toggle theme">
                     @if (ThemeService.IsDarkMode)
@@ -42,6 +54,12 @@
             </div>
         </div>
     </header>
+
+    <!-- Overlay for mobile menu -->
+    @if (isMenuOpen)
+    {
+        <div class="mobile-overlay" @onclick="CloseMenu"></div>
+    }
 
     <main class="main-content">
         @Body
@@ -89,6 +107,8 @@
     [Inject]
     private NavigationManager Navigation { get; set; } = null!;
 
+    private bool isMenuOpen = false;
+
     protected override async Task OnInitializedAsync()
     {
         await ThemeService.InitializeAsync();
@@ -101,9 +121,20 @@
         await ThemeService.ToggleThemeAsync();
     }
 
+    private void ToggleMenu()
+    {
+        isMenuOpen = !isMenuOpen;
+    }
+
+    private void CloseMenu()
+    {
+        isMenuOpen = false;
+    }
+
     private void HandleLogout()
     {
         AuthService.Logout();
+        CloseMenu();
         Navigation.NavigateTo("");
     }
 

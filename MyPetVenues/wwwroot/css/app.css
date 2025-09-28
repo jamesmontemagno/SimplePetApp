@@ -91,6 +91,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 2rem;
 }
 
 .logo {
@@ -99,6 +100,7 @@ h1, h2, h3, h4, h5, h6 {
     gap: 0.75rem;
     cursor: pointer;
     transition: transform 0.3s ease;
+    z-index: 1001;
 }
 
 .logo:hover {
@@ -124,9 +126,48 @@ h1, h2, h3, h4, h5, h6 {
     background-clip: text;
 }
 
-.main-nav {
+/* Hamburger Menu Button */
+.hamburger-menu {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 32px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1001;
+    transition: transform 0.3s ease;
+}
+
+.hamburger-menu span {
+    width: 100%;
+    height: 3px;
+    background: var(--text-color);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+.hamburger-menu.active span:nth-child(1) {
+    transform: translateY(10.5px) rotate(45deg);
+}
+
+.hamburger-menu.active span:nth-child(2) {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.hamburger-menu.active span:nth-child(3) {
+    transform: translateY(-10.5px) rotate(-45deg);
+}
+
+/* Navigation Links */
+.nav-links {
     display: flex;
     gap: 2rem;
+    align-items: center;
 }
 
 .nav-link {
@@ -137,6 +178,7 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 8px;
     transition: all 0.3s ease;
     position: relative;
+    white-space: nowrap;
 }
 
 .nav-link:hover {
@@ -149,12 +191,14 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 
 .user-greeting {
     color: var(--text-color);
     font-weight: 500;
     margin-right: 0.5rem;
+    white-space: nowrap;
 }
 
 .nav-button {
@@ -167,6 +211,7 @@ h1, h2, h3, h4, h5, h6 {
     transition: all 0.3s ease;
     font-size: 0.95rem;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .nav-button-primary {
@@ -203,6 +248,7 @@ h1, h2, h3, h4, h5, h6 {
     cursor: pointer;
     font-size: 1.5rem;
     transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
 .theme-toggle:hover {
@@ -581,16 +627,151 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .header-content {
-        padding: 1rem;
-        flex-wrap: wrap;
+    /* Show hamburger menu on mobile */
+    .hamburger-menu {
+        display: flex;
     }
 
-    .main-nav {
-        order: 3;
+    /* Header adjustments */
+    .header-content {
+        padding: 1rem;
+        flex-wrap: nowrap;
+    }
+
+    /* Hide navigation by default on mobile */
+    .nav-links {
+        position: fixed;
+        top: 68px;
+        left: 0;
+        right: 0;
+        background: var(--header-bg);
+        backdrop-filter: blur(10px);
+        flex-direction: column;
+        gap: 0;
+        padding: 0;
+        transform: translateX(-100%);
+        opacity: 0;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+        max-height: 0;
+        overflow: hidden;
+    }
+
+    .nav-links.mobile-open {
+        transform: translateX(0);
+        opacity: 1;
+        max-height: 300px;
+    }
+
+    .nav-link {
         width: 100%;
+        padding: 1rem 2rem;
+        border-radius: 0;
+        font-size: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .nav-link:hover {
+        transform: none;
+        background: var(--bg-secondary);
+        color: var(--primary-pink);
+    }
+
+    /* Hide header actions by default on mobile */
+    .header-actions {
+        position: fixed;
+        top: calc(68px + 180px);
+        left: 0;
+        right: 0;
+        background: var(--header-bg);
+        backdrop-filter: blur(10px);
+        flex-direction: column;
+        padding: 0;
+        transform: translateX(-100%);
+        opacity: 0;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: var(--shadow);
+        max-height: 0;
+        overflow: hidden;
+    }
+
+    .header-actions.mobile-open {
+        transform: translateX(0);
+        opacity: 1;
+        max-height: 400px;
+        padding: 1rem 2rem;
+        gap: 1rem;
+    }
+
+    .user-greeting {
+        text-align: center;
+        width: 100%;
+    }
+
+    .nav-button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .theme-toggle {
+        align-self: center;
+    }
+
+    /* Show overlay when menu is open */
+    .mobile-overlay {
+        display: block;
+        position: fixed;
+        top: 68px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .logo-text {
+        font-size: 1.5rem;
+    }
+
+    .logo-icon {
+        font-size: 1.75rem;
+    }
+
+    /* Footer adjustments */
+    .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .social-links {
         justify-content: center;
-        margin-top: 1rem;
+    }
+
+    /* Content padding adjustments */
+    .main-content {
+        padding-top: 68px;
+    }
+}
+
+/* Tablet responsive (768px - 968px) */
+@media (min-width: 769px) and (max-width: 968px) {
+    .header-content {
+        padding: 1rem 1.5rem;
+    }
+
+    .nav-links {
         gap: 1rem;
     }
 
@@ -603,12 +784,38 @@ h1, h2, h3, h4, h5, h6 {
         font-size: 1.5rem;
     }
 
-    .footer-content {
-        grid-template-columns: 1fr;
-        text-align: center;
+    .user-greeting {
+        font-size: 0.875rem;
     }
 
-    .social-links {
-        justify-content: center;
+    .nav-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Small mobile devices (max 480px) */
+@media (max-width: 480px) {
+    .header-content {
+        padding: 0.75rem 1rem;
+    }
+
+    .logo-text {
+        font-size: 1.25rem;
+    }
+
+    .logo-icon {
+        font-size: 1.5rem;
+    }
+
+    .theme-toggle {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+
+    .hamburger-menu {
+        width: 28px;
+        height: 22px;
     }
 }
