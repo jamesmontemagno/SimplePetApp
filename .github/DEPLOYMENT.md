@@ -91,6 +91,15 @@ This file tells GitHub Pages not to use Jekyll processing, which is important fo
 
 ## 🐛 Troubleshooting
 
+### "Branch is not allowed to deploy" Error
+If you get an error like: `Branch "full-cook-daisy" is not allowed to deploy to github-pages due to environment protection rules.`
+
+**Solution:**
+1. Go to **Settings** → **Environments** → **github-pages**
+2. Under **Deployment branches and tags**: Select **All branches** OR add `full-cook-daisy` specifically
+3. Click **Save protection rules**
+4. Re-run the failed workflow from the Actions tab
+
 ### Workflow Fails
 - Check the **Actions** tab for detailed error messages
 - Ensure GitHub Pages is enabled with "GitHub Actions" as the source
