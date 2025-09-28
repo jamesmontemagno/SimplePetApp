@@ -1,0 +1,216 @@
+@page "/venues"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@inject VenueService VenueService
+@inject NavigationManager Navigation
+
+<PageTitle>Browse Pet-Friendly Venues - PetSpot</PageTitle>
+
+<div class="venues-page">
+    <!-- Page Header -->
+    <section class="venues-header">
+        <h1 class="venues-title">🐾 Discover Pet-Friendly Venues</h1>
+        <p class="venues-subtitle">Find the perfect spot for you and your furry friend</p>
+    </section>
+
+    <!-- Search and Filter -->
+    <section class="venues-controls">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input 
+                type="text" 
+                class="search-input" 
+                placeholder="Search venues by name, location, or category..." 
+                @bind="searchTerm"
+                @bind:event="oninput"
+                @onkeyup="HandleSearch" />
+        </div>
+
+        <div class="filter-tabs">
+            <button class="filter-tab @(selectedCategory == "All" ? "active" : "")" 
+                    @onclick='() => SelectCategory("All")'>
+                All
+            </button>
+            @foreach (var category in categories)
+            {
+                <button class="filter-tab @(selectedCategory == category ? "active" : "")" 
+                        @onclick="() => SelectCategory(category)">
+                    @GetCategoryIcon(category) @category
+                </button>
+            }
+        </div>
+    </section>
+
+    <!-- Venues Grid -->
+    <section class="venues-grid-section">
+        @if (isLoading)
+        {
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading venues...</p>
+            </div>
+        }
+        else if (filteredVenues.Count == 0)
+        {
+            <div class="no-results">
+                <div class="no-results-icon">😔</div>
+                <h3>No venues found</h3>
+                <p>Try adjusting your search or filter criteria</p>
+            </div>
+        }
+        else
+        {
+            <div class="venues-grid">
+                @foreach (var venue in filteredVenues)
+                {
+                    <div class="venue-card" @onclick="() => NavigateToVenue(venue.Id)">
+                        <div class="venue-image-container">
+                            <img src="@venue.MainImageUrl" alt="@venue.Name" class="venue-image" />
+                            <div class="venue-category-badge">@GetCategoryIcon(venue.Category) @venue.Category</div>
+                        </div>
+                        
+                        <div class="venue-card-content">
+                            <h3 class="venue-card-title">@venue.Name</h3>
+                            
+                            <div class="venue-rating">
+                                <span class="rating-stars">@GetStarRating(venue.Rating)</span>
+                                <span class="rating-text">@venue.Rating.ToString("F1")</span>
+                                <span class="review-count">(@venue.ReviewCount reviews)</span>
+                            </div>
+                            
+                            <p class="venue-card-description">@TruncateDescription(venue.Description)</p>
+                            
+                            <div class="venue-location">
+                                <span class="location-icon">📍</span>
+                                <span>@venue.City, @venue.State</span>
+                            </div>
+                            
+                            <div class="venue-amenities">
+                                @foreach (var amenity in venue.Amenities.Take(3))
+                                {
+                                    <span class="amenity-tag">@amenity</span>
+                                }
+                                @if (venue.Amenities.Count > 3)
+                                {
+                                    <span class="amenity-tag more">+@(venue.Amenities.Count - 3) more</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+
+    <!-- Results Count -->
+    @if (!isLoading && filteredVenues.Count > 0)
+    {
+        <div class="results-count">
+            Showing @filteredVenues.Count venue@(filteredVenues.Count != 1 ? "s" : "")
+        </div>
+    }
+</div>
+
+@code {
+    private List<Venue> venues = new();
+    private List<Venue> filteredVenues = new();
+    private List<string> categories = new();
+    private string selectedCategory = "All";
+    private string searchTerm = string.Empty;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        venues = await VenueService.GetAllVenuesAsync();
+        categories = await VenueService.GetCategoriesAsync();
+        filteredVenues = venues;
+        isLoading = false;
+    }
+
+    private async Task SelectCategory(string category)
+    {
+        selectedCategory = category;
+        searchTerm = string.Empty;
+        
+        if (category == "All")
+        {
+            filteredVenues = await VenueService.GetAllVenuesAsync();
+        }
+        else
+        {
+            filteredVenues = await VenueService.GetVenuesByCategoryAsync(category);
+        }
+    }
+
+    private async Task HandleSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            if (selectedCategory == "All")
+            {
+                filteredVenues = venues;
+            }
+            else
+            {
+                filteredVenues = await VenueService.GetVenuesByCategoryAsync(selectedCategory);
+            }
+        }
+        else
+        {
+            var searchResults = await VenueService.SearchVenuesAsync(searchTerm);
+            
+            if (selectedCategory != "All")
+            {
+                filteredVenues = searchResults
+                    .Where(v => v.Category.Equals(selectedCategory, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+            else
+            {
+                filteredVenues = searchResults;
+            }
+        }
+    }
+
+    private void NavigateToVenue(int venueId)
+    {
+        Navigation.NavigateTo($"/venue/{venueId}");
+    }
+
+    private string GetCategoryIcon(string category)
+    {
+        return category.ToLower() switch
+        {
+            "cafe" => "☕",
+            "restaurant" => "🍽️",
+            "park" => "🌳",
+            "shop" => "🛍️",
+            "hotel" => "🏨",
+            _ => "📍"
+        };
+    }
+
+    private string GetStarRating(double rating)
+    {
+        var fullStars = (int)Math.Floor(rating);
+        var hasHalfStar = rating - fullStars >= 0.5;
+        var emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+        return new string('⭐', fullStars) + (hasHalfStar ? "⭐" : "") + new string('☆', emptyStars);
+    }
+
+    private string TruncateDescription(string description)
+    {
+        const int maxLength = 120;
+        if (description.Length <= maxLength)
+            return description;
+
+        return description.Substring(0, maxLength).TrimEnd() + "...";
+    }
+}

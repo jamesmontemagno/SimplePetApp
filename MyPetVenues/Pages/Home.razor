@@ -1,7 +1,244 @@
 ﻿@page "/"
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
 
-<PageTitle>Home</PageTitle>
+<PageTitle>PetSpot - Find Pet-Friendly Venues Near You</PageTitle>
 
-<h1>Hello, world!</h1>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            🐾 Discover Pet-Friendly Places
+        </h1>
+        <p class="hero-subtitle">
+            Your go-to platform for finding, sharing, and reviewing pet-friendly venues where you and your furry friends are welcome! 🐶🐱
+        </p>
+        <div class="hero-buttons">
+            <button class="btn-primary" @onclick="NavigateToVenues">
+                Explore Venues 🗺️
+            </button>
+            <button class="btn-secondary" @onclick="NavigateToVenues">
+                Add a Venue ➕
+            </button>
+        </div>
+    </div>
+    <div class="hero-images">
+        <div class="hero-image-grid">
+            <img src="images/pets/dog1.png" alt="Happy dog" class="hero-img hero-img-1" />
+            <img src="images/pets/cat1.jpg" alt="Cute cat" class="hero-img hero-img-2" />
+            <img src="images/venues/cafe1.jpg" alt="Pet-friendly cafe" class="hero-img hero-img-3" />
+            <img src="images/pets/dog5.jpg" alt="Dog at venue" class="hero-img hero-img-4" />
+        </div>
+    </div>
+</section>
 
-Welcome to your new app.
+<!-- Features Section -->
+<section class="features-section">
+    <h2 class="section-title">✨ What We Offer</h2>
+    <p class="section-subtitle">Everything you need to find the perfect spot for you and your pet</p>
+    
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <h3 class="feature-title">Browse Venues</h3>
+            <p class="feature-description">
+                Discover pet-friendly cafes, parks, restaurants, shops, and more in your area. Filter by category and find exactly what you're looking for.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">➕</div>
+            <h3 class="feature-title">Add New Venues</h3>
+            <p class="feature-description">
+                Found a great pet-friendly spot? Share it with the community! Add venue details, amenities, and photos to help other pet owners.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">⭐</div>
+            <h3 class="feature-title">Review & Rate</h3>
+            <p class="feature-description">
+                Share your experiences and read reviews from other pet owners. Rate venues on pet-friendliness, cleanliness, and amenities.
+            </p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">📍</div>
+            <h3 class="feature-title">Detailed Information</h3>
+            <p class="feature-description">
+                Get comprehensive venue details including pet policies, amenities like water bowls and outdoor seating, photos, and location info.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Venue Types Section -->
+<section class="venue-types-section">
+    <h2 class="section-title">🏙️ Find Pet-Friendly Places</h2>
+    <p class="section-subtitle">Explore different types of venues that welcome your pets</p>
+    
+    <div class="venue-types-grid">
+        <div class="venue-type-card">
+            <img src="images/venues/cafe1.jpg" alt="Pet-friendly cafe" class="venue-type-img" />
+            <div class="venue-type-overlay">
+                <h3 class="venue-type-title">☕ Cafes & Restaurants</h3>
+            </div>
+        </div>
+        
+        <div class="venue-type-card">
+            <img src="images/venues/park1.jpg" alt="Pet-friendly park" class="venue-type-img" />
+            <div class="venue-type-overlay">
+                <h3 class="venue-type-title">🌳 Parks & Outdoors</h3>
+            </div>
+        </div>
+        
+        <div class="venue-type-card">
+            <img src="images/venues/store1.jpg" alt="Pet-friendly store" class="venue-type-img" />
+            <div class="venue-type-overlay">
+                <h3 class="venue-type-title">🛍️ Shops & Stores</h3>
+            </div>
+        </div>
+        
+        <div class="venue-type-card">
+            <img src="images/venues/hotel1.jpg" alt="Pet-friendly hotel" class="venue-type-img" />
+            <div class="venue-type-overlay">
+                <h3 class="venue-type-title">🏨 Hotels & Stays</h3>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works-section">
+    <h2 class="section-title">🚀 How It Works</h2>
+    <p class="section-subtitle">Get started in three simple steps</p>
+    
+    <div class="steps-container">
+        <div class="step">
+            <div class="step-number">1</div>
+            <h3 class="step-title">Search & Discover</h3>
+            <p class="step-description">Browse venues in your area or search by location and category</p>
+        </div>
+        
+        <div class="step-arrow">→</div>
+        
+        <div class="step">
+            <div class="step-number">2</div>
+            <h3 class="step-title">Read Reviews</h3>
+            <p class="step-description">Check ratings and reviews from other pet owners</p>
+        </div>
+        
+        <div class="step-arrow">→</div>
+        
+        <div class="step">
+            <div class="step-number">3</div>
+            <h3 class="step-title">Visit & Share</h3>
+            <p class="step-description">Enjoy the venue with your pet and share your experience</p>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <h2 class="section-title">💬 What Pet Owners Say</h2>
+    <p class="section-subtitle">Join our growing community of happy pet parents</p>
+    
+    <div class="testimonials-grid">
+        <div class="testimonial-card">
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">
+                "Found the perfect cafe where I can work and my dog can relax! This platform has been a game-changer for our daily routine."
+            </p>
+            <div class="testimonial-author">
+                <img src="images/pets/dog3.jpg" alt="Happy dog owner" class="testimonial-img" />
+                <div class="testimonial-info">
+                    <p class="testimonial-name">Sarah & Max 🐕</p>
+                    <p class="testimonial-role">Dog Owner</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testimonial-card">
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">
+                "As a new pet owner, I was struggling to find places that welcome cats. This site made it so easy to discover cat-friendly venues!"
+            </p>
+            <div class="testimonial-author">
+                <img src="images/pets/cat2.jpg" alt="Happy cat owner" class="testimonial-img" />
+                <div class="testimonial-info">
+                    <p class="testimonial-name">Mike & Luna 🐱</p>
+                    <p class="testimonial-role">Cat Owner</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testimonial-card">
+            <div class="testimonial-stars">⭐⭐⭐⭐⭐</div>
+            <p class="testimonial-text">
+                "Love how detailed the venue information is! Knowing about water bowls and outdoor seating helps me plan better visits with my pup."
+            </p>
+            <div class="testimonial-author">
+                <img src="images/pets/dog7.jpg" alt="Happy dog owner" class="testimonial-img" />
+                <div class="testimonial-info">
+                    <p class="testimonial-name">Emma & Bailey 🦮</p>
+                    <p class="testimonial-role">Dog Owner</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="stats-grid">
+        <div class="stat">
+            <div class="stat-number">500+</div>
+            <div class="stat-label">Pet-Friendly Venues</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">1,000+</div>
+            <div class="stat-label">Happy Pet Owners</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">2,500+</div>
+            <div class="stat-label">Reviews Shared</div>
+        </div>
+        <div class="stat">
+            <div class="stat-number">50+</div>
+            <div class="stat-label">Cities Covered</div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="cta-content">
+        <h2 class="cta-title">Ready to Explore? 🎉</h2>
+        <p class="cta-subtitle">
+            Join thousands of pet owners discovering amazing pet-friendly venues every day
+        </p>
+        <button class="btn-cta" @onclick="NavigateToVenues">
+            Get Started Now 🚀
+        </button>
+    </div>
+    <div class="cta-images">
+        <img src="images/pets/dog8.jpg" alt="Happy pets" class="cta-img cta-img-1" />
+        <img src="images/pets/cat3.jpg" alt="Happy pets" class="cta-img cta-img-2" />
+        <img src="images/pets/bunny.jpg" alt="Happy pets" class="cta-img cta-img-3" />
+    </div>
+</section>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("initTheme");
+        }
+    }
+
+    private void NavigateToVenues()
+    {
+        Navigation.NavigateTo("/venues");
+    }
+}

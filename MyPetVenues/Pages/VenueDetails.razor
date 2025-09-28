@@ -1,0 +1,294 @@
+@page "/venue/{id:int}"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@inject VenueService VenueService
+@inject NavigationManager Navigation
+
+<PageTitle>@(venue?.Name ?? "Venue Details") - PetSpot</PageTitle>
+
+<div class="venue-details-page">
+    @if (isLoading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading venue details...</p>
+        </div>
+    }
+    else if (venue == null)
+    {
+        <div class="not-found">
+            <div class="not-found-icon">😔</div>
+            <h2>Venue Not Found</h2>
+            <p>Sorry, we couldn't find the venue you're looking for.</p>
+            <button class="btn-primary" @onclick="GoBack">← Back to Venues</button>
+        </div>
+    }
+    else
+    {
+        <!-- Back Button -->
+        <button class="back-button" @onclick="GoBack">← Back to Venues</button>
+
+        <!-- Hero Section -->
+        <section class="venue-hero">
+            <div class="venue-hero-image">
+                <img src="@venue.MainImageUrl" alt="@venue.Name" />
+                <div class="venue-hero-overlay">
+                    <span class="venue-category-badge large">@GetCategoryIcon(venue.Category) @venue.Category</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <section class="venue-content">
+            <!-- Header Info -->
+            <div class="venue-header">
+                <div class="venue-header-main">
+                    <h1 class="venue-name">@venue.Name</h1>
+                    <div class="venue-rating-large">
+                        <span class="rating-stars-large">@GetStarRating(venue.Rating)</span>
+                        <span class="rating-number">@venue.Rating.ToString("F1")</span>
+                        <span class="review-count">(@venue.ReviewCount reviews)</span>
+                    </div>
+                    <div class="venue-location-large">
+                        <span class="location-icon">📍</span>
+                        <span>@venue.Address, @venue.City, @venue.State @venue.ZipCode</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two Column Layout -->
+            <div class="venue-details-grid">
+                <!-- Left Column - Main Info -->
+                <div class="venue-main-info">
+                    <!-- Description -->
+                    <div class="info-section">
+                        <h2 class="section-heading">About This Venue</h2>
+                        <p class="venue-description">@venue.Description</p>
+                    </div>
+
+                    <!-- Amenities -->
+                    <div class="info-section">
+                        <h2 class="section-heading">🎯 Amenities & Features</h2>
+                        <div class="amenities-grid">
+                            @foreach (var amenity in venue.Amenities)
+                            {
+                                <div class="amenity-item">
+                                    <span class="amenity-check">✓</span>
+                                    <span>@amenity</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Pet Policy -->
+                    @if (!string.IsNullOrWhiteSpace(venue.PetPolicy))
+                    {
+                        <div class="info-section">
+                            <h2 class="section-heading">🐾 Pet Policy</h2>
+                            <div class="policy-box">
+                                <p>@venue.PetPolicy</p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Reviews Section -->
+                    <div class="info-section reviews-section">
+                        <h2 class="section-heading">⭐ Reviews (@venue.ReviewCount)</h2>
+                        
+                        @if (venue.Reviews.Any())
+                        {
+                            <div class="reviews-list">
+                                @foreach (var review in venue.Reviews.OrderByDescending(r => r.CreatedAt))
+                                {
+                                    <div class="review-card">
+                                        <div class="review-header">
+                                            <div class="review-author">
+                                                <div class="author-avatar">🐾</div>
+                                                <div class="author-info">
+                                                    <h4 class="author-name">@review.AuthorName & @review.AuthorPetName</h4>
+                                                    <span class="pet-type">@review.AuthorPetType Owner</span>
+                                                </div>
+                                            </div>
+                                            <div class="review-date">@GetRelativeDate(review.CreatedAt)</div>
+                                        </div>
+                                        
+                                        <div class="review-rating">
+                                            <span class="review-stars">@GetStarRating(review.Rating)</span>
+                                            <span class="rating-value">@review.Rating.0/5.0</span>
+                                        </div>
+                                        
+                                        <div class="review-ratings-breakdown">
+                                            <div class="breakdown-item">
+                                                <span class="breakdown-label">Pet Friendliness:</span>
+                                                <span class="breakdown-value">@GetStarRating(review.PetFriendlinessRating)</span>
+                                            </div>
+                                            <div class="breakdown-item">
+                                                <span class="breakdown-label">Cleanliness:</span>
+                                                <span class="breakdown-value">@GetStarRating(review.CleanlinessRating)</span>
+                                            </div>
+                                            <div class="breakdown-item">
+                                                <span class="breakdown-label">Amenities:</span>
+                                                <span class="breakdown-value">@GetStarRating(review.AmenitiesRating)</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <p class="review-content">@review.Content</p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="no-reviews">
+                                <p>No reviews yet. Be the first to review this venue! 🎉</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Right Column - Sidebar -->
+                <div class="venue-sidebar">
+                    <!-- Contact Info Card -->
+                    <div class="sidebar-card">
+                        <h3 class="sidebar-heading">📞 Contact Information</h3>
+                        <div class="contact-info">
+                            @if (!string.IsNullOrWhiteSpace(venue.Phone))
+                            {
+                                <div class="contact-item">
+                                    <span class="contact-icon">📱</span>
+                                    <a href="tel:@venue.Phone" class="contact-link">@venue.Phone</a>
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(venue.Website))
+                            {
+                                <div class="contact-item">
+                                    <span class="contact-icon">🌐</span>
+                                    <a href="@venue.Website" target="_blank" class="contact-link">Visit Website</a>
+                                </div>
+                            }
+                            <div class="contact-item">
+                                <span class="contact-icon">📍</span>
+                                <span>@venue.Address</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="contact-icon"></span>
+                                <span>@venue.City, @venue.State @venue.ZipCode</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hours Card -->
+                    @if (!string.IsNullOrWhiteSpace(venue.Hours))
+                    {
+                        <div class="sidebar-card">
+                            <h3 class="sidebar-heading">🕐 Hours of Operation</h3>
+                            <div class="hours-info">
+                                <p>@venue.Hours</p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Quick Stats Card -->
+                    <div class="sidebar-card">
+                        <h3 class="sidebar-heading">📊 Quick Stats</h3>
+                        <div class="stats-list">
+                            <div class="stat-item">
+                                <span class="stat-label">Overall Rating</span>
+                                <span class="stat-value">@venue.Rating.ToString("F1") ⭐</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Total Reviews</span>
+                                <span class="stat-value">@venue.ReviewCount</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Amenities</span>
+                                <span class="stat-value">@venue.Amenities.Count</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Category</span>
+                                <span class="stat-value">@venue.Category</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CTA Card -->
+                    <div class="sidebar-card cta-card">
+                        <h3 class="cta-heading">💬 Share Your Experience</h3>
+                        <p class="cta-text">Have you visited this venue? Help other pet owners by sharing your review!</p>
+                        <button class="btn-primary full-width">Write a Review</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Venue? venue;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVenue();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadVenue();
+    }
+
+    private async Task LoadVenue()
+    {
+        isLoading = true;
+        venue = await VenueService.GetVenueByIdAsync(Id);
+        isLoading = false;
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/venues");
+    }
+
+    private string GetCategoryIcon(string category)
+    {
+        return category.ToLower() switch
+        {
+            "cafe" => "☕",
+            "restaurant" => "🍽️",
+            "park" => "🌳",
+            "shop" => "🛍️",
+            "hotel" => "🏨",
+            _ => "📍"
+        };
+    }
+
+    private string GetStarRating(double rating)
+    {
+        var fullStars = (int)Math.Floor(rating);
+        var hasHalfStar = rating - fullStars >= 0.5;
+        var emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+        return new string('⭐', fullStars) + (hasHalfStar ? "⭐" : "") + new string('☆', emptyStars);
+    }
+
+    private string GetRelativeDate(DateTime date)
+    {
+        var timeSpan = DateTime.UtcNow - date;
+        
+        if (timeSpan.TotalDays < 1)
+            return "Today";
+        if (timeSpan.TotalDays < 2)
+            return "Yesterday";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays} days ago";
+        if (timeSpan.TotalDays < 30)
+            return $"{(int)(timeSpan.TotalDays / 7)} weeks ago";
+        if (timeSpan.TotalDays < 365)
+            return $"{(int)(timeSpan.TotalDays / 30)} months ago";
+        
+        return date.ToString("MMM dd, yyyy");
+    }
+}

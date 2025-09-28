@@ -1,3 +1,98 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JS
 
-@Body
+<header class="app-header">
+    <nav class="nav-container">
+        <div class="logo">🐾 PetSpot</div>
+        
+        <ul class="nav-links">
+            <li><a href="#" class="nav-link">Home 🏠</a></li>
+            <li><a href="#features" class="nav-link">Features ✨</a></li>
+            <li><a href="#venues" class="nav-link">Venues 📍</a></li>
+            <li><a href="#about" class="nav-link">About 💡</a></li>
+            <li><a href="#contact" class="nav-link">Contact 📧</a></li>
+        </ul>
+        
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <button class="theme-toggle" @onclick="ToggleTheme">🌙</button>
+            <button class="mobile-menu-btn" @onclick="ToggleMobileMenu">☰</button>
+        </div>
+    </nav>
+</header>
+
+<main>
+    @Body
+</main>
+
+<footer class="app-footer">
+    <div class="footer-content">
+        <div class="footer-grid">
+            <div class="footer-section">
+                <h3>🐾 PetSpot</h3>
+                <p style="color: var(--text-secondary); line-height: 1.8;">
+                    Your go-to platform for discovering pet-friendly venues. 
+                    Building a community where pets are always welcome! 🐶🐱
+                </p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#venues">Browse Venues</a></li>
+                    <li><a href="#">Add Venue</a></li>
+                    <li><a href="#">Reviews</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Company</h3>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press Kit</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                    <li><a href="#">Guidelines</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="footer-social">
+                    <a href="#" aria-label="Facebook">📘</a>
+                    <a href="#" aria-label="Instagram">📷</a>
+                    <a href="#" aria-label="Twitter">🐦</a>
+                    <a href="#" aria-label="LinkedIn">💼</a>
+                    <a href="#" aria-label="YouTube">📹</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 PetSpot. All rights reserved. Made with ❤️ for pet lovers everywhere.</p>
+        </div>
+    </div>
+</footer>
+
+@code {
+    private async Task ToggleTheme()
+    {
+        await JS.InvokeVoidAsync("toggleTheme");
+    }
+    
+    private async Task ToggleMobileMenu()
+    {
+        await JS.InvokeVoidAsync("toggleMobileMenu");
+    }
+}
