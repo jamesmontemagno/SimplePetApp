@@ -32,12 +32,12 @@
 
     <!-- Filters -->
     <div class="filter-section">
-        <div class="filter-header">
+        <div class="filter-header @(isFilterExpanded ? "expanded" : "")" @onclick="ToggleFilters">
             <h3 class="filter-title">🎯 Filters</h3>
-            <span class="clear-filters" @onclick="ClearFilters">Clear All</span>
+            <span class="clear-filters" @onclick:stopPropagation="true" @onclick="ClearFilters">Clear All</span>
         </div>
 
-        <div class="filter-group">
+        <div class="filter-group @(isFilterExpanded ? "visible" : "")">
             <div class="filter-group-title">Category</div>
             <div class="filter-chips">
                 @foreach (var category in Enum.GetValues<VenueCategory>())
@@ -50,7 +50,7 @@
             </div>
         </div>
 
-        <div class="filter-group">
+        <div class="filter-group @(isFilterExpanded ? "visible" : "")">
             <div class="filter-group-title">Amenities</div>
             <div class="filter-chips">
                 @foreach (var amenity in Enum.GetValues<Amenity>())
@@ -99,6 +99,7 @@
     private string _sortBy = "rating";
     private HashSet<VenueCategory> selectedCategories = new();
     private HashSet<Amenity> selectedAmenities = new();
+    private bool isFilterExpanded = false;
 
     private string sortBy
     {
@@ -117,6 +118,11 @@
     {
         venues = await DataService.GetVenuesAsync();
         FilterAndSortVenues();
+    }
+
+    private void ToggleFilters()
+    {
+        isFilterExpanded = !isFilterExpanded;
     }
 
     private void OnSearchChanged()
