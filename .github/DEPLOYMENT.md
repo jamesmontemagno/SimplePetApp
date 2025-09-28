@@ -13,6 +13,22 @@ This GitHub Action workflow automatically deploys the Blazor WebAssembly app to 
    - Source: Select **GitHub Actions**
    - (Not "Deploy from a branch")
 
+### Step 1b: Configure Environment Protection Rules (Important!)
+
+Since you're deploying from the `full-cook-daisy` branch, you need to allow it in the environment settings:
+
+1. Go to **Settings** → **Environments** → **github-pages**
+2. Under **Deployment branches and tags**:
+   - Select **Selected branches and tags**
+   - Click **Add deployment branch or tag rule**
+   - Add pattern: `full-cook-daisy`
+   - Click **Save protection rules**
+
+**OR** if you want to allow all branches:
+1. Under **Deployment branches and tags**:
+   - Select **All branches**
+   - This allows any branch to deploy
+
 ### Step 2: Commit and Push the Workflow
 
 The workflow file has been created at `.github/workflows/deploy-to-github-pages.yml`
@@ -39,7 +55,7 @@ https://jamesmontemagno.github.io/SimplePetApp/
 ## 🔄 Automatic Deployments
 
 After the initial setup, the workflow will automatically:
-- Trigger on every push to the `main` branch
+- Trigger on every push to the `full-cook-daisy` branch
 - Build the Blazor WebAssembly app
 - Publish the output
 - Deploy to GitHub Pages
@@ -106,4 +122,4 @@ For production deployments, consider:
 
 ## 🎉 Success!
 
-Once deployed, your Blazor WebAssembly app will be live and accessible to anyone with the URL. The app will automatically redeploy whenever you push changes to the main branch.
+Once deployed, your Blazor WebAssembly app will be live and accessible to anyone with the URL. The app will automatically redeploy whenever you push changes to the `full-cook-daisy` branch.
