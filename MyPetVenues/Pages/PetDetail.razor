@@ -1,0 +1,156 @@
+@page "/pet/{Id:int}"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@inject MockDataService DataService
+@inject NavigationManager Navigation
+
+<PageTitle>@(pet?.Name ?? "Pet") - PawSpots</PageTitle>
+
+<link rel="stylesheet" href="../css/pet-detail.css" />
+
+@if (pet == null)
+{
+    <div class="loading-container">
+        <div class="loading-spinner">🐾</div>
+        <p>Loading pet profile...</p>
+    </div>
+}
+else
+{
+    <div class="pet-detail-container">
+        <!-- Back Button -->
+        <button class="back-button" @onclick="NavigateBack">
+            ← Back to Pets
+        </button>
+
+        <!-- Pet Profile Header -->
+        <div class="pet-profile-header">
+            <div class="pet-profile-image">
+                <img src="../@pet.ImageUrl" alt="@pet.Name" />
+                <div class="pet-type-icon">@GetPetTypeIcon(pet.Type)</div>
+            </div>
+            <div class="pet-profile-info">
+                <h1 class="pet-name-large">@pet.Name</h1>
+                <p class="pet-breed-large">@pet.Breed</p>
+                
+                <div class="pet-stats">
+                    <div class="stat-item">
+                        <span class="stat-icon">🎂</span>
+                        <div class="stat-content">
+                            <span class="stat-label">Age</span>
+                            <span class="stat-value">@pet.Age @(pet.Age == 1 ? "year" : "years") old</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">📏</span>
+                        <div class="stat-content">
+                            <span class="stat-label">Size</span>
+                            <span class="stat-value">@pet.Size</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-icon">⚧</span>
+                        <div class="stat-content">
+                            <span class="stat-label">Size</span>
+                            <span class="stat-value">@pet.Size</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="owner-info">
+                    <span class="owner-icon">👤</span>
+                    <span class="owner-name">Owner: <strong>@pet.OwnerName</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pet Details Content -->
+        <div class="pet-content">
+            <!-- About -->
+            <section class="content-section">
+                <h2 class="section-title">📝 About @pet.Name</h2>
+                <p class="pet-bio">@pet.Bio</p>
+            </section>
+
+            <!-- Personality -->
+            <section class="content-section">
+                <h2 class="section-title">✨ Personality Traits</h2>
+                <div class="personality-grid">
+                    @foreach (var trait in pet.Personality)
+                    {
+                        <div class="personality-item">
+                            @GetPersonalityIcon(trait) @trait
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <!-- Favorite Places -->
+            @if (pet.FavoriteVenues.Any())
+            {
+                <section class="content-section">
+                    <h2 class="section-title">❤️ Favorite Places</h2>
+                    <div class="favorite-places">
+                        @foreach (var place in pet.FavoriteVenues)
+                        {
+                            <div class="favorite-place-item">
+                                <span class="place-icon">📍</span>
+                                <span class="place-name">@place</span>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Pet? pet;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var pets = await DataService.GetPetsAsync();
+        pet = pets.FirstOrDefault(p => p.Id == Id);
+    }
+
+    private void NavigateBack()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private string GetPetTypeIcon(PetType type)
+    {
+        return type switch
+        {
+            PetType.Dogs => "🐕",
+            PetType.Cats => "🐈",
+            PetType.Birds => "🦜",
+            PetType.SmallAnimals => "🐰",
+            _ => "🐾"
+        };
+    }
+
+    private string GetPersonalityIcon(string trait)
+    {
+        return trait.ToLower() switch
+        {
+            var t when t.Contains("friendly") => "😊",
+            var t when t.Contains("playful") => "🎾",
+            var t when t.Contains("energetic") => "⚡",
+            var t when t.Contains("calm") => "😌",
+            var t when t.Contains("shy") => "🙈",
+            var t when t.Contains("brave") => "💪",
+            var t when t.Contains("curious") => "🔍",
+            var t when t.Contains("gentle") => "🤗",
+            var t when t.Contains("social") => "👥",
+            var t when t.Contains("loyal") => "❤️",
+            var t when t.Contains("smart") => "🧠",
+            var t when t.Contains("affectionate") => "💕",
+            _ => "✨"
+        };
+    }
+}

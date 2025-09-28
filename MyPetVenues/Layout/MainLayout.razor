@@ -1,3 +1,115 @@
 ﻿@inherits LayoutComponentBase
+@using MyPetVenues.Services
+@inject ThemeService ThemeService
+@inject AuthService AuthService
+@implements IDisposable
 
-@Body
+<div class="page-container">
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo" @onclick='() => Navigation.NavigateTo("/")'>
+                <span class="logo-icon">🐾</span>
+                <span class="logo-text">PawSpots</span>
+            </div>
+            <nav class="main-nav">
+                <a href="/" class="nav-link">🏠 Home</a>
+                <a href="/venues" class="nav-link">📍 Venues</a>
+                <a href="/pets" class="nav-link">🐕 Pets</a>
+            </nav>
+            <div class="header-actions">
+                @if (AuthService.IsAuthenticated)
+                {
+                    <span class="user-greeting">Hi, @AuthService.CurrentUser?.FirstName! 👋</span>
+                    <button class="nav-button nav-button-secondary" @onclick="HandleLogout">
+                        Logout
+                    </button>
+                }
+                else
+                {
+                    <a href="/login" class="nav-button nav-button-secondary">Login</a>
+                    <a href="/register" class="nav-button nav-button-primary">Sign Up</a>
+                }
+                <button class="theme-toggle" @onclick="ToggleTheme" title="Toggle theme">
+                    @if (ThemeService.IsDarkMode)
+                    {
+                        <span>☀️</span>
+                    }
+                    else
+                    {
+                        <span>🌙</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        @Body
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>🐾 PawSpots</h4>
+                <p>Connecting pet owners with pet-friendly venues</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/venues">Find Venues</a></li>
+                    <li><a href="/pets">Pet Profiles</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="#" title="Facebook">📘</a>
+                    <a href="#" title="Instagram">📷</a>
+                    <a href="#" title="Twitter">🐦</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 PawSpots. All rights reserved. Made with ❤️ for pet lovers everywhere.</p>
+        </div>
+    </footer>
+</div>
+
+@code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ThemeService.InitializeAsync();
+        ThemeService.OnThemeChanged += StateHasChanged;
+        AuthService.OnAuthStateChanged += StateHasChanged;
+    }
+
+    private async Task ToggleTheme()
+    {
+        await ThemeService.ToggleThemeAsync();
+    }
+
+    private void HandleLogout()
+    {
+        AuthService.Logout();
+        Navigation.NavigateTo("/");
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+        AuthService.OnAuthStateChanged -= StateHasChanged;
+    }
+}

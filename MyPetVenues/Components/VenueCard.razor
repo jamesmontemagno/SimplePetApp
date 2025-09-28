@@ -1,0 +1,87 @@
+@using MyPetVenues.Models
+
+<div class="venue-card" @onclick="NavigateToVenue">
+    <div class="venue-image">
+        <img src="@Venue.ImageUrl" alt="@Venue.Name" />
+        <div class="venue-category">@Venue.Category</div>
+    </div>
+    <div class="venue-info">
+        <h3 class="venue-name">@Venue.Name</h3>
+        <div class="venue-rating">
+            <span class="stars">
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <span class="star @(i <= Math.Round(Venue.Rating) ? "filled" : "")">★</span>
+                }
+            </span>
+            <span class="rating-text">@Venue.Rating.ToString("0.0") (@Venue.ReviewCount reviews)</span>
+        </div>
+        <p class="venue-description">@TruncateDescription(Venue.Description)</p>
+        <div class="venue-amenities">
+            @foreach (var amenity in Venue.Amenities.Take(3))
+            {
+                <span class="amenity-badge">@GetAmenityIcon(amenity) @FormatAmenity(amenity)</span>
+            }
+            @if (Venue.Amenities.Count > 3)
+            {
+                <span class="amenity-badge more">+@(Venue.Amenities.Count - 3) more</span>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Venue Venue { get; set; } = null!;
+
+    [Inject]
+    private NavigationManager Navigation { get; set; } = null!;
+
+    private void NavigateToVenue()
+    {
+        Navigation.NavigateTo($"/venue/{Venue.Id}");
+    }
+
+    private string TruncateDescription(string description)
+    {
+        return description.Length > 120 ? description.Substring(0, 120) + "..." : description;
+    }
+
+    private string GetAmenityIcon(Amenity amenity)
+    {
+        return amenity switch
+        {
+            Amenity.WaterBowls => "💧",
+            Amenity.PetMenu => "🍖",
+            Amenity.OffLeashArea => "🎾",
+            Amenity.IndoorSeating => "🏠",
+            Amenity.OutdoorSeating => "🌳",
+            Amenity.WasteStations => "🗑️",
+            Amenity.PetTreats => "🦴",
+            Amenity.ShadeAreas => "☂️",
+            Amenity.Parking => "🅿️",
+            Amenity.DogRuns => "🏃",
+            Amenity.AgilityCourse => "🎯",
+            _ => "✓"
+        };
+    }
+
+    private string FormatAmenity(Amenity amenity)
+    {
+        return amenity switch
+        {
+            Amenity.WaterBowls => "Water Bowls",
+            Amenity.PetMenu => "Pet Menu",
+            Amenity.OffLeashArea => "Off-Leash",
+            Amenity.IndoorSeating => "Indoor",
+            Amenity.OutdoorSeating => "Outdoor",
+            Amenity.WasteStations => "Waste Stations",
+            Amenity.PetTreats => "Pet Treats",
+            Amenity.ShadeAreas => "Shade",
+            Amenity.Parking => "Parking",
+            Amenity.DogRuns => "Dog Runs",
+            Amenity.AgilityCourse => "Agility Course",
+            _ => amenity.ToString()
+        };
+    }
+}

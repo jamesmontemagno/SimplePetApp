@@ -1,7 +1,287 @@
-﻿@page "/"
+@page "/"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject NavigationManager Navigation
+@inject MockDataService DataService
 
-<PageTitle>Home</PageTitle>
+<PageTitle>PawSpots - Find Pet-Friendly Venues Near You</PageTitle>
 
-<h1>Hello, world!</h1>
+<link rel="stylesheet" href="css/landing.css" />
 
-Welcome to your new app.
+<!-- Hero Section -->
+<section class="landing-hero">
+    <div class="hero-content">
+        <h1 class="hero-title-main">🐾 Welcome to PawSpots</h1>
+        <p class="hero-subtitle-main">
+            Discover amazing pet-friendly venues where you and your furry friends are always welcome. 
+            Connect with a community of pet lovers and find the perfect spots for adventures together!
+        </p>
+        <div class="hero-cta-buttons">
+            <a href="/venues" class="cta-button cta-primary">Explore Venues 🗺️</a>
+            <a href="/register" class="cta-button cta-secondary">Join the Community ✨</a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="section-container">
+        <h2 class="section-title-center">Why Choose PawSpots?</h2>
+        <p class="section-subtitle">Everything you need to plan the perfect outing with your pet</p>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🗺️</span>
+                <h3 class="feature-title">Discover Venues</h3>
+                <p class="feature-description">
+                    Browse thousands of pet-friendly restaurants, parks, hotels, and more. 
+                    Find the perfect spot for any occasion.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">⭐</span>
+                <h3 class="feature-title">Read Reviews</h3>
+                <p class="feature-description">
+                    Get insights from real pet owners. See ratings, photos, and detailed 
+                    reviews before you visit.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🐕</span>
+                <h3 class="feature-title">Pet Profiles</h3>
+                <p class="feature-description">
+                    Create profiles for your pets, track favorite venues, and connect 
+                    with other pet parents in your area.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🔍</span>
+                <h3 class="feature-title">Advanced Search</h3>
+                <p class="feature-description">
+                    Filter by pet type, size restrictions, amenities, and more. 
+                    Find exactly what you're looking for.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">📱</span>
+                <h3 class="feature-title">Mobile Friendly</h3>
+                <p class="feature-description">
+                    Access PawSpots on any device. Plan your adventures on the go 
+                    with our responsive design.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🌟</span>
+                <h3 class="feature-title">Community Driven</h3>
+                <p class="feature-description">
+                    Join a vibrant community of pet lovers. Share experiences and 
+                    discover hidden gems together.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works-section">
+    <div class="section-container">
+        <h2 class="section-title-center">How It Works</h2>
+        <p class="section-subtitle">Getting started is easy!</p>
+        
+        <div class="steps-container">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3 class="step-title">Sign Up Free</h3>
+                <p class="step-description">
+                    Create your account in seconds. No credit card required!
+                </p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3 class="step-title">Add Your Pets</h3>
+                <p class="step-description">
+                    Create profiles for your furry friends with photos and details.
+                </p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3 class="step-title">Search & Explore</h3>
+                <p class="step-description">
+                    Find pet-friendly venues near you with our powerful search tools.
+                </p>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <h3 class="step-title">Visit & Review</h3>
+                <p class="step-description">
+                    Visit venues and share your experiences with the community!
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Venues Section -->
+<section class="featured-section">
+    <div class="section-container">
+        <h2 class="section-title-center">⭐ Featured Venues</h2>
+        <p class="section-subtitle">Check out these top-rated pet-friendly spots!</p>
+        
+        <div class="featured-grid">
+            @if (featuredVenues != null && featuredVenues.Any())
+            {
+                @foreach (var venue in featuredVenues)
+                {
+                    <VenueCard Venue="venue" />
+                }
+            }
+            else
+            {
+                <p style="text-align: center; grid-column: 1/-1;">Loading featured venues...</p>
+            }
+        </div>
+
+        <div class="section-cta">
+            <a href="/venues" class="cta-button cta-secondary">View All Venues →</a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Pets Section -->
+<section class="featured-section featured-pets-section">
+    <div class="section-container">
+        <h2 class="section-title-center">🐾 Featured Pets</h2>
+        <p class="section-subtitle">Meet some adorable members of our community!</p>
+        
+        <div class="featured-grid">
+            @if (featuredPets != null && featuredPets.Any())
+            {
+                @foreach (var pet in featuredPets)
+                {
+                    <PetCard Pet="pet" />
+                }
+            }
+            else
+            {
+                <p style="text-align: center; grid-column: 1/-1;">Loading featured pets...</p>
+            }
+        </div>
+
+        <div class="section-cta">
+            <a href="/pets" class="cta-button cta-secondary">View All Pets →</a>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">10K+</div>
+            <div class="stat-label">Pet-Friendly Venues</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-number">50K+</div>
+            <div class="stat-label">Happy Pet Parents</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-number">100K+</div>
+            <div class="stat-label">Verified Reviews</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-number">500+</div>
+            <div class="stat-label">Cities Worldwide</div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <div class="section-container">
+        <h2 class="section-title-center">What Pet Parents Say</h2>
+        <p class="section-subtitle">Join thousands of satisfied users!</p>
+        
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <p class="testimonial-text">
+                    "PawSpots helped me find the most amazing dog-friendly cafe! 
+                    My golden retriever Max loves the outdoor patio, and they even 
+                    have a special pet menu. Highly recommend!"
+                </p>
+                <div class="testimonial-author">
+                    <span class="author-avatar">🐕</span>
+                    <div class="author-info">
+                        <span class="author-name">Sarah & Max</span>
+                        <span class="author-location">Seattle, WA</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-text">
+                    "As a cat parent, finding pet-friendly hotels was always a challenge. 
+                    PawSpots made it so easy! The filters and reviews are incredibly helpful."
+                </p>
+                <div class="testimonial-author">
+                    <span class="author-avatar">🐈</span>
+                    <div class="author-info">
+                        <span class="author-name">Michael & Luna</span>
+                        <span class="author-location">Portland, OR</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-text">
+                    "The community on PawSpots is amazing! I've made so many friends through 
+                    pet meetups at local parks. It's more than just a venue finder—it's a lifestyle!"
+                </p>
+                <div class="testimonial-author">
+                    <span class="author-avatar">🐕</span>
+                    <div class="author-info">
+                        <span class="author-name">Emily & Bella</span>
+                        <span class="author-location">San Francisco, CA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA Section -->
+<section class="cta-section">
+    <div class="cta-content">
+        <h2 class="cta-title">Ready to Start Your Adventure?</h2>
+        <p class="cta-description">
+            Join PawSpots today and discover a world of pet-friendly possibilities. 
+            Your next adventure is just a click away!
+        </p>
+        <div class="hero-cta-buttons">
+            <a href="/register" class="cta-button cta-primary">Get Started Free 🎉</a>
+            <a href="/venues" class="cta-button cta-secondary">Browse Venues 🗺️</a>
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<Venue> featuredVenues = new();
+    private List<Pet> featuredPets = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        featuredVenues = await DataService.GetFeaturedVenuesAsync();
+        featuredPets = await DataService.GetFeaturedPetsAsync();
+    }
+}

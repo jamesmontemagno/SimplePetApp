@@ -1,0 +1,137 @@
+@page "/login"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Login - PawSpots</PageTitle>
+
+<link rel="stylesheet" href="css/auth.css" />
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">🐾</div>
+            <h1 class="auth-title">Welcome Back!</h1>
+            <p class="auth-subtitle">Login to continue your pet-friendly adventures</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-error">
+                ❌ @errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success">
+                ✅ @successMessage
+            </div>
+        }
+
+        <form class="auth-form" @onsubmit="HandleLogin">
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email"
+                    class="form-input @(showValidation && string.IsNullOrEmpty(loginRequest.Email) ? "error" : "")"
+                    placeholder="your@email.com"
+                    @bind="loginRequest.Email"
+                    required />
+                @if (showValidation && string.IsNullOrEmpty(loginRequest.Email))
+                {
+                    <span class="form-error">Email is required</span>
+                }
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password"
+                    class="form-input @(showValidation && string.IsNullOrEmpty(loginRequest.Password) ? "error" : "")"
+                    placeholder="Enter your password"
+                    @bind="loginRequest.Password"
+                    required />
+                @if (showValidation && string.IsNullOrEmpty(loginRequest.Password))
+                {
+                    <span class="form-error">Password is required</span>
+                }
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="remember" class="checkbox-input" @bind="rememberMe" />
+                <label for="remember" class="checkbox-label">Remember me</label>
+            </div>
+
+            <button type="submit" class="auth-button" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span>Logging in... ⏳</span>
+                }
+                else
+                {
+                    <span>Login 🚀</span>
+                }
+            </button>
+        </form>
+
+        <div class="auth-link-section">
+            <p class="auth-link-text">
+                Don't have an account? 
+                <a href="/register" class="auth-link">Sign up now!</a>
+            </p>
+        </div>
+
+        <div class="auth-divider">
+            <p style="background: var(--card-bg); padding: 0 1rem; display: inline-block;">Demo Account</p>
+        </div>
+
+        <div style="text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+            <p>📧 Email: <strong>demo@pawspots.com</strong></p>
+            <p>🔑 Password: <strong>demo123</strong></p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginRequest loginRequest = new();
+    private bool isLoading = false;
+    private bool showValidation = false;
+    private bool rememberMe = false;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        showValidation = true;
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(loginRequest.Email) || string.IsNullOrWhiteSpace(loginRequest.Password))
+        {
+            errorMessage = "Please fill in all fields";
+            return;
+        }
+
+        isLoading = true;
+        StateHasChanged();
+
+        var (success, message) = await AuthService.LoginAsync(loginRequest);
+
+        isLoading = false;
+
+        if (success)
+        {
+            successMessage = message;
+            await Task.Delay(1000);
+            Navigation.NavigateTo("/venues");
+        }
+        else
+        {
+            errorMessage = message;
+        }
+    }
+}

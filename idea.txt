@@ -1,1 +1,1 @@
-A website that allows pet owners to find pet friendly locations to take their animals, sort of like a "meetup"/"yelp" but for pet owners. They should be able to find locations, add locations, and review locations based on the ammenities available. 
+A website that allows pet owners to find pet friendly locations to take their animals, sort of like a "meetup"/"yelp" but for pet owners. They should be able to find locations, add locations, and review locations based on the ammenities available. Should be able to  browse pet profile and see details.

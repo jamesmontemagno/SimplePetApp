@@ -1,0 +1,248 @@
+@page "/venues"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject MockDataService DataService
+
+<PageTitle>Browse Venues - PawSpots</PageTitle>
+
+<link rel="stylesheet" href="css/home.css" />
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <h1 class="hero-title">📍 Pet-Friendly Venues</h1>
+    <p class="hero-subtitle">Discover amazing places where you and your furry friends are always welcome ❤️</p>
+</section>
+
+<!-- Search and Filters -->
+<div class="search-filters-section">
+    <div class="search-bar">
+        <input type="text" 
+               class="search-input" 
+               placeholder="🔍 Search venues by name or location..." 
+               @bind="searchQuery"
+               @bind:event="oninput"
+               @onkeyup="OnSearchChanged" />
+        <select class="sort-select" @bind="sortBy">
+            <option value="rating">⭐ Highest Rated</option>
+            <option value="name">📝 Name (A-Z)</option>
+            <option value="reviews">💬 Most Reviews</option>
+        </select>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-section">
+        <div class="filter-header">
+            <h3 class="filter-title">🎯 Filters</h3>
+            <span class="clear-filters" @onclick="ClearFilters">Clear All</span>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-title">Category</div>
+            <div class="filter-chips">
+                @foreach (var category in Enum.GetValues<VenueCategory>())
+                {
+                    <div class="filter-chip @(selectedCategories.Contains(category) ? "active" : "")"
+                         @onclick="() => ToggleCategory(category)">
+                        @GetCategoryIcon(category) @category
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-title">Amenities</div>
+            <div class="filter-chips">
+                @foreach (var amenity in Enum.GetValues<Amenity>())
+                {
+                    <div class="filter-chip @(selectedAmenities.Contains(amenity) ? "active" : "")"
+                         @onclick="() => ToggleAmenity(amenity)">
+                        @GetAmenityIcon(amenity) @FormatAmenity(amenity)
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Venues Grid -->
+<div class="content-section">
+    <div class="section-header">
+        <h2 class="section-title">All Venues</h2>
+        <span class="section-count">@filteredVenues.Count @(filteredVenues.Count == 1 ? "venue" : "venues") found</span>
+    </div>
+
+    @if (filteredVenues.Any())
+    {
+        <div class="cards-grid">
+            @foreach (var venue in filteredVenues)
+            {
+                <VenueCard Venue="venue" />
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-text">No venues found</div>
+            <div class="empty-subtext">Try adjusting your search or filters</div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Venue> venues = new();
+    private List<Venue> filteredVenues = new();
+    
+    private string searchQuery = string.Empty;
+    private string _sortBy = "rating";
+    private HashSet<VenueCategory> selectedCategories = new();
+    private HashSet<Amenity> selectedAmenities = new();
+
+    private string sortBy
+    {
+        get => _sortBy;
+        set
+        {
+            if (_sortBy != value)
+            {
+                _sortBy = value;
+                FilterAndSortVenues();
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        venues = await DataService.GetVenuesAsync();
+        FilterAndSortVenues();
+    }
+
+    private void OnSearchChanged()
+    {
+        FilterAndSortVenues();
+    }
+
+    private void ToggleCategory(VenueCategory category)
+    {
+        if (selectedCategories.Contains(category))
+            selectedCategories.Remove(category);
+        else
+            selectedCategories.Add(category);
+        
+        FilterAndSortVenues();
+    }
+
+    private void ToggleAmenity(Amenity amenity)
+    {
+        if (selectedAmenities.Contains(amenity))
+            selectedAmenities.Remove(amenity);
+        else
+            selectedAmenities.Add(amenity);
+        
+        FilterAndSortVenues();
+    }
+
+    private void ClearFilters()
+    {
+        searchQuery = string.Empty;
+        selectedCategories.Clear();
+        selectedAmenities.Clear();
+        _sortBy = "rating";
+        FilterAndSortVenues();
+    }
+
+    private void FilterAndSortVenues()
+    {
+        filteredVenues = venues;
+
+        // Filter by search query
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredVenues = filteredVenues.Where(v => 
+                v.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                v.Address.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                v.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+
+        // Filter by categories
+        if (selectedCategories.Any())
+        {
+            filteredVenues = filteredVenues.Where(v => selectedCategories.Contains(v.Category)).ToList();
+        }
+
+        // Filter by amenities
+        if (selectedAmenities.Any())
+        {
+            filteredVenues = filteredVenues.Where(v => 
+                selectedAmenities.All(a => v.Amenities.Contains(a))
+            ).ToList();
+        }
+
+        // Sort venues
+        filteredVenues = sortBy switch
+        {
+            "rating" => filteredVenues.OrderByDescending(v => v.Rating).ToList(),
+            "name" => filteredVenues.OrderBy(v => v.Name).ToList(),
+            "reviews" => filteredVenues.OrderByDescending(v => v.ReviewCount).ToList(),
+            _ => filteredVenues
+        };
+    }
+
+    private string GetCategoryIcon(VenueCategory category)
+    {
+        return category switch
+        {
+            VenueCategory.Parks => "🌳",
+            VenueCategory.Restaurants => "🍽️",
+            VenueCategory.Cafes => "☕",
+            VenueCategory.Hotels => "🏨",
+            VenueCategory.PetStores => "🏪",
+            VenueCategory.Grooming => "✂️",
+            VenueCategory.Veterinary => "🏥",
+            VenueCategory.Beaches => "🏖️",
+            VenueCategory.Trails => "🥾",
+            _ => "📍"
+        };
+    }
+
+    private string GetAmenityIcon(Amenity amenity)
+    {
+        return amenity switch
+        {
+            Amenity.WaterBowls => "💧",
+            Amenity.PetMenu => "🍖",
+            Amenity.OffLeashArea => "🎾",
+            Amenity.IndoorSeating => "🏠",
+            Amenity.OutdoorSeating => "🌳",
+            Amenity.WasteStations => "🗑️",
+            Amenity.PetTreats => "🦴",
+            Amenity.ShadeAreas => "☂️",
+            Amenity.Parking => "🅿️",
+            Amenity.DogRuns => "🏃",
+            Amenity.AgilityCourse => "🎯",
+            _ => "✓"
+        };
+    }
+
+    private string FormatAmenity(Amenity amenity)
+    {
+        return amenity switch
+        {
+            Amenity.WaterBowls => "Water Bowls",
+            Amenity.PetMenu => "Pet Menu",
+            Amenity.OffLeashArea => "Off-Leash",
+            Amenity.IndoorSeating => "Indoor",
+            Amenity.OutdoorSeating => "Outdoor",
+            Amenity.WasteStations => "Waste Stations",
+            Amenity.PetTreats => "Pet Treats",
+            Amenity.ShadeAreas => "Shade",
+            Amenity.Parking => "Parking",
+            Amenity.DogRuns => "Dog Runs",
+            Amenity.AgilityCourse => "Agility",
+            _ => amenity.ToString()
+        };
+    }
+}

@@ -1,0 +1,211 @@
+/* Pet Detail Page Styles */
+.pet-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.pet-profile-header {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+    background: var(--card-bg);
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: var(--shadow-hover);
+}
+
+.pet-profile-image {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    height: 400px;
+    box-shadow: var(--shadow);
+}
+
+.pet-profile-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pet-type-icon {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pet-profile-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.pet-name-large {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.pet-breed-large {
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.pet-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+}
+
+.stat-icon {
+    font-size: 2rem;
+}
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.owner-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(190, 24, 93, 0.1));
+    border-radius: 12px;
+    font-size: 1.125rem;
+}
+
+.owner-icon {
+    font-size: 1.5rem;
+}
+
+.owner-name {
+    color: var(--text-color);
+}
+
+.pet-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.pet-bio {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+}
+
+.personality-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.personality-item {
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 1.125rem;
+    transition: transform 0.3s ease;
+}
+
+.personality-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(217, 70, 166, 0.3);
+}
+
+.favorite-places {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.favorite-place-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 2px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.favorite-place-item:hover {
+    border-color: var(--primary-pink);
+    transform: translateX(5px);
+}
+
+.place-icon {
+    font-size: 1.5rem;
+}
+
+.place-name {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+@media (max-width: 968px) {
+    .pet-profile-header {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .pet-name-large {
+        font-size: 2.5rem;
+    }
+
+    .pet-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .personality-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pet-detail-container {
+        padding: 1rem;
+    }
+}

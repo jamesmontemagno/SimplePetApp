@@ -1,0 +1,205 @@
+@page "/pets"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject MockDataService DataService
+
+<PageTitle>Community Pets - PawSpots</PageTitle>
+
+<link rel="stylesheet" href="css/home.css" />
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <h1 class="hero-title">🐕 Community Pets</h1>
+    <p class="hero-subtitle">Meet adorable pets from our community! Connect with pet parents and their furry friends ❤️</p>
+</section>
+
+<!-- Search Bar -->
+<div class="search-filters-section">
+    <div class="search-bar">
+        <input type="text" 
+               class="search-input" 
+               placeholder="🔍 Search pets by name or breed..." 
+               @bind="searchQuery"
+               @bind:event="oninput"
+               @onkeyup="OnSearchChanged" />
+        <select class="sort-select" @bind="sortBy">
+            <option value="name">📝 Name (A-Z)</option>
+            <option value="age">🎂 Age</option>
+            <option value="type">🐾 Pet Type</option>
+        </select>
+    </div>
+
+    <!-- Pet Type Filters -->
+    <div class="filter-section">
+        <div class="filter-header">
+            <h3 class="filter-title">🐾 Pet Types</h3>
+            <span class="clear-filters" @onclick="ClearFilters">Clear All</span>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-chips">
+                @foreach (var type in Enum.GetValues<PetType>())
+                {
+                    <div class="filter-chip @(selectedTypes.Contains(type) ? "active" : "")"
+                         @onclick="() => ToggleType(type)">
+                        @GetPetTypeIcon(type) @type
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-group-title">Size</div>
+            <div class="filter-chips">
+                @foreach (var size in Enum.GetValues<PetSize>())
+                {
+                    if (size != PetSize.AllSizes)
+                    {
+                        <div class="filter-chip @(selectedSizes.Contains(size) ? "active" : "")"
+                             @onclick="() => ToggleSize(size)">
+                            @size
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pets Grid -->
+<div class="content-section">
+    <div class="section-header">
+        <h2 class="section-title">All Pets</h2>
+        <span class="section-count">@filteredPets.Count adorable @(filteredPets.Count == 1 ? "pet" : "pets")</span>
+    </div>
+
+    @if (filteredPets.Any())
+    {
+        <div class="cards-grid">
+            @foreach (var pet in filteredPets)
+            {
+                <PetCard Pet="pet" />
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-text">No pets found</div>
+            <div class="empty-subtext">Try adjusting your search or filters</div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Pet> pets = new();
+    private List<Pet> filteredPets = new();
+    
+    private string searchQuery = string.Empty;
+    private string _sortBy = "name";
+    private HashSet<PetType> selectedTypes = new();
+    private HashSet<PetSize> selectedSizes = new();
+
+    private string sortBy
+    {
+        get => _sortBy;
+        set
+        {
+            if (_sortBy != value)
+            {
+                _sortBy = value;
+                FilterAndSortPets();
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        pets = await DataService.GetPetsAsync();
+        FilterAndSortPets();
+    }
+
+    private void OnSearchChanged()
+    {
+        FilterAndSortPets();
+    }
+
+    private void ToggleType(PetType type)
+    {
+        if (selectedTypes.Contains(type))
+            selectedTypes.Remove(type);
+        else
+            selectedTypes.Add(type);
+        
+        FilterAndSortPets();
+    }
+
+    private void ToggleSize(PetSize size)
+    {
+        if (selectedSizes.Contains(size))
+            selectedSizes.Remove(size);
+        else
+            selectedSizes.Add(size);
+        
+        FilterAndSortPets();
+    }
+
+    private void ClearFilters()
+    {
+        searchQuery = string.Empty;
+        selectedTypes.Clear();
+        selectedSizes.Clear();
+        _sortBy = "name";
+        FilterAndSortPets();
+    }
+
+    private void FilterAndSortPets()
+    {
+        filteredPets = pets;
+
+        // Filter by search query
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredPets = filteredPets.Where(p => 
+                p.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                p.Breed.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                p.OwnerName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+
+        // Filter by pet types
+        if (selectedTypes.Any())
+        {
+            filteredPets = filteredPets.Where(p => selectedTypes.Contains(p.Type)).ToList();
+        }
+
+        // Filter by sizes
+        if (selectedSizes.Any())
+        {
+            filteredPets = filteredPets.Where(p => selectedSizes.Contains(p.Size)).ToList();
+        }
+
+        // Sort pets
+        filteredPets = sortBy switch
+        {
+            "name" => filteredPets.OrderBy(p => p.Name).ToList(),
+            "age" => filteredPets.OrderBy(p => p.Age).ToList(),
+            "type" => filteredPets.OrderBy(p => p.Type).ToList(),
+            _ => filteredPets
+        };
+    }
+
+    private string GetPetTypeIcon(PetType type)
+    {
+        return type switch
+        {
+            PetType.Dogs => "🐕",
+            PetType.Cats => "🐈",
+            PetType.Birds => "🦜",
+            PetType.SmallAnimals => "🐰",
+            _ => "🐾"
+        };
+    }
+}

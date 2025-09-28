@@ -1,0 +1,207 @@
+@page "/register"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Register - PawSpots</PageTitle>
+
+<link rel="stylesheet" href="css/auth.css" />
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">🐾</div>
+            <h1 class="auth-title">Join PawSpots!</h1>
+            <p class="auth-subtitle">Create your account and start exploring</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-error">
+                ❌ @errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success">
+                ✅ @successMessage
+            </div>
+        }
+
+        <form class="auth-form" @onsubmit="HandleRegister">
+            <div class="form-group">
+                <label class="form-label" for="firstName">First Name</label>
+                <input 
+                    type="text" 
+                    id="firstName"
+                    class="form-input @(showValidation && string.IsNullOrEmpty(registerRequest.FirstName) ? "error" : "")"
+                    placeholder="John"
+                    @bind="registerRequest.FirstName"
+                    required />
+                @if (showValidation && string.IsNullOrEmpty(registerRequest.FirstName))
+                {
+                    <span class="form-error">First name is required</span>
+                }
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="lastName">Last Name</label>
+                <input 
+                    type="text" 
+                    id="lastName"
+                    class="form-input @(showValidation && string.IsNullOrEmpty(registerRequest.LastName) ? "error" : "")"
+                    placeholder="Doe"
+                    @bind="registerRequest.LastName"
+                    required />
+                @if (showValidation && string.IsNullOrEmpty(registerRequest.LastName))
+                {
+                    <span class="form-error">Last name is required</span>
+                }
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email"
+                    class="form-input @(showValidation && string.IsNullOrEmpty(registerRequest.Email) ? "error" : "")"
+                    placeholder="your@email.com"
+                    @bind="registerRequest.Email"
+                    required />
+                @if (showValidation && string.IsNullOrEmpty(registerRequest.Email))
+                {
+                    <span class="form-error">Email is required</span>
+                }
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password"
+                    class="form-input @(showValidation && string.IsNullOrEmpty(registerRequest.Password) ? "error" : "")"
+                    placeholder="Create a password"
+                    @bind="registerRequest.Password"
+                    required />
+                @if (showValidation && string.IsNullOrEmpty(registerRequest.Password))
+                {
+                    <span class="form-error">Password is required</span>
+                }
+                else if (showValidation && registerRequest.Password.Length < 6)
+                {
+                    <span class="form-error">Password must be at least 6 characters</span>
+                }
+                <div class="password-requirements">
+                    Password must be at least 6 characters long
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="confirmPassword">Confirm Password</label>
+                <input 
+                    type="password" 
+                    id="confirmPassword"
+                    class="form-input @(showValidation && registerRequest.Password != registerRequest.ConfirmPassword ? "error" : "")"
+                    placeholder="Confirm your password"
+                    @bind="registerRequest.ConfirmPassword"
+                    required />
+                @if (showValidation && registerRequest.Password != registerRequest.ConfirmPassword)
+                {
+                    <span class="form-error">Passwords do not match</span>
+                }
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="terms" class="checkbox-input" @bind="agreeToTerms" required />
+                <label for="terms" class="checkbox-label">
+                    I agree to the Terms of Service and Privacy Policy
+                </label>
+            </div>
+            @if (showValidation && !agreeToTerms)
+            {
+                <span class="form-error">You must agree to the terms to register</span>
+            }
+
+            <button type="submit" class="auth-button" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span>Creating account... ⏳</span>
+                }
+                else
+                {
+                    <span>Create Account 🎉</span>
+                }
+            </button>
+        </form>
+
+        <div class="auth-link-section">
+            <p class="auth-link-text">
+                Already have an account? 
+                <a href="/login" class="auth-link">Login here!</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterRequest registerRequest = new();
+    private bool isLoading = false;
+    private bool showValidation = false;
+    private bool agreeToTerms = false;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+
+    private async Task HandleRegister()
+    {
+        showValidation = true;
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(registerRequest.FirstName) || 
+            string.IsNullOrWhiteSpace(registerRequest.LastName) ||
+            string.IsNullOrWhiteSpace(registerRequest.Email) || 
+            string.IsNullOrWhiteSpace(registerRequest.Password))
+        {
+            errorMessage = "Please fill in all fields";
+            return;
+        }
+
+        if (registerRequest.Password.Length < 6)
+        {
+            errorMessage = "Password must be at least 6 characters";
+            return;
+        }
+
+        if (registerRequest.Password != registerRequest.ConfirmPassword)
+        {
+            errorMessage = "Passwords do not match";
+            return;
+        }
+
+        if (!agreeToTerms)
+        {
+            errorMessage = "You must agree to the terms to register";
+            return;
+        }
+
+        isLoading = true;
+        StateHasChanged();
+
+        var (success, message) = await AuthService.RegisterAsync(registerRequest);
+
+        isLoading = false;
+
+        if (success)
+        {
+            successMessage = message;
+            await Task.Delay(1500);
+            Navigation.NavigateTo("/venues");
+        }
+        else
+        {
+            errorMessage = message;
+        }
+    }
+}

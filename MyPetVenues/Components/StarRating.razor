@@ -1,0 +1,63 @@
+@using MyPetVenues.Models
+
+<div class="star-rating @(IsInteractive ? "interactive" : "readonly")">
+    @for (int i = 1; i <= 5; i++)
+    {
+        var starIndex = i;
+        var isFilled = starIndex <= (HoverRating > 0 ? HoverRating : CurrentRating);
+        
+        <span class="star @(isFilled ? "filled" : "")"
+              @onclick="() => OnStarClick(starIndex)"
+              @onmouseover="() => OnStarHover(starIndex)"
+              @onmouseout="OnStarLeave">
+            @(isFilled ? "⭐" : "☆")
+        </span>
+    }
+    @if (ShowCount && RatingCount > 0)
+    {
+        <span class="rating-count">(@RatingCount)</span>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public double CurrentRating { get; set; }
+
+    [Parameter]
+    public int RatingCount { get; set; }
+
+    [Parameter]
+    public bool IsInteractive { get; set; } = false;
+
+    [Parameter]
+    public bool ShowCount { get; set; } = true;
+
+    [Parameter]
+    public EventCallback<int> OnRatingChanged { get; set; }
+
+    private int HoverRating { get; set; } = 0;
+
+    private async Task OnStarClick(int rating)
+    {
+        if (IsInteractive)
+        {
+            await OnRatingChanged.InvokeAsync(rating);
+        }
+    }
+
+    private void OnStarHover(int rating)
+    {
+        if (IsInteractive)
+        {
+            HoverRating = rating;
+        }
+    }
+
+    private void OnStarLeave()
+    {
+        if (IsInteractive)
+        {
+            HoverRating = 0;
+        }
+    }
+}
