@@ -1,10 +1,55 @@
-/* Pet Detail Page Styles */
+/* Pet Detail Page Component Styles */
+
+/* Loading State */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    gap: 1rem;
+}
+
+.loading-spinner {
+    font-size: 4rem;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Main Container */
 .pet-detail-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
 }
 
+/* Back Button */
+.back-button {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+    display: inline-block;
+}
+
+.back-button:hover {
+    background: var(--primary-pink);
+    color: white;
+    border-color: var(--primary-pink);
+    transform: translateX(-5px);
+}
+
+/* Profile Header */
 .pet-profile-header {
     display: grid;
     grid-template-columns: 1fr 1.5fr;
@@ -121,10 +166,24 @@
     color: var(--text-color);
 }
 
+/* Content Sections */
 .pet-content {
     display: flex;
     flex-direction: column;
     gap: 2rem;
+}
+
+.content-section {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+}
+
+.section-title {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
 }
 
 .pet-bio {
@@ -133,6 +192,7 @@
     color: var(--text-secondary);
 }
 
+/* Personality Grid */
 .personality-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -155,6 +215,7 @@
     box-shadow: 0 8px 16px rgba(217, 70, 166, 0.3);
 }
 
+/* Favorite Places */
 .favorite-places {
     display: flex;
     flex-direction: column;
@@ -187,7 +248,7 @@
     color: var(--text-color);
 }
 
-/* Mobile Responsive Styles */
+/* Responsive Design */
 @media (max-width: 968px) {
     .pet-profile-header {
         grid-template-columns: 1fr;

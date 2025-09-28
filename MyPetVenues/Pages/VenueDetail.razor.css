@@ -1,10 +1,33 @@
-/* Venue Detail Page Styles */
+/* Venue Detail Page Component Styles */
+
+/* Loading State */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    color: var(--text-color);
+}
+
+.loading-spinner {
+    font-size: 4rem;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Main Container */
 .venue-detail-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
 }
 
+/* Back Button */
 .back-button {
     background: var(--card-bg);
     border: 2px solid var(--border-color);
@@ -24,6 +47,7 @@
     transform: translateX(-5px);
 }
 
+/* Venue Header */
 .venue-header {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -89,6 +113,7 @@
     color: var(--text-secondary);
 }
 
+/* User Rating Section */
 .user-rating-section {
     background: var(--bg-secondary);
     padding: 1.5rem;
@@ -127,6 +152,7 @@
     text-decoration: underline;
 }
 
+/* Contact Info */
 .venue-address {
     font-size: 1.25rem;
     color: var(--text-color);
@@ -155,6 +181,7 @@
     text-decoration: underline;
 }
 
+/* Content Sections */
 .venue-content {
     display: flex;
     flex-direction: column;
@@ -180,6 +207,7 @@
     color: var(--text-secondary);
 }
 
+/* Pet Policy */
 .pet-policy {
     font-size: 1.125rem;
     line-height: 1.8;
@@ -209,6 +237,7 @@
     border: 2px solid var(--border-color);
 }
 
+/* Amenities */
 .amenities-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -240,11 +269,19 @@
     color: var(--text-color);
 }
 
+/* Hours */
+.hours-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
 .hours-info {
     font-size: 1.125rem;
     color: var(--text-secondary);
 }
 
+/* Reviews */
 .reviews-list {
     display: flex;
     flex-direction: column;
@@ -283,6 +320,15 @@
 
 .review-rating {
     font-size: 1.25rem;
+    display: flex;
+    gap: 0.125rem;
+}
+
+.star {
+    color: #d1d5db;
+}
+
+.star.filled {
     color: #fbbf24;
 }
 
@@ -306,26 +352,7 @@
     padding: 2rem;
 }
 
-.loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-    color: var(--text-color);
-}
-
-.loading-spinner {
-    font-size: 4rem;
-    animation: spin 2s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Mobile Responsive Styles */
+/* Responsive Design */
 @media (max-width: 968px) {
     .venue-header {
         grid-template-columns: 1fr;

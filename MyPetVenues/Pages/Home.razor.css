@@ -1,4 +1,6 @@
-/* Landing Page Styles */
+/* Home/Landing Page Component Styles */
+
+/* Landing Hero Section */
 .landing-hero {
     background: linear-gradient(135deg, var(--gradient-start), var(--gradient-middle), var(--gradient-end));
     color: white;
@@ -311,6 +313,7 @@
     margin-top: 2rem;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
     .hero-title-main {
         font-size: 2.5rem;

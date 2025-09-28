@@ -1,4 +1,4 @@
-/* Auth Page Styles */
+/* Register Page Component Styles */
 .auth-container {
     min-height: calc(100vh - 200px);
     display: flex;
@@ -108,31 +108,6 @@
     cursor: not-allowed;
 }
 
-.auth-divider {
-    text-align: center;
-    margin: 1.5rem 0;
-    color: var(--text-secondary);
-    position: relative;
-}
-
-.auth-divider::before,
-.auth-divider::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    width: 45%;
-    height: 1px;
-    background: var(--border-color);
-}
-
-.auth-divider::before {
-    left: 0;
-}
-
-.auth-divider::after {
-    right: 0;
-}
-
 .auth-link-section {
     text-align: center;
     margin-top: 1.5rem;
@@ -153,7 +128,7 @@
 }
 
 .auth-link:hover {
-    color: var(--secondary-pink);
+    color: var(--primary-pink-dark);
     text-decoration: underline;
 }
 
@@ -216,13 +191,13 @@
 }
 
 /* Dark mode adjustments */
-[data-theme="dark"] .alert-success {
+.dark-theme .alert-success {
     background: #064e3b;
     color: #d1fae5;
     border-color: #047857;
 }
 
-[data-theme="dark"] .alert-error {
+.dark-theme .alert-error {
     background: #7f1d1d;
     color: #fecaca;
     border-color: #dc2626;
