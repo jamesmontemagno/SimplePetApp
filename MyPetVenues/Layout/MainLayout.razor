@@ -7,14 +7,14 @@
 <div class="page-container">
     <header class="main-header">
         <div class="header-content">
-            <div class="logo" @onclick='() => Navigation.NavigateTo("/")'>
+            <div class="logo" @onclick='() => Navigation.NavigateTo("")'>
                 <span class="logo-icon">🐾</span>
                 <span class="logo-text">PawSpots</span>
             </div>
-            <nav class="main-nav">
-                <a href="/" class="nav-link">🏠 Home</a>
-                <a href="/venues" class="nav-link">📍 Venues</a>
-                <a href="/pets" class="nav-link">🐕 Pets</a>
+            <nav class="nav-links">
+                <a href="" class="nav-link">🏠 Home</a>
+                <a href="venues" class="nav-link">📍 Venues</a>
+                <a href="pets" class="nav-link">🐕 Pets</a>
             </nav>
             <div class="header-actions">
                 @if (AuthService.IsAuthenticated)
@@ -26,8 +26,8 @@
                 }
                 else
                 {
-                    <a href="/login" class="nav-button nav-button-secondary">Login</a>
-                    <a href="/register" class="nav-button nav-button-primary">Sign Up</a>
+                    <a href="login" class="nav-button nav-button-secondary">Login</a>
+                    <a href="register" class="nav-button nav-button-primary">Sign Up</a>
                 }
                 <button class="theme-toggle" @onclick="ToggleTheme" title="Toggle theme">
                     @if (ThemeService.IsDarkMode)
@@ -56,9 +56,9 @@
             <div class="footer-section">
                 <h4>Quick Links</h4>
                 <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/venues">Find Venues</a></li>
-                    <li><a href="/pets">Pet Profiles</a></li>
+                    <li><a href="">Home</a></li>
+                    <li><a href="venues">Find Venues</a></li>
+                    <li><a href="pets">Pet Profiles</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -104,7 +104,7 @@
     private void HandleLogout()
     {
         AuthService.Logout();
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("");
     }
 
     public void Dispose()

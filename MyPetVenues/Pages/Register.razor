@@ -139,7 +139,7 @@
         <div class="auth-link-section">
             <p class="auth-link-text">
                 Already have an account? 
-                <a href="/login" class="auth-link">Login here!</a>
+                <a href="login" class="auth-link">Login here!</a>
             </p>
         </div>
     </div>
@@ -197,7 +197,8 @@
         {
             successMessage = message;
             await Task.Delay(1500);
-            Navigation.NavigateTo("/venues");
+            // Navigate to venues page
+            Navigation.NavigateTo("venues");
         }
         else
         {

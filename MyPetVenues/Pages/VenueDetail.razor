@@ -28,7 +28,7 @@ else
         <!-- Header Section -->
         <div class="venue-header">
             <div class="venue-header-image">
-                <img src="../@venue.ImageUrl" alt="@venue.Name" />
+                <img src="@venue.ImageUrl" alt="@venue.Name" />
                 <div class="venue-category-badge">@venue.Category</div>
             </div>
             <div class="venue-header-info">
@@ -59,7 +59,7 @@ else
                 else
                 {
                     <div class="login-prompt">
-                        <a href="/login">Log in</a> to rate this venue
+                        <a href="login">Log in</a> to rate this venue
                     </div>
                 }
                 
@@ -236,7 +236,7 @@ else
 
     private void NavigateBack()
     {
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("");
     }
 
     private string GetPetTypeIcon(PetType type)
