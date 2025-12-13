@@ -1,0 +1,173 @@
+@page "/venues/{Id:int}"
+
+@using Microsoft.AspNetCore.Components.Web
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@inject IVenueService VenueService
+
+<PageTitle>@(_venue?.Name ?? "Venue")</PageTitle>
+
+<section class="vd">
+    @if (_isLoading)
+    {
+        <div class="vd-empty">Loading venue…</div>
+    }
+    else if (_venue is null)
+    {
+        <div class="vd-empty">
+            <h1 class="vd-h1">Venue not found 😿</h1>
+            <p class="vd-sub">That venue doesn’t exist (or was removed).</p>
+            <a class="vd-back" href="/venues">← Back to venues</a>
+        </div>
+    }
+    else
+    {
+        <header class="vd-hero">
+            <a class="vd-back" href="/venues">← Back to venues</a>
+
+            <div class="vd-hero-card">
+                <div class="vd-hero-img">
+                    <img src="@_venue.ImageUrl" alt="@_venue.Name" />
+                </div>
+
+                <div class="vd-hero-body">
+                    <h1 class="vd-h1">@_venue.Name</h1>
+                    <div class="vd-meta">
+                        <span>📍 @_venue.Address, @_venue.City, @_venue.State</span>
+                        <span class="vd-dot" aria-hidden="true">•</span>
+                        <span aria-label="Rating @_venue.Rating">⭐ @_venue.Rating.ToString("0.0")</span>
+                        <span class="vd-muted">(@_venue.ReviewCount reviews)</span>
+                    </div>
+
+                    <p class="vd-desc">@_venue.Description</p>
+
+                    <div class="vd-chips" aria-label="Amenities">
+                        @foreach (var a in _venue.Amenities)
+                        {
+                            <span class="vd-chip">@AmenityEmoji(a) @AmenityLabel(a)</span>
+                        }
+                    </div>
+
+                    <div class="vd-rules" aria-label="Pet rules">
+                        <h2 class="vd-h2">Rules & notes 📝</h2>
+                        <ul>
+                            <li>@(_venue.Rules.LeashedOnly ? "Leashed only" : "Off-leash allowed in some areas")</li>
+                            <li>@(_venue.Rules.OutdoorOnly ? "Outdoor only" : "Indoors allowed (where posted)")</li>
+                            <li>@(_venue.Rules.SmallDogsOnly ? "Small dogs only in some areas" : "All sizes welcome")</li>
+                        </ul>
+                        @if (!string.IsNullOrWhiteSpace(_venue.Rules.Notes))
+                        {
+                            <div class="vd-note">💡 @_venue.Rules.Notes</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="vd-section" aria-label="Reviews">
+            <div class="vd-section-head">
+                <h2 class="vd-h2">Reviews 💬</h2>
+                <p class="vd-sub">Mock reviews for now—wired like real data.</p>
+            </div>
+
+            <div class="vd-reviews">
+                @foreach (var r in _venue.Reviews.OrderByDescending(r => r.CreatedAt))
+                {
+                    <article class="vd-review" @key="r.Id">
+                        <div class="vd-review-top">
+                            <div class="vd-review-author">@r.Author</div>
+                            <div class="vd-review-rating" aria-label="Rating @r.Rating">
+                                <span aria-hidden="true">@Stars(r.Rating)</span>
+                            </div>
+                        </div>
+                        <div class="vd-review-date">@r.CreatedAt.ToLocalTime().ToString("MMM d, yyyy")</div>
+                        <p class="vd-review-text">@r.Text</p>
+
+                        @if (r.AmenityConfirmations.Count > 0)
+                        {
+                            <div class="vd-review-amenities" aria-label="Amenity confirmations">
+                                @foreach (var kvp in r.AmenityConfirmations)
+                                {
+                                    <span class="vd-pill">@AmenityEmoji(kvp.Key) @AmenityShort(kvp.Key): @Confirmation(kvp.Value)</span>
+                                }
+                            </div>
+                        }
+                    </article>
+                }
+            </div>
+        </section>
+
+        <section class="vd-section" aria-label="Call to action">
+            <div class="vd-cta">
+                <div>
+                    <h2 class="vd-h2">Know this spot well? 🫶</h2>
+                    <p class="vd-sub">In the MVP, you’ll be able to add reviews and verify amenities.</p>
+                </div>
+                <a class="vd-btn" href="/venues">Browse more venues 🔎</a>
+            </div>
+        </section>
+    }
+</section>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private bool _isLoading = true;
+    private Venue? _venue;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _isLoading = true;
+        _venue = await VenueService.GetVenueAsync(Id);
+        _isLoading = false;
+    }
+
+    private static string Stars(int rating)
+        => new string('★', Math.Clamp(rating, 0, 5)) + new string('☆', 5 - Math.Clamp(rating, 0, 5));
+
+    private static string Confirmation(bool? value) => value switch
+    {
+        true => "Yes ✅",
+        false => "No ❌",
+        null => "Not sure 🤷",
+    };
+
+    private static string AmenityLabel(VenueAmenity a) => a switch
+    {
+        VenueAmenity.WaterBowls => "Water bowls",
+        VenueAmenity.OffLeashArea => "Off‑leash area",
+        VenueAmenity.FencedArea => "Fenced area",
+        VenueAmenity.ShadeAvailable => "Shade available",
+        VenueAmenity.WasteBags => "Waste bags",
+        VenueAmenity.DogFriendlySeating => "Dog‑friendly seating",
+        VenueAmenity.PetFriendlyIndoors => "Pet‑friendly indoors",
+        VenueAmenity.PetFriendlyOutdoors => "Pet‑friendly outdoors",
+        _ => a.ToString()
+    };
+
+    private static string AmenityShort(VenueAmenity a) => a switch
+    {
+        VenueAmenity.WaterBowls => "Water",
+        VenueAmenity.OffLeashArea => "Off‑leash",
+        VenueAmenity.FencedArea => "Fenced",
+        VenueAmenity.ShadeAvailable => "Shade",
+        VenueAmenity.WasteBags => "Bags",
+        VenueAmenity.DogFriendlySeating => "Seating",
+        VenueAmenity.PetFriendlyIndoors => "Indoors",
+        VenueAmenity.PetFriendlyOutdoors => "Outdoors",
+        _ => a.ToString()
+    };
+
+    private static string AmenityEmoji(VenueAmenity a) => a switch
+    {
+        VenueAmenity.WaterBowls => "💧",
+        VenueAmenity.OffLeashArea => "🎾",
+        VenueAmenity.FencedArea => "🧱",
+        VenueAmenity.ShadeAvailable => "🌳",
+        VenueAmenity.WasteBags => "🧻",
+        VenueAmenity.DogFriendlySeating => "🪑",
+        VenueAmenity.PetFriendlyIndoors => "🏡",
+        VenueAmenity.PetFriendlyOutdoors => "🌤️",
+        _ => "🐾"
+    };
+}
