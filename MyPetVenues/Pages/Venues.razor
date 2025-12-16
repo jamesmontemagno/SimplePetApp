@@ -1,0 +1,175 @@
+@page "/venues"
+
+@using Microsoft.AspNetCore.Components.Web
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@inject IVenueService VenueService
+
+<PageTitle>Venues</PageTitle>
+
+<section class="vp">
+    <header class="vp-head">
+        <div>
+            <h1 class="vp-h1">Browse venues 🗺️</h1>
+            <p class="vp-sub">Find pet-friendly spots and filter by the amenities that matter.</p>
+        </div>
+
+        <div class="vp-tools" role="search">
+            <input class="vp-search" type="search" placeholder="Search by name or city…" @bind="_query" @bind:event="oninput" />
+        </div>
+    </header>
+
+    <div class="vp-filters" aria-label="Amenity filters">
+        @foreach (var a in _allAmenities)
+        {
+            var selected = _selectedAmenities.Contains(a);
+            <button class="vp-filter @(selected ? "vp-filter-on" : "")" type="button" @onclick="() => ToggleAmenity(a)">
+                <span aria-hidden="true">@AmenityEmoji(a)</span>
+                <span>@AmenityLabel(a)</span>
+            </button>
+        }
+
+        @if (_selectedAmenities.Count > 0)
+        {
+            <button class="vp-clear" type="button" @onclick="ClearAmenities">Clear ✨</button>
+        }
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="vp-empty">Loading venues…</div>
+    }
+    else if (FilteredVenues.Count == 0)
+    {
+        <div class="vp-empty">No venues match your filters. Try clearing one. 🐾</div>
+    }
+    else
+    {
+        <div class="vp-grid" aria-label="Venue list">
+            @foreach (var venue in FilteredVenues)
+            {
+                <a class="vp-card" href="/venues/@venue.Id" @key="venue.Id" aria-label="Open @venue.Name details">
+                    <div class="vp-card-img">
+                        <img src="@venue.ImageUrl" alt="@venue.Name" loading="lazy" />
+                    </div>
+                    <div class="vp-card-body">
+                        <div class="vp-card-top">
+                            <h2 class="vp-h2">@venue.Name</h2>
+                            <div class="vp-rating" aria-label="Rating @venue.Rating">
+                                <span aria-hidden="true">⭐</span>
+                                <span>@venue.Rating.ToString("0.0")</span>
+                                <span class="vp-muted">(@venue.ReviewCount)</span>
+                            </div>
+                        </div>
+
+                        <div class="vp-loc">📍 @venue.City, @venue.State</div>
+                        <p class="vp-desc">@venue.Description</p>
+
+                        <div class="vp-chips" aria-label="Amenities">
+                            @foreach (var a in venue.Amenities.Take(4))
+                            {
+                                <span class="vp-chip">@AmenityEmoji(a) @AmenityShort(a)</span>
+                            }
+                            @if (venue.Amenities.Count > 4)
+                            {
+                                <span class="vp-chip">+@(venue.Amenities.Count - 4)</span>
+                            }
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private bool _isLoading = true;
+    private string _query = string.Empty;
+
+    private IReadOnlyList<Venue> _venues = Array.Empty<Venue>();
+    private readonly HashSet<VenueAmenity> _selectedAmenities = new();
+
+    private static readonly VenueAmenity[] _allAmenities = Enum.GetValues<VenueAmenity>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _venues = await VenueService.GetVenuesAsync();
+        _isLoading = false;
+    }
+
+    private List<Venue> FilteredVenues
+    {
+        get
+        {
+            var query = _query.Trim();
+
+            IEnumerable<Venue> result = _venues;
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                result = result.Where(v =>
+                    v.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    v.City.Contains(query, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (_selectedAmenities.Count > 0)
+            {
+                result = result.Where(v => _selectedAmenities.All(a => v.Amenities.Contains(a)));
+            }
+
+            return result
+                .OrderByDescending(v => v.Rating)
+                .ThenByDescending(v => v.ReviewCount)
+                .ToList();
+        }
+    }
+
+    private void ToggleAmenity(VenueAmenity a)
+    {
+        if (!_selectedAmenities.Add(a))
+        {
+            _selectedAmenities.Remove(a);
+        }
+    }
+
+    private void ClearAmenities() => _selectedAmenities.Clear();
+
+    private static string AmenityLabel(VenueAmenity a) => a switch
+    {
+        VenueAmenity.WaterBowls => "Water bowls",
+        VenueAmenity.OffLeashArea => "Off‑leash",
+        VenueAmenity.FencedArea => "Fenced",
+        VenueAmenity.ShadeAvailable => "Shade",
+        VenueAmenity.WasteBags => "Waste bags",
+        VenueAmenity.DogFriendlySeating => "Dog seating",
+        VenueAmenity.PetFriendlyIndoors => "Indoors",
+        VenueAmenity.PetFriendlyOutdoors => "Outdoors",
+        _ => a.ToString()
+    };
+
+    private static string AmenityShort(VenueAmenity a) => a switch
+    {
+        VenueAmenity.WaterBowls => "Water",
+        VenueAmenity.OffLeashArea => "Off‑leash",
+        VenueAmenity.FencedArea => "Fenced",
+        VenueAmenity.ShadeAvailable => "Shade",
+        VenueAmenity.WasteBags => "Bags",
+        VenueAmenity.DogFriendlySeating => "Seating",
+        VenueAmenity.PetFriendlyIndoors => "Indoors",
+        VenueAmenity.PetFriendlyOutdoors => "Outdoors",
+        _ => a.ToString()
+    };
+
+    private static string AmenityEmoji(VenueAmenity a) => a switch
+    {
+        VenueAmenity.WaterBowls => "💧",
+        VenueAmenity.OffLeashArea => "🎾",
+        VenueAmenity.FencedArea => "🧱",
+        VenueAmenity.ShadeAvailable => "🌳",
+        VenueAmenity.WasteBags => "🧻",
+        VenueAmenity.DogFriendlySeating => "🪑",
+        VenueAmenity.PetFriendlyIndoors => "🏡",
+        VenueAmenity.PetFriendlyOutdoors => "🌤️",
+        _ => "🐾"
+    };
+}

@@ -1,3 +1,83 @@
 ﻿@inherits LayoutComponentBase
 
-@Body
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+<header class="lp-header">
+	<a class="lp-brand" href="/" aria-label="MyPetVenues home">
+		<span class="lp-brand-mark" aria-hidden="true">🐾</span>
+		<span class="lp-brand-text">MyPetVenues</span>
+	</a>
+
+	<nav class="lp-nav" aria-label="Primary">
+		<NavLink class="lp-nav-link" ActiveClass="lp-nav-link-active" href="/" Match="NavLinkMatch.All">Home</NavLink>
+		<NavLink class="lp-nav-link" ActiveClass="lp-nav-link-active" href="/venues">Venues</NavLink>
+		<a class="lp-nav-link" href="/#features">Features</a>
+		<a class="lp-nav-link" href="/#faq">FAQ</a>
+	</nav>
+
+	<div class="lp-header-actions">
+		<button class="lp-theme" type="button" @onclick="ToggleTheme" aria-label="Toggle theme">
+			<span aria-hidden="true">@(_theme == "dark" ? "🌙" : "☀️")</span>
+			<span class="lp-theme-label">@(_theme == "dark" ? "Dark" : "Light")</span>
+		</button>
+		<a class="lp-btn lp-btn-primary" href="/venues">Browse ✨</a>
+	</div>
+</header>
+
+<main class="app-body">
+	@Body
+</main>
+
+<footer class="lp-footer" aria-label="Footer">
+	<div class="lp-footer-inner">
+		<div class="lp-footer-brand">
+			<span aria-hidden="true">🐾</span>
+			<span>MyPetVenues</span>
+		</div>
+		<nav class="lp-footer-links" aria-label="Footer links">
+			<a href="/">Home</a>
+			<a href="/venues">Venues</a>
+			<a href="/#faq">FAQ</a>
+			<a href="https://github.com/jamesmontemagno/SimplePetApp" target="_blank" rel="noopener">GitHub</a>
+		</nav>
+		<div class="lp-footer-meta">© @DateTimeOffset.Now.Year MyPetVenues. All rights reserved.</div>
+	</div>
+</footer>
+
+@code {
+	private string _theme = "light";
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (!firstRender)
+		{
+			return;
+		}
+
+		try
+		{
+			_theme = await JS.InvokeAsync<string>("theme.init");
+			StateHasChanged();
+		}
+		catch
+		{
+			_theme = "light";
+		}
+	}
+
+	private async Task ToggleTheme()
+	{
+		_theme = _theme == "dark" ? "light" : "dark";
+
+		try
+		{
+			await JS.InvokeVoidAsync("theme.set", _theme);
+		}
+		catch
+		{
+			// ignore
+		}
+	}
+}
