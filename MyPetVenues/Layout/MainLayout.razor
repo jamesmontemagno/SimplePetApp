@@ -1,3 +1,150 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JS
 
-@Body
+<!-- Header -->
+<header class="site-header">
+    <nav class="nav-container">
+        <a href="/" class="logo">
+            🐾 MyPetVenues
+        </a>
+        
+        <button class="mobile-menu-btn" @onclick="ToggleMobileMenu" aria-label="Toggle menu">
+            @if (isMobileMenuOpen)
+            {
+                <span>✕</span>
+            }
+            else
+            {
+                <span>☰</span>
+            }
+        </button>
+        
+        <ul class="nav-links @(isMobileMenuOpen ? "active" : "")">
+            <li><a href="/" @onclick="CloseMobileMenu">🏠 Home</a></li>
+            <li><a href="/venues" @onclick="CloseMobileMenu">📍 Browse Venues</a></li>
+            <li><a href="/#features" @onclick="CloseMobileMenu">✨ Features</a></li>
+            <li><a href="/#amenities" @onclick="CloseMobileMenu">🎁 Amenities</a></li>
+            <li>
+                <button class="theme-toggle" @onclick="ToggleTheme" aria-label="Toggle theme">
+                    @if (isDarkMode)
+                    {
+                        <span>☀️</span>
+                    }
+                    else
+                    {
+                        <span>🌙</span>
+                    }
+                </button>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<!-- Main Content -->
+<main>
+    @Body
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h4>🐾 MyPetVenues</h4>
+            <p>Discover pet-friendly locations, share your experiences, and connect with fellow pet lovers. Making every outing pawsitively amazing! 🐕💕</p>
+            <div class="social-links">
+                <a href="#" class="social-link" aria-label="Twitter">🐦</a>
+                <a href="#" class="social-link" aria-label="Instagram">📸</a>
+                <a href="#" class="social-link" aria-label="Facebook">👥</a>
+                <a href="#" class="social-link" aria-label="TikTok">🎵</a>
+            </div>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="/#features">Features</a></li>
+                <li><a href="/venues">Browse Venues</a></li>
+                <li><a href="/#amenities">Amenities</a></li>
+                <li><a href="#">Add a Location</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Support</h4>
+            <ul>
+                <li><a href="#">Help Center</a></li>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">FAQs</a></li>
+                <li><a href="#">Community Guidelines</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section">
+            <h4>Legal</h4>
+            <ul>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+                <li><a href="#">Cookie Policy</a></li>
+                <li><a href="#">Accessibility</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <p>© @DateTime.Now.Year MyPetVenues. All rights reserved. Made with 💕 for pet lovers everywhere.</p>
+        <div class="footer-bottom-links">
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Sitemap</a>
+        </div>
+    </div>
+</footer>
+
+@code {
+    private bool isDarkMode = false;
+    private bool isMobileMenuOpen = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Check for saved theme preference
+            var savedTheme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+            if (savedTheme == "dark")
+            {
+                isDarkMode = true;
+                await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", "dark");
+                StateHasChanged();
+            }
+            else if (savedTheme == null)
+            {
+                // Check system preference
+                var prefersDark = await JS.InvokeAsync<bool>("eval", "window.matchMedia('(prefers-color-scheme: dark)').matches");
+                if (prefersDark)
+                {
+                    isDarkMode = true;
+                    await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", "dark");
+                    StateHasChanged();
+                }
+            }
+        }
+    }
+
+    private async Task ToggleTheme()
+    {
+        isDarkMode = !isDarkMode;
+        var theme = isDarkMode ? "dark" : "light";
+        await JS.InvokeVoidAsync("document.documentElement.setAttribute", "data-theme", isDarkMode ? "dark" : "");
+        await JS.InvokeVoidAsync("localStorage.setItem", "theme", theme);
+    }
+
+    private void ToggleMobileMenu()
+    {
+        isMobileMenuOpen = !isMobileMenuOpen;
+    }
+
+    private void CloseMobileMenu()
+    {
+        isMobileMenuOpen = false;
+    }
+}

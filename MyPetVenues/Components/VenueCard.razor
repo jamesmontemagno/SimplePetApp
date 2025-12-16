@@ -1,0 +1,98 @@
+@using MyPetVenues.Models
+@using MyPetVenues.Helpers
+
+<a href="/venues/@Venue.Id" class="venue-card-link">
+    <article class="venue-card">
+        <div class="venue-card-image">
+            <img src="@Venue.ImageUrl" alt="@Venue.Name" loading="lazy" />
+            <span class="type-badge">
+                <VenueTypeBadge Type="@Venue.Type" />
+            </span>
+            @if (Venue.IsVerified)
+            {
+                <span class="verified-badge" title="Verified Venue">✓</span>
+            }
+        </div>
+        <div class="venue-card-content">
+            <h3>@Venue.Name</h3>
+            <p class="venue-location">📍 @Venue.LocationDisplay</p>
+            
+            @if (ShowDescription)
+            {
+                <p class="venue-description">@VenueDisplayHelper.TruncateText(Venue.Description, DescriptionLength)</p>
+            }
+
+            <div class="venue-rating">
+                <StarRating Rating="@Venue.Rating" ReviewCount="@Venue.ReviewCount" />
+            </div>
+
+            @if (ShowAmenities && Venue.Amenities.Any())
+            {
+                <div class="venue-amenities">
+                    @foreach (var amenity in Venue.Amenities.Take(MaxAmenities))
+                    {
+                        <AmenityTag Text="@amenity" />
+                    }
+                    @if (Venue.Amenities.Count > MaxAmenities)
+                    {
+                        <AmenityTag Text="@($"+{Venue.Amenities.Count - MaxAmenities} more")" CssClass="more" />
+                    }
+                </div>
+            }
+
+            @if (ShowPetTypes && Venue.PetTypesAllowed.Any())
+            {
+                <div class="venue-pets">
+                    @foreach (var pet in Venue.PetTypesAllowed.Take(MaxPetTypes))
+                    {
+                        <PetBadge PetType="@pet" />
+                    }
+                </div>
+            }
+        </div>
+    </article>
+</a>
+
+@code {
+    /// <summary>
+    /// The venue to display.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public Venue Venue { get; set; } = default!;
+
+    /// <summary>
+    /// Whether to show the venue description.
+    /// </summary>
+    [Parameter]
+    public bool ShowDescription { get; set; } = true;
+
+    /// <summary>
+    /// Maximum length of the description text.
+    /// </summary>
+    [Parameter]
+    public int DescriptionLength { get; set; } = 100;
+
+    /// <summary>
+    /// Whether to show amenities.
+    /// </summary>
+    [Parameter]
+    public bool ShowAmenities { get; set; } = true;
+
+    /// <summary>
+    /// Maximum number of amenities to display.
+    /// </summary>
+    [Parameter]
+    public int MaxAmenities { get; set; } = 3;
+
+    /// <summary>
+    /// Whether to show pet type badges.
+    /// </summary>
+    [Parameter]
+    public bool ShowPetTypes { get; set; } = true;
+
+    /// <summary>
+    /// Maximum number of pet types to display.
+    /// </summary>
+    [Parameter]
+    public int MaxPetTypes { get; set; } = 3;
+}

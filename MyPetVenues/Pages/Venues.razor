@@ -1,0 +1,170 @@
+@page "/venues"
+@inject IVenueService VenueService
+
+<PageTitle>Browse Venues - MyPetVenues 🐾</PageTitle>
+
+<div class="venues-page">
+    <!-- Search Header -->
+    <section class="search-hero">
+        <div class="search-hero-content">
+            <h1>🔍 Find Pet-Friendly Venues</h1>
+            <p>Discover amazing places that welcome your furry friends</p>
+            
+            <div class="search-box">
+                <input type="text" 
+                       placeholder="Search by name, city, or description..." 
+                       @bind="searchCriteria.SearchTerm" 
+                       @bind:event="oninput"
+                       @onkeyup="HandleSearch"
+                       class="search-input" />
+                <button class="search-btn" @onclick="Search">
+                    🔍 Search
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters & Results -->
+    <section class="venues-content">
+        <aside class="filters-sidebar">
+            <div class="filter-section">
+                <h3>🏷️ Venue Type</h3>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="radio" name="venueType" checked="@(searchCriteria.Type == null)" @onchange="@(() => FilterByType(null))" />
+                        <span>All Types</span>
+                    </label>
+                    @foreach (var type in Enum.GetValues<VenueType>())
+                    {
+                        <label class="filter-option">
+                            <input type="radio" name="venueType" checked="@(searchCriteria.Type == type)" @onchange="@(() => FilterByType(type))" />
+                            <span>@VenueDisplayHelper.GetTypeEmoji(type) @type</span>
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>🐾 Pet Type</h3>
+                <div class="filter-options">
+                    <label class="filter-option">
+                        <input type="checkbox" checked="@searchCriteria.AllowsDogs" @onchange="@((e) => { searchCriteria.AllowsDogs = (bool)(e.Value ?? true); ApplyFilters(); })" />
+                        <span>🐕 Dogs</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox" checked="@searchCriteria.AllowsCats" @onchange="@((e) => { searchCriteria.AllowsCats = (bool)(e.Value ?? true); ApplyFilters(); })" />
+                        <span>🐱 Cats</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>✨ Popular Amenities</h3>
+                <div class="filter-options">
+                    @foreach (var amenity in allAmenities.Take(10))
+                    {
+                        <label class="filter-option">
+                            <input type="checkbox" 
+                                   checked="@(searchCriteria.RequiredAmenities.Contains(amenity))" 
+                                   @onchange="@(() => ToggleAmenity(amenity))" />
+                            <span>@amenity</span>
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <button class="clear-filters-btn" @onclick="ClearFilters">
+                🔄 Clear All Filters
+            </button>
+        </aside>
+
+        <div class="venues-results">
+            <div class="results-header">
+                <h2>@filteredVenues.Count Venues Found</h2>
+                <div class="sort-options">
+                    <label>Sort by:</label>
+                    <select @bind="searchCriteria.SortBy" @bind:after="ApplyFilters">
+                        <option value="@VenueSortOption.RatingDesc">⭐ Highest Rated</option>
+                        <option value="@VenueSortOption.ReviewCountDesc">💬 Most Reviews</option>
+                        <option value="@VenueSortOption.NameAsc">🔤 Name A-Z</option>
+                        <option value="@VenueSortOption.Newest">🆕 Newest</option>
+                    </select>
+                </div>
+            </div>
+
+            @if (filteredVenues.Count == 0)
+            {
+                <div class="no-results">
+                    <span class="no-results-icon">🔍</span>
+                    <h3>No venues found</h3>
+                    <p>Try adjusting your filters or search term</p>
+                </div>
+            }
+            else
+            {
+                <div class="venues-grid">
+                    @foreach (var venue in filteredVenues)
+                    {
+                        <a href="/venues/@venue.Id" class="venue-card-link">
+                            <VenueCard Venue="@venue" 
+                                       ShowDescription="true" 
+                                       ShowAmenities="true" 
+                                       MaxAmenities="3" />
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    private List<Venue> filteredVenues = new();
+    private List<string> allAmenities = new();
+    private VenueSearchCriteria searchCriteria = new();
+
+    protected override void OnInitialized()
+    {
+        allAmenities = VenueService.GetAllAmenities().ToList();
+        ApplyFilters();
+    }
+
+    private void Search()
+    {
+        ApplyFilters();
+    }
+
+    private void HandleSearch(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            ApplyFilters();
+        }
+    }
+
+    private void FilterByType(VenueType? type)
+    {
+        searchCriteria.Type = type;
+        ApplyFilters();
+    }
+
+    private void ToggleAmenity(string amenity)
+    {
+        if (searchCriteria.RequiredAmenities.Contains(amenity))
+            searchCriteria.RequiredAmenities.Remove(amenity);
+        else
+            searchCriteria.RequiredAmenities.Add(amenity);
+        ApplyFilters();
+    }
+
+    private void ClearFilters()
+    {
+        searchCriteria = new VenueSearchCriteria();
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        filteredVenues = VenueService.SearchVenues(searchCriteria).ToList();
+    }
+}

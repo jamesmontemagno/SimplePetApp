@@ -1,0 +1,80 @@
+.review-card {
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: 15px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.reviewer-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.reviewer-avatar {
+    font-size: 2rem;
+    width: 48px;
+    height: 48px;
+    background: var(--bg-tertiary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reviewer-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.review-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.review-pet-info {
+    font-size: 0.9rem;
+    color: var(--accent-primary);
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+}
+
+.review-content {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.review-ratings-breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--card-border);
+}
+
+.rating-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.rating-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.rating-item ::deep .stars {
+    font-size: 0.85rem;
+}

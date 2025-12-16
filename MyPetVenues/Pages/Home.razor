@@ -1,7 +1,345 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>MyPetVenues - Discover Pet-Friendly Locations 🐾</PageTitle>
 
-<h1>Hello, world!</h1>
+<!-- Hero Section -->
+<section class="hero" id="home">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1>
+                Find <span class="gradient-text">Pet-Friendly</span> Places Near You 🐕
+            </h1>
+            <p>
+                Discover, share, and review the best locations that welcome your furry friends. 
+                From cozy cafes to beautiful parks - explore with your pets! 🌟
+            </p>
+            <div class="hero-buttons">
+                <a href="/venues" class="btn btn-primary">
+                    🔍 Explore Venues
+                </a>
+                <a href="#features" class="btn btn-secondary">
+                    ✨ Learn More
+                </a>
+            </div>
+        </div>
+        <div class="hero-images">
+            <div class="hero-image">
+                <img src="images/pets/dog1.png" alt="Happy dog" loading="lazy" />
+            </div>
+            <div class="hero-image">
+                <img src="images/venues/cafe1.jpg" alt="Pet-friendly cafe" loading="lazy" />
+            </div>
+            <div class="hero-image">
+                <img src="images/pets/cat1.jpg" alt="Cute cat" loading="lazy" />
+            </div>
+            <div class="hero-image">
+                <img src="images/venues/park1.jpg" alt="Pet-friendly park" loading="lazy" />
+            </div>
+        </div>
+    </div>
+</section>
 
-Welcome to your new app.
+<!-- Stats Section -->
+<section class="section section-alt">
+    <div class="stats-container">
+        <div class="stat-item">
+            <div class="stat-number">500+</div>
+            <div class="stat-label">Pet-Friendly Venues</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">10K+</div>
+            <div class="stat-label">Happy Pet Parents</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">25K+</div>
+            <div class="stat-label">Reviews Shared</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">50+</div>
+            <div class="stat-label">Cities Covered</div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section" id="features">
+    <div class="section-header">
+        <h2>✨ Why Choose MyPetVenues?</h2>
+        <p>Everything you need to plan the perfect outing with your furry companion</p>
+    </div>
+    
+    <div class="features-grid">
+        <div class="feature-card">
+            <span class="feature-icon">🔍</span>
+            <h3>Discover Locations</h3>
+            <p>Browse pet-friendly venues including parks, restaurants, cafes, hotels, and beaches. Search by location, venue type, and pet type.</p>
+        </div>
+        
+        <div class="feature-card">
+            <span class="feature-icon">📍</span>
+            <h3>Add New Places</h3>
+            <p>Found a hidden gem? Share it with the community! Submit new pet-friendly venues with details, photos, and amenity tags.</p>
+        </div>
+        
+        <div class="feature-card">
+            <span class="feature-icon">⭐</span>
+            <h3>Rate & Review</h3>
+            <p>Share your experiences and read reviews from fellow pet owners. Rate venues on pet-friendliness, cleanliness, and staff attitude.</p>
+        </div>
+        
+        <div class="feature-card">
+            <span class="feature-icon">🗺️</span>
+            <h3>Interactive Map</h3>
+            <p>View all pet-friendly locations on an interactive map. Find the closest venues and plan your route easily.</p>
+        </div>
+        
+        <div class="feature-card">
+            <span class="feature-icon">🎯</span>
+            <h3>Smart Filters</h3>
+            <p>Filter by specific amenities like water bowls, off-leash areas, pet menus, and more to find exactly what you need.</p>
+        </div>
+        
+        <div class="feature-card">
+            <span class="feature-icon">📸</span>
+            <h3>Photo Gallery</h3>
+            <p>Browse photos uploaded by the community. See real pictures of venues and happy pets before you visit.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Venues Gallery Section -->
+<section class="section section-alt" id="venues">
+    <div class="section-header">
+        <h2>📍 Featured Venues</h2>
+        <p>Explore some of our most popular pet-friendly destinations</p>
+    </div>
+    
+    <div class="venue-gallery">
+        <a href="/venues/1" class="venue-card">
+            <div class="venue-card-image">
+                <img src="images/venues/cafe1.jpg" alt="Paws & Coffee Cafe" loading="lazy" />
+                <span class="venue-badge">☕ Cafe</span>
+            </div>
+            <div class="venue-card-content">
+                <h3>Paws & Coffee ☕</h3>
+                <p>A cozy cafe where your furry friend is always welcome. Great coffee and pet treats!</p>
+                <div class="venue-amenities">
+                    <span class="amenity-tag">💧 Water Bowls</span>
+                    <span class="amenity-tag">🦴 Pet Treats</span>
+                    <span class="amenity-tag">🪑 Patio Seating</span>
+                </div>
+            </div>
+        </a>
+        
+        <a href="/venues/2" class="venue-card">
+            <div class="venue-card-image">
+                <img src="images/venues/park1.jpg" alt="Sunny Paws Park" loading="lazy" />
+                <span class="venue-badge">🌳 Park</span>
+            </div>
+            <div class="venue-card-content">
+                <h3>Sunny Paws Park 🌳</h3>
+                <p>A beautiful off-leash dog park with separate areas for small and large dogs.</p>
+                <div class="venue-amenities">
+                    <span class="amenity-tag">🐕 Off-Leash</span>
+                    <span class="amenity-tag">🚿 Wash Station</span>
+                    <span class="amenity-tag">🗑️ Waste Bags</span>
+                </div>
+            </div>
+        </a>
+        
+        <a href="/venues/3" class="venue-card">
+            <div class="venue-card-image">
+                <img src="images/venues/hotel1.jpg" alt="Pet Paradise Hotel" loading="lazy" />
+                <span class="venue-badge">🏨 Hotel</span>
+            </div>
+            <div class="venue-card-content">
+                <h3>Pet Paradise Hotel 🏨</h3>
+                <p>Luxury accommodations that welcome pets with open arms. Pet beds and treats provided!</p>
+                <div class="venue-amenities">
+                    <span class="amenity-tag">🛏️ Pet Beds</span>
+                    <span class="amenity-tag">🍽️ Room Service</span>
+                    <span class="amenity-tag">🏊 Pool Access</span>
+                </div>
+            </div>
+        </a>
+        
+        <a href="/venues/4" class="venue-card">
+            <div class="venue-card-image">
+                <img src="images/venues/store1.jpg" alt="Furry Friends Store" loading="lazy" />
+                <span class="venue-badge">🛍️ Store</span>
+            </div>
+            <div class="venue-card-content">
+                <h3>Furry Friends Store 🛍️</h3>
+                <p>Your one-stop shop for all pet supplies. Bring your pet to try on gear!</p>
+                <div class="venue-amenities">
+                    <span class="amenity-tag">🦴 Treats</span>
+                    <span class="amenity-tag">🧸 Toys</span>
+                    <span class="amenity-tag">💊 Health Products</span>
+                </div>
+            </div>
+        </a>
+        
+        <a href="/venues/5" class="venue-card">
+            <div class="venue-card-image">
+                <img src="images/venues/moochs1.jpg" alt="Mooch's Bar & Grill" loading="lazy" />
+                <span class="venue-badge">🍔 Restaurant</span>
+            </div>
+            <div class="venue-card-content">
+                <h3>Mooch's Bar & Grill 🍔</h3>
+                <p>Family-friendly restaurant with a special pet menu. Great burgers for you, treats for them!</p>
+                <div class="venue-amenities">
+                    <span class="amenity-tag">🐕 Pet Menu</span>
+                    <span class="amenity-tag">💧 Water Bowls</span>
+                    <span class="amenity-tag">🌤️ Outdoor Seating</span>
+                </div>
+            </div>
+        </a>
+        
+        <a href="/venues/6" class="venue-card">
+            <div class="venue-card-image">
+                <img src="images/venues/home1.jpg" alt="Pet Haven Boarding" loading="lazy" />
+                <span class="venue-badge">🏠 Boarding</span>
+            </div>
+            <div class="venue-card-content">
+                <h3>Pet Haven Boarding 🏠</h3>
+                <p>Premium pet boarding services with 24/7 care. Your pet's home away from home!</p>
+                <div class="venue-amenities">
+                    <span class="amenity-tag">📹 Webcam</span>
+                    <span class="amenity-tag">🎾 Play Areas</span>
+                    <span class="amenity-tag">💤 Cozy Beds</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    
+    <div class="text-center" style="margin-top: 2rem;">
+        <a href="/venues" class="btn btn-primary">🔍 View All Venues</a>
+    </div>
+</section>
+
+<!-- Amenities Section -->
+<section class="section" id="amenities">
+    <div class="section-header">
+        <h2>🎁 Amenities We Track</h2>
+        <p>Filter venues by the amenities that matter most to you and your pet</p>
+    </div>
+    
+    <div class="amenities-grid">
+        <div class="amenity-item">
+            <span>💧</span>
+            <p>Water Stations</p>
+        </div>
+        <div class="amenity-item">
+            <span>🗑️</span>
+            <p>Waste Bags</p>
+        </div>
+        <div class="amenity-item">
+            <span>🐕</span>
+            <p>Off-Leash Areas</p>
+        </div>
+        <div class="amenity-item">
+            <span>🦴</span>
+            <p>Pet Treats</p>
+        </div>
+        <div class="amenity-item">
+            <span>🌳</span>
+            <p>Shaded Areas</p>
+        </div>
+        <div class="amenity-item">
+            <span>🚿</span>
+            <p>Wash Stations</p>
+        </div>
+        <div class="amenity-item">
+            <span>🐕‍🦺</span>
+            <p>Large Dogs OK</p>
+        </div>
+        <div class="amenity-item">
+            <span>🐩</span>
+            <p>Small Dogs OK</p>
+        </div>
+        <div class="amenity-item">
+            <span>🐱</span>
+            <p>Cat Friendly</p>
+        </div>
+        <div class="amenity-item">
+            <span>🍽️</span>
+            <p>Pet Menu</p>
+        </div>
+        <div class="amenity-item">
+            <span>🪑</span>
+            <p>Patio Seating</p>
+        </div>
+        <div class="amenity-item">
+            <span>🛏️</span>
+            <p>Pet Beds</p>
+        </div>
+    </div>
+</section>
+
+<!-- Pet Gallery Section -->
+<section class="section section-alt" id="pets">
+    <div class="section-header">
+        <h2>🐾 Meet Our Community</h2>
+        <p>Some of the adorable pets enjoying their favorite venues</p>
+    </div>
+    
+    <div class="pet-gallery">
+        <div class="pet-card">
+            <img src="images/pets/dog1.png" alt="Happy dog at venue" loading="lazy" />
+            <div class="pet-card-overlay">Max 🐕</div>
+        </div>
+        <div class="pet-card">
+            <img src="images/pets/cat1.jpg" alt="Cute cat at home" loading="lazy" />
+            <div class="pet-card-overlay">Whiskers 🐱</div>
+        </div>
+        <div class="pet-card">
+            <img src="images/pets/dog3.jpg" alt="Dog enjoying outdoors" loading="lazy" />
+            <div class="pet-card-overlay">Bella 🐕</div>
+        </div>
+        <div class="pet-card">
+            <img src="images/pets/cat2.jpg" alt="Cat relaxing" loading="lazy" />
+            <div class="pet-card-overlay">Luna 🐱</div>
+        </div>
+        <div class="pet-card">
+            <img src="images/pets/dog4.png" alt="Playful pup" loading="lazy" />
+            <div class="pet-card-overlay">Charlie 🐕</div>
+        </div>
+        <div class="pet-card">
+            <img src="images/pets/bunny.jpg" alt="Adorable bunny" loading="lazy" />
+            <div class="pet-card-overlay">Thumper 🐰</div>
+        </div>
+        <div class="pet-card">
+            <img src="images/pets/dog5.jpg" alt="Dog at park" loading="lazy" />
+            <div class="pet-card-overlay">Cooper 🐕</div>
+        </div>
+        <div class="pet-card">
+            <img src="images/pets/cat3.jpg" alt="Sleepy cat" loading="lazy" />
+            <div class="pet-card-overlay">Milo 🐱</div>
+        </div>
+        <div class="pet-card">
+            <img src="images/pets/hedgehog.jpg" alt="Cute hedgehog" loading="lazy" />
+            <div class="pet-card-overlay">Sonic 🦔</div>
+        </div>
+        <div class="pet-card">
+            <img src="images/pets/dog6.png" alt="Happy pup" loading="lazy" />
+            <div class="pet-card-overlay">Daisy 🐕</div>
+        </div>
+        <div class="pet-card">
+            <img src="images/pets/dog7.jpg" alt="Dog at cafe" loading="lazy" />
+            <div class="pet-card-overlay">Rocky 🐕</div>
+        </div>
+        <div class="pet-card">
+            <img src="images/pets/dog8.jpg" alt="Friendly dog" loading="lazy" />
+            <div class="pet-card-overlay">Buddy 🐕</div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <h2>Ready to Explore? 🎉</h2>
+    <p>Join thousands of pet owners who have discovered amazing pet-friendly locations!</p>
+    <a href="/venues" class="btn">
+        🐾 Start Exploring Now
+    </a>
+</section>

@@ -1,0 +1,57 @@
+@using MyPetVenues.Models
+
+<article class="review-card">
+    <div class="review-header">
+        <div class="reviewer-info">
+            <span class="reviewer-avatar">@Review.AuthorAvatar</span>
+            <div class="reviewer-details">
+                <span class="reviewer-name">@Review.AuthorName</span>
+                <span class="review-date">@Review.DatePosted.ToString("MMM d, yyyy")</span>
+            </div>
+        </div>
+        <div class="review-rating">
+            <StarRating Rating="@Review.Rating" ShowNumeric="false" />
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Review.PetName))
+    {
+        <div class="review-pet-info">
+            <span>🐾 Visited with @Review.PetName (@Review.PetType)</span>
+        </div>
+    }
+
+    <p class="review-content">@Review.Content</p>
+
+    @if (ShowDetailedRatings)
+    {
+        <div class="review-ratings-breakdown">
+            <div class="rating-item">
+                <span class="rating-label">Pet Friendliness</span>
+                <StarRating Rating="@Review.PetFriendlinessRating" ShowNumeric="false" />
+            </div>
+            <div class="rating-item">
+                <span class="rating-label">Cleanliness</span>
+                <StarRating Rating="@Review.CleanlinessRating" ShowNumeric="false" />
+            </div>
+            <div class="rating-item">
+                <span class="rating-label">Staff</span>
+                <StarRating Rating="@Review.StaffRating" ShowNumeric="false" />
+            </div>
+        </div>
+    }
+</article>
+
+@code {
+    /// <summary>
+    /// The review to display.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public Review Review { get; set; } = default!;
+
+    /// <summary>
+    /// Whether to show the detailed rating breakdown.
+    /// </summary>
+    [Parameter]
+    public bool ShowDetailedRatings { get; set; } = true;
+}

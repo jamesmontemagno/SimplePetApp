@@ -1,0 +1,33 @@
+@using MyPetVenues.Helpers
+
+@if (ShowLabel)
+{
+    <div class="pet-allowed-item @CssClass" title="@PetType">
+        <span class="pet-emoji">@VenueDisplayHelper.GetPetEmoji(PetType)</span>
+        <span>@PetType</span>
+    </div>
+}
+else
+{
+    <span class="pet-badge @CssClass" title="@PetType">@VenueDisplayHelper.GetPetEmoji(PetType)</span>
+}
+
+@code {
+    /// <summary>
+    /// The pet type to display (e.g., "Dogs", "Cats").
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string PetType { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether to show the text label alongside the emoji.
+    /// </summary>
+    [Parameter]
+    public bool ShowLabel { get; set; }
+
+    /// <summary>
+    /// Additional CSS class to apply.
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+}

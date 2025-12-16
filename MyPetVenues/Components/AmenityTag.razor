@@ -1,0 +1,39 @@
+@if (ShowCheckmark)
+{
+    <div class="amenity-item-detail @CssClass">
+        <span class="amenity-check">✓</span>
+        <span>@GetDisplayText()</span>
+    </div>
+}
+else
+{
+    <span class="amenity-tag @CssClass">@GetDisplayText()</span>
+}
+
+@code {
+    /// <summary>
+    /// The amenity name/text to display.
+    /// </summary>
+    [Parameter]
+    public string? Amenity { get; set; }
+
+    /// <summary>
+    /// Alternative text property for backward compatibility.
+    /// </summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>
+    /// Whether to show with a checkmark (list style).
+    /// </summary>
+    [Parameter]
+    public bool ShowCheckmark { get; set; }
+
+    /// <summary>
+    /// Additional CSS class to apply.
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string GetDisplayText() => Amenity ?? Text ?? string.Empty;
+}

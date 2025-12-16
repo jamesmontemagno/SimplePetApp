@@ -1,0 +1,113 @@
+.venue-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.venue-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 4px 20px var(--card-shadow);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.venue-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px var(--card-shadow);
+}
+
+.venue-card-image {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+}
+
+.venue-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.venue-card:hover .venue-card-image img {
+    transform: scale(1.1);
+}
+
+.type-badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+}
+
+.type-badge ::deep .venue-type-badge {
+    font-size: 0.75rem;
+}
+
+.verified-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #10b981;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.venue-card-content {
+    padding: 1.25rem;
+}
+
+.venue-card-content h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+}
+
+.venue-location {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.venue-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.venue-rating {
+    margin-bottom: 0.75rem;
+}
+
+.venue-rating ::deep .star-rating {
+    font-size: 0.9rem;
+}
+
+.venue-amenities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+}
+
+.venue-amenities ::deep .amenity-tag {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+}
+
+.venue-pets {
+    display: flex;
+    gap: 0.5rem;
+}

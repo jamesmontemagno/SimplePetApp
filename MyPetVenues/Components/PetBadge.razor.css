@@ -1,0 +1,9 @@
+.pet-badge {
+    font-size: 1.25rem;
+    cursor: default;
+    transition: transform 0.2s ease;
+}
+
+.pet-badge:hover {
+    transform: scale(1.2);
+}

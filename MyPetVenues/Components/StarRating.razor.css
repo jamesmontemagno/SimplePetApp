@@ -1,0 +1,21 @@
+.star-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stars {
+    color: #fbbf24;
+    font-size: inherit;
+    letter-spacing: 1px;
+}
+
+.rating-number {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.review-count {
+    font-size: 0.85em;
+    color: var(--text-muted);
+}

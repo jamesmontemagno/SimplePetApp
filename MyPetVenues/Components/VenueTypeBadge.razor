@@ -1,0 +1,33 @@
+@using MyPetVenues.Models
+@using MyPetVenues.Helpers
+
+<span class="venue-type-badge @SizeClass @CssClass" title="@Type">
+    @VenueDisplayHelper.GetTypeEmoji(Type) @Type
+</span>
+
+@code {
+    /// <summary>
+    /// The venue type to display.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public VenueType Type { get; set; }
+
+    /// <summary>
+    /// Size of the badge display.
+    /// </summary>
+    [Parameter]
+    public string Size { get; set; } = "normal";
+
+    /// <summary>
+    /// Additional CSS class to apply.
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string SizeClass => Size switch
+    {
+        "small" => "badge-sm",
+        "large" => "badge-lg",
+        _ => ""
+    };
+}

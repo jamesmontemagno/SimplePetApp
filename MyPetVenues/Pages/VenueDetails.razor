@@ -1,0 +1,202 @@
+@page "/venues/{Id:int}"
+@inject IVenueService VenueService
+@inject NavigationManager Navigation
+
+<PageTitle>@(venue?.Name ?? "Venue Details") - MyPetVenues 🐾</PageTitle>
+
+@if (venue == null)
+{
+    <div class="venue-not-found">
+        <span class="not-found-icon">🔍</span>
+        <h1>Venue Not Found</h1>
+        <p>Sorry, we couldn't find the venue you're looking for.</p>
+        <a href="/venues" class="btn btn-primary">← Back to Venues</a>
+    </div>
+}
+else
+{
+    <div class="venue-details-page">
+        <!-- Hero Section -->
+        <section class="venue-hero">
+            <div class="venue-hero-image">
+                <img src="@venue.ImageUrl" alt="@venue.Name" />
+                <div class="venue-hero-overlay"></div>
+            </div>
+            <div class="venue-hero-content">
+                <a href="/venues" class="back-link">← Back to Venues</a>
+                <div class="venue-hero-info">
+                    <div class="venue-badges">
+                        <VenueTypeBadge Type="@venue.Type" Size="large" />
+                        @if (venue.IsVerified)
+                        {
+                            <span class="verified-badge-large">✓ Verified</span>
+                        }
+                    </div>
+                    <h1>@venue.Name</h1>
+                    <p class="venue-location-large">📍 @venue.FullAddress</p>
+                    <div class="venue-rating-large">
+                        <StarRating Rating="@venue.Rating" 
+                                    ReviewCount="@venue.ReviewCount" 
+                                    Size="large" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <section class="venue-main-content">
+            <div class="venue-details-grid">
+                <!-- Left Column -->
+                <div class="venue-info-column">
+                    <!-- About Section -->
+                    <div class="detail-card">
+                        <h2>📖 About This Venue</h2>
+                        <p class="venue-description-full">@venue.Description</p>
+                    </div>
+
+                    <!-- Amenities Section -->
+                    <div class="detail-card">
+                        <h2>✨ Amenities</h2>
+                        <div class="amenities-list">
+                            @foreach (var amenity in venue.Amenities)
+                            {
+                                <AmenityTag Amenity="@amenity" ShowCheckmark="true" />
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Pets Allowed Section -->
+                    <div class="detail-card">
+                        <h2>🐾 Pets Welcome</h2>
+                        <div class="pets-allowed-list">
+                            @foreach (var pet in venue.PetTypesAllowed)
+                            {
+                                <PetBadge PetType="@pet" ShowLabel="true" />
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Reviews Section -->
+                    <div class="detail-card reviews-card">
+                        <div class="reviews-header">
+                            <h2>💬 Reviews</h2>
+                            <button class="btn btn-secondary write-review-btn">✏️ Write a Review</button>
+                        </div>
+                        
+                        <div class="reviews-summary">
+                            <div class="overall-rating">
+                                <span class="big-rating">@venue.Rating.ToString("F1")</span>
+                                <div class="rating-breakdown">
+                                    <StarRating Rating="@venue.Rating" ShowNumeric="false" />
+                                    <span>Based on @venue.ReviewCount reviews</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="reviews-list">
+                            @foreach (var review in venue.Reviews)
+                            {
+                                <ReviewCard Review="@review" ShowDetailedRatings="true" />
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Sidebar -->
+                <aside class="venue-sidebar">
+                    <!-- Contact Card -->
+                    <div class="sidebar-card contact-card">
+                        <h3>📞 Contact Info</h3>
+                        <div class="contact-items">
+                            <div class="contact-item">
+                                <span class="contact-icon">📍</span>
+                                <div>
+                                    <span class="contact-label">Address</span>
+                                    <span class="contact-value">@venue.Address<br/>@venue.LocationDisplay</span>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <span class="contact-icon">📱</span>
+                                <div>
+                                    <span class="contact-label">Phone</span>
+                                    <a href="tel:@venue.Phone" class="contact-value">@venue.Phone</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <span class="contact-icon">🌐</span>
+                                <div>
+                                    <span class="contact-label">Website</span>
+                                    <a href="@venue.Website" target="_blank" class="contact-value">Visit Website</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hours Card -->
+                    <div class="sidebar-card hours-card">
+                        <h3>🕐 Hours</h3>
+                        <p class="hours-text">@venue.Hours</p>
+                    </div>
+
+                    <!-- Actions Card -->
+                    <div class="sidebar-card actions-card">
+                        <h3>🎯 Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn">
+                                <span>❤️</span>
+                                <span>Save to Favorites</span>
+                            </button>
+                            <button class="action-btn">
+                                <span>📤</span>
+                                <span>Share Venue</span>
+                            </button>
+                            <button class="action-btn">
+                                <span>🗺️</span>
+                                <span>Get Directions</span>
+                            </button>
+                            <button class="action-btn">
+                                <span>📸</span>
+                                <span>Add Photos</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Similar Venues -->
+                    <div class="sidebar-card similar-card">
+                        <h3>🔗 Similar Venues</h3>
+                        <div class="similar-venues-list">
+                            @foreach (var similar in similarVenues)
+                            {
+                                <a href="/venues/@similar.Id" class="similar-venue-item">
+                                    <img src="@similar.ImageUrl" alt="@similar.Name" />
+                                    <div class="similar-venue-info">
+                                        <span class="similar-venue-name">@similar.Name</span>
+                                        <span class="similar-venue-location">@similar.LocationDisplay</span>
+                                        <StarRating Rating="@similar.Rating" ShowNumeric="true" ShowReviewCount="false" Size="small" />
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Venue? venue;
+    private List<Venue> similarVenues = new();
+
+    protected override void OnParametersSet()
+    {
+        venue = VenueService.GetVenueById(Id);
+        if (venue != null)
+        {
+            similarVenues = VenueService.GetSimilarVenues(venue.Id, venue.Type, 3).ToList();
+        }
+    }
+}

@@ -1,0 +1,206 @@
+@using MyPetVenues.Models
+
+<aside class="search-filters">
+    <div class="filter-header">
+        <h3>🔍 Filters</h3>
+        @if (HasActiveFilters)
+        {
+            <button class="clear-filters" @onclick="OnClearFilters">Clear All</button>
+        }
+    </div>
+
+    <!-- Search -->
+    <div class="filter-section">
+        <label class="filter-label">Search</label>
+        <input type="text" 
+               class="filter-input" 
+               placeholder="Search venues..." 
+               value="@SearchQuery"
+               @oninput="OnSearchQueryChanged" />
+    </div>
+
+    <!-- City Filter -->
+    @if (Cities?.Any() == true)
+    {
+        <div class="filter-section">
+            <label class="filter-label">📍 City</label>
+            <select class="filter-select" value="@SelectedCity" @onchange="OnCityChanged">
+                <option value="">All Cities</option>
+                @foreach (var city in Cities)
+                {
+                    <option value="@city">@city</option>
+                }
+            </select>
+        </div>
+    }
+
+    <!-- Venue Type Filter -->
+    <div class="filter-section">
+        <label class="filter-label">🏢 Venue Type</label>
+        <select class="filter-select" value="@SelectedVenueType" @onchange="OnVenueTypeChanged">
+            <option value="">All Types</option>
+            @foreach (VenueType type in Enum.GetValues(typeof(VenueType)))
+            {
+                <option value="@type">@Helpers.VenueDisplayHelper.GetTypeEmoji(type) @type</option>
+            }
+        </select>
+    </div>
+
+    <!-- Pet Type Filter -->
+    <div class="filter-section">
+        <label class="filter-label">🐾 Pet Type</label>
+        <div class="pet-filter-group">
+            <label class="checkbox-label">
+                <input type="checkbox" checked="@AllowsDogs" @onchange="OnDogsChanged" />
+                <span>🐕 Dogs</span>
+            </label>
+            <label class="checkbox-label">
+                <input type="checkbox" checked="@AllowsCats" @onchange="OnCatsChanged" />
+                <span>🐈 Cats</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Amenities Filter -->
+    @if (Amenities?.Any() == true)
+    {
+        <div class="filter-section">
+            <label class="filter-label">✨ Amenities</label>
+            <div class="amenities-filter">
+                @foreach (var amenity in Amenities.Take(10))
+                {
+                    var isSelected = SelectedAmenities?.Contains(amenity) == true;
+                    <button class="amenity-filter-btn @(isSelected ? "selected" : "")"
+                            @onclick="() => ToggleAmenity(amenity)">
+                        @amenity
+                    </button>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Minimum Rating Filter -->
+    <div class="filter-section">
+        <label class="filter-label">⭐ Minimum Rating</label>
+        <select class="filter-select" value="@MinimumRating" @onchange="OnMinRatingChanged">
+            <option value="0">Any Rating</option>
+            <option value="3">3+ Stars</option>
+            <option value="3.5">3.5+ Stars</option>
+            <option value="4">4+ Stars</option>
+            <option value="4.5">4.5+ Stars</option>
+        </select>
+    </div>
+
+    <!-- Sort Options -->
+    <div class="filter-section">
+        <label class="filter-label">📊 Sort By</label>
+        <select class="filter-select" value="@SortOption" @onchange="OnSortChanged">
+            @foreach (VenueSortOption option in Enum.GetValues(typeof(VenueSortOption)))
+            {
+                <option value="@option">@FormatSortOption(option)</option>
+            }
+        </select>
+    </div>
+</aside>
+
+@code {
+    [Parameter] public string? SearchQuery { get; set; }
+    [Parameter] public string? SelectedCity { get; set; }
+    [Parameter] public VenueType? SelectedVenueType { get; set; }
+    [Parameter] public bool AllowsDogs { get; set; } = true;
+    [Parameter] public bool AllowsCats { get; set; } = true;
+    [Parameter] public double MinimumRating { get; set; }
+    [Parameter] public VenueSortOption SortOption { get; set; }
+    [Parameter] public List<string>? SelectedAmenities { get; set; }
+    [Parameter] public IEnumerable<string>? Cities { get; set; }
+    [Parameter] public IEnumerable<string>? Amenities { get; set; }
+
+    [Parameter] public EventCallback<string?> SearchQueryChanged { get; set; }
+    [Parameter] public EventCallback<string?> SelectedCityChanged { get; set; }
+    [Parameter] public EventCallback<VenueType?> SelectedVenueTypeChanged { get; set; }
+    [Parameter] public EventCallback<bool> AllowsDogsChanged { get; set; }
+    [Parameter] public EventCallback<bool> AllowsCatsChanged { get; set; }
+    [Parameter] public EventCallback<double> MinimumRatingChanged { get; set; }
+    [Parameter] public EventCallback<VenueSortOption> SortOptionChanged { get; set; }
+    [Parameter] public EventCallback<List<string>> SelectedAmenitiesChanged { get; set; }
+    [Parameter] public EventCallback OnClearFiltersClicked { get; set; }
+
+    private bool HasActiveFilters =>
+        !string.IsNullOrEmpty(SearchQuery) ||
+        !string.IsNullOrEmpty(SelectedCity) ||
+        SelectedVenueType.HasValue ||
+        !AllowsDogs ||
+        !AllowsCats ||
+        MinimumRating > 0 ||
+        SelectedAmenities?.Any() == true;
+
+    private async Task OnSearchQueryChanged(ChangeEventArgs e)
+    {
+        await SearchQueryChanged.InvokeAsync(e.Value?.ToString());
+    }
+
+    private async Task OnCityChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        await SelectedCityChanged.InvokeAsync(string.IsNullOrEmpty(value) ? null : value);
+    }
+
+    private async Task OnVenueTypeChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        VenueType? type = string.IsNullOrEmpty(value) ? null : Enum.Parse<VenueType>(value);
+        await SelectedVenueTypeChanged.InvokeAsync(type);
+    }
+
+    private async Task OnDogsChanged(ChangeEventArgs e)
+    {
+        await AllowsDogsChanged.InvokeAsync((bool)(e.Value ?? true));
+    }
+
+    private async Task OnCatsChanged(ChangeEventArgs e)
+    {
+        await AllowsCatsChanged.InvokeAsync((bool)(e.Value ?? true));
+    }
+
+    private async Task OnMinRatingChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var rating))
+        {
+            await MinimumRatingChanged.InvokeAsync(rating);
+        }
+    }
+
+    private async Task OnSortChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<VenueSortOption>(e.Value?.ToString(), out var option))
+        {
+            await SortOptionChanged.InvokeAsync(option);
+        }
+    }
+
+    private async Task ToggleAmenity(string amenity)
+    {
+        var list = SelectedAmenities?.ToList() ?? new List<string>();
+        if (list.Contains(amenity))
+            list.Remove(amenity);
+        else
+            list.Add(amenity);
+        await SelectedAmenitiesChanged.InvokeAsync(list);
+    }
+
+    private async Task OnClearFilters()
+    {
+        await OnClearFiltersClicked.InvokeAsync();
+    }
+
+    private static string FormatSortOption(VenueSortOption option) => option switch
+    {
+        VenueSortOption.NameAsc => "Name (A-Z)",
+        VenueSortOption.NameDesc => "Name (Z-A)",
+        VenueSortOption.RatingDesc => "Highest Rated",
+        VenueSortOption.RatingAsc => "Lowest Rated",
+        VenueSortOption.ReviewCountDesc => "Most Reviews",
+        VenueSortOption.Newest => "Newest First",
+        _ => option.ToString()
+    };
+}

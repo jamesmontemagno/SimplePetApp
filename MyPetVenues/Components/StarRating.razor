@@ -1,0 +1,58 @@
+@using MyPetVenues.Helpers
+
+<span class="star-rating @SizeClass @CssClass" title="@Rating.ToString("F1") out of 5">
+    <span class="stars">@VenueDisplayHelper.GetStars(Rating)</span>
+    @if (ShowNumeric)
+    {
+        <span class="rating-number">@Rating.ToString("F1")</span>
+    }
+    @if (ShowReviewCount && ReviewCount.HasValue)
+    {
+        <span class="review-count">(@ReviewCount reviews)</span>
+    }
+</span>
+
+@code {
+    /// <summary>
+    /// The rating value (0-5).
+    /// </summary>
+    [Parameter, EditorRequired]
+    public double Rating { get; set; }
+
+    /// <summary>
+    /// Optional review count to display.
+    /// </summary>
+    [Parameter]
+    public int? ReviewCount { get; set; }
+
+    /// <summary>
+    /// Whether to show the numeric rating value.
+    /// </summary>
+    [Parameter]
+    public bool ShowNumeric { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show the review count.
+    /// </summary>
+    [Parameter]
+    public bool ShowReviewCount { get; set; } = true;
+
+    /// <summary>
+    /// Size of the rating display.
+    /// </summary>
+    [Parameter]
+    public string Size { get; set; } = "normal";
+
+    /// <summary>
+    /// Additional CSS class to apply.
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string SizeClass => Size switch
+    {
+        "small" => "star-rating-sm",
+        "large" => "star-rating-lg",
+        _ => ""
+    };
+}
