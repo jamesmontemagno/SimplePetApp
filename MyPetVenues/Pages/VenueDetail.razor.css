@@ -1,0 +1,404 @@
+.venue-detail-page {
+    padding: 20px 0;
+}
+
+/* Loading & Not Found States */
+.loading-state,
+.not-found-state {
+    text-align: center;
+    padding: 100px 20px;
+}
+
+.loading-emoji,
+.not-found-emoji {
+    font-size: 5rem;
+    display: block;
+    margin-bottom: 24px;
+}
+
+.loading-emoji {
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.not-found-state h2 {
+    margin-bottom: 12px;
+}
+
+.not-found-state p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+}
+
+.breadcrumb a {
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+}
+
+.breadcrumb a:hover {
+    color: var(--accent-primary);
+}
+
+.breadcrumb span {
+    color: var(--text-muted);
+}
+
+.breadcrumb span:last-child {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Hero Section */
+.venue-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 48px;
+}
+
+.venue-hero-image {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+}
+
+.venue-hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.venue-hero-overlay {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.venue-hero-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.venue-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.venue-title-row h1 {
+    font-size: 2.25rem;
+    line-height: 1.2;
+}
+
+.favorite-btn {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.favorite-btn:hover {
+    transform: scale(1.1);
+    border-color: var(--accent-primary);
+}
+
+.favorite-btn.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+.venue-location {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+}
+
+.venue-rating-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.review-count {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.venue-pets-accepted {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.venue-pets-accepted .label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.venue-cta {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.venue-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.price-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.price-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent-primary);
+}
+
+.price-unit {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Content Grid */
+.venue-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 40px;
+}
+
+/* Main Content */
+.venue-main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.content-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.venue-description {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+}
+
+/* Amenities */
+.amenities-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.amenity-item {
+    transition: transform 0.2s ease;
+}
+
+.amenity-item:hover {
+    transform: scale(1.05);
+}
+
+/* Policy */
+.policy-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.policy-card p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* Reviews */
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-header-row h2 {
+    margin-bottom: 0;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.no-reviews {
+    text-align: center;
+    padding: 40px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.no-reviews p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Sidebar */
+.venue-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sidebar-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 24px;
+}
+
+.sidebar-card.highlight {
+    background: linear-gradient(135deg, rgba(219, 39, 119, 0.1), rgba(147, 51, 234, 0.1));
+    border-color: var(--accent-primary);
+}
+
+.sidebar-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+}
+
+.sidebar-card p {
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+/* Contact Info */
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.contact-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.contact-icon {
+    font-size: 1.1rem;
+}
+
+.contact-item span,
+.contact-item a {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.contact-item a:hover {
+    color: var(--accent-primary);
+}
+
+/* Hours */
+.hours-text {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Share */
+.share-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.share-btn {
+    background: var(--tag-bg);
+    border: 1px solid var(--border-color);
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.share-btn:hover {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    .venue-content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .venue-sidebar {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .sidebar-card {
+        flex: 1;
+        min-width: 280px;
+    }
+}
+
+@media (max-width: 800px) {
+    .venue-hero {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    
+    .venue-hero-image {
+        aspect-ratio: 16/9;
+    }
+    
+    .venue-title-row h1 {
+        font-size: 1.75rem;
+    }
+    
+    .venue-cta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .section-header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .sidebar-card {
+        min-width: 100%;
+    }
+}

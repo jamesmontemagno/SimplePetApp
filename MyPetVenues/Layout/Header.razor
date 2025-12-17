@@ -1,0 +1,102 @@
+@using MyPetVenues.Services
+@inject NavigationManager Navigation
+@inject IThemeService ThemeService
+@implements IDisposable
+
+<header class="site-header">
+    <div class="header-container">
+        <a href="/" class="logo" @onclick:preventDefault @onclick="NavigateHome">
+            <span class="logo-icon">🐾</span>
+            <span class="logo-text">MyPetVenues</span>
+        </a>
+        
+        <button class="mobile-menu-btn" @onclick="ToggleMobileMenu">
+            @if (_isMobileMenuOpen)
+            {
+                <span>✕</span>
+            }
+            else
+            {
+                <span>☰</span>
+            }
+        </button>
+        
+        <nav class="main-nav @(_isMobileMenuOpen ? "open" : "")">
+            <a href="/" class="nav-link @(IsActive("/") ? "active" : "")" @onclick:preventDefault @onclick="NavigateHome">
+                🏠 Home
+            </a>
+            <a href="/venues" class="nav-link @(IsActive("/venues") ? "active" : "")" @onclick:preventDefault @onclick="NavigateVenues">
+                📍 Venues
+            </a>
+            <a href="/booking" class="nav-link @(IsActive("/booking") ? "active" : "")" @onclick:preventDefault @onclick="NavigateBooking">
+                📅 Book Now
+            </a>
+            <a href="/profile" class="nav-link @(IsActive("/profile") ? "active" : "")" @onclick:preventDefault @onclick="NavigateProfile">
+                👤 Profile
+            </a>
+        </nav>
+        
+        <div class="header-actions">
+            <button class="theme-toggle" @onclick="ToggleTheme" title="Toggle theme">
+                @if (ThemeService.IsDarkMode)
+                {
+                    <span>☀️</span>
+                }
+                else
+                {
+                    <span>🌙</span>
+                }
+            </button>
+        </div>
+    </div>
+</header>
+
+@code {
+    private bool _isMobileMenuOpen = false;
+
+    protected override void OnInitialized()
+    {
+        ThemeService.OnThemeChanged += StateHasChanged;
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    private void ToggleMobileMenu()
+    {
+        _isMobileMenuOpen = !_isMobileMenuOpen;
+    }
+
+    private void NavigateHome() => Navigate("/");
+    private void NavigateVenues() => Navigate("/venues");
+    private void NavigateBooking() => Navigate("/booking");
+    private void NavigateProfile() => Navigate("/profile");
+
+    private void Navigate(string path)
+    {
+        _isMobileMenuOpen = false;
+        Navigation.NavigateTo(path);
+    }
+
+    private bool IsActive(string path)
+    {
+        var currentPath = new Uri(Navigation.Uri).AbsolutePath;
+        if (path == "/")
+            return currentPath == "/" || currentPath == "";
+        return currentPath.StartsWith(path);
+    }
+
+    private void ToggleTheme()
+    {
+        ThemeService.ToggleTheme();
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

@@ -1,0 +1,21 @@
+@using MyPetVenues.Models
+
+<span class="pet-badge @Type.ToString().ToLower()">
+    @GetPetEmoji() @Type.ToString()
+</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public PetType Type { get; set; }
+
+    private string GetPetEmoji() => Type switch
+    {
+        PetType.Dog => "🐕",
+        PetType.Cat => "🐱",
+        PetType.Bird => "🐦",
+        PetType.Rabbit => "🐰",
+        PetType.SmallPet => "🐹",
+        PetType.All => "🐾",
+        _ => "🐾"
+    };
+}

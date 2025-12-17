@@ -1,0 +1,161 @@
+@page "/venues"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject IVenueService VenueService
+@inject NavigationManager Navigation
+
+<PageTitle>Explore Venues - MyPetVenues 🐾</PageTitle>
+
+<div class="venues-page">
+    <header class="page-header">
+        <h1>Explore Pet-Friendly Venues 🔍</h1>
+        <p>Discover amazing places to visit with your furry friends</p>
+    </header>
+
+    <SearchFilters 
+        SearchTerm="@_searchTerm"
+        SelectedVenueType="@_selectedVenueType"
+        SelectedPetType="@_selectedPetType"
+        OnSearch="HandleSearch" />
+
+    @if (_isLoading)
+    {
+        <div class="loading-state">
+            <span class="loading-emoji">🐾</span>
+            <p>Finding perfect venues for you...</p>
+        </div>
+    }
+    else if (_venues is null || !_venues.Any())
+    {
+        <div class="empty-state">
+            <span class="empty-emoji">🔍</span>
+            <h3>No venues found</h3>
+            <p>Try adjusting your search filters or explore all venues</p>
+            <button class="btn btn-primary" @onclick="ClearFilters">
+                Clear Filters
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="results-info">
+            <span>🎯 Found <strong>@_venues.Count</strong> pet-friendly venues</span>
+            @if (_hasActiveFilters)
+            {
+                <button class="clear-filters-btn" @onclick="ClearFilters">
+                    ✕ Clear filters
+                </button>
+            }
+        </div>
+
+        <div class="venues-grid">
+            @foreach (var venue in _venues)
+            {
+                <VenueCard 
+                    Venue="@venue" 
+                    IsFeatured="@venue.IsFeatured"
+                    OnClick="() => NavigateToVenue(venue.Id)" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "search")]
+    public string? SearchQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "type")]
+    public string? TypeQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "pet")]
+    public string? PetQuery { get; set; }
+
+    private List<Venue>? _venues;
+    private bool _isLoading = true;
+    private string? _searchTerm;
+    private VenueType? _selectedVenueType;
+    private PetType? _selectedPetType;
+
+    private bool _hasActiveFilters => 
+        !string.IsNullOrWhiteSpace(_searchTerm) || 
+        _selectedVenueType.HasValue || 
+        _selectedPetType.HasValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ParseQueryParameters();
+        await LoadVenues();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        ParseQueryParameters();
+        await LoadVenues();
+    }
+
+    private void ParseQueryParameters()
+    {
+        _searchTerm = SearchQuery;
+        
+        if (Enum.TryParse<VenueType>(TypeQuery, out var venueType))
+            _selectedVenueType = venueType;
+        else
+            _selectedVenueType = null;
+            
+        if (Enum.TryParse<PetType>(PetQuery, out var petType))
+            _selectedPetType = petType;
+        else
+            _selectedPetType = null;
+    }
+
+    private async Task LoadVenues()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        await Task.Delay(300); // Simulate network delay
+        _venues = await VenueService.SearchVenuesAsync(_searchTerm, _selectedVenueType, _selectedPetType);
+        
+        _isLoading = false;
+    }
+
+    private async Task HandleSearch((string? SearchTerm, VenueType? VenueType, PetType? PetType) filters)
+    {
+        _searchTerm = filters.SearchTerm;
+        _selectedVenueType = filters.VenueType;
+        _selectedPetType = filters.PetType;
+
+        UpdateUrl();
+        await LoadVenues();
+    }
+
+    private void UpdateUrl()
+    {
+        var queryParams = new List<string>();
+        
+        if (!string.IsNullOrWhiteSpace(_searchTerm))
+            queryParams.Add($"search={Uri.EscapeDataString(_searchTerm)}");
+        if (_selectedVenueType.HasValue)
+            queryParams.Add($"type={_selectedVenueType}");
+        if (_selectedPetType.HasValue)
+            queryParams.Add($"pet={_selectedPetType}");
+            
+        var query = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
+        Navigation.NavigateTo($"/venues{query}", replace: true);
+    }
+
+    private async Task ClearFilters()
+    {
+        _searchTerm = null;
+        _selectedVenueType = null;
+        _selectedPetType = null;
+        Navigation.NavigateTo("/venues", replace: true);
+        await LoadVenues();
+    }
+
+    private void NavigateToVenue(int venueId)
+    {
+        Navigation.NavigateTo($"/venues/{venueId}");
+    }
+}

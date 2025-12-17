@@ -1,0 +1,31 @@
+.star-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.star {
+    font-size: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.star.filled {
+    color: #fbbf24;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+}
+
+.star.half {
+    color: #fbbf24;
+    opacity: 0.7;
+}
+
+.star.empty {
+    color: var(--text-muted);
+}
+
+.rating-value {
+    margin-left: 6px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}

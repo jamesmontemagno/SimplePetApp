@@ -1,0 +1,324 @@
+@page "/profile"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject IUserService UserService
+@inject IVenueService VenueService
+@inject IBookingService BookingService
+@inject NavigationManager Navigation
+
+<PageTitle>My Profile - MyPetVenues 🐾</PageTitle>
+
+<div class="profile-page">
+    @if (_isLoading)
+    {
+        <div class="loading-state">
+            <span class="loading-emoji">🐾</span>
+            <p>Loading your profile...</p>
+        </div>
+    }
+    else if (_user is null)
+    {
+        <div class="not-found-state">
+            <span class="not-found-emoji">👤</span>
+            <h2>Profile Not Found</h2>
+            <p>Please sign in to view your profile.</p>
+        </div>
+    }
+    else
+    {
+        <!-- Profile Header -->
+        <section class="profile-header">
+            <div class="profile-avatar">
+                <img src="@_user.Avatar" alt="@_user.Name" />
+                <button class="edit-avatar-btn" title="Change photo">📷</button>
+            </div>
+            <div class="profile-info">
+                <h1>@_user.Name</h1>
+                <p class="profile-location">📍 @_user.Location</p>
+                <p class="profile-bio">@_user.Bio</p>
+                <div class="profile-stats">
+                    <div class="stat">
+                        <span class="stat-value">@_user.Pets.Count</span>
+                        <span class="stat-label">Pets</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">@_favoriteVenues?.Count</span>
+                        <span class="stat-label">Favorites</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">@_bookings?.Count</span>
+                        <span class="stat-label">Bookings</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">@GetMemberDuration()</span>
+                        <span class="stat-label">Member</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-outline edit-profile-btn" @onclick="() => _isEditing = true">
+                ✏️ Edit Profile
+            </button>
+        </section>
+
+        <!-- Tab Navigation -->
+        <nav class="profile-tabs">
+            <button class="tab-btn @(_activeTab == "pets" ? "active" : "")" @onclick="SetTabPets">
+                🐾 My Pets
+            </button>
+            <button class="tab-btn @(_activeTab == "favorites" ? "active" : "")" @onclick="SetTabFavorites">
+                ❤️ Favorites
+            </button>
+            <button class="tab-btn @(_activeTab == "bookings" ? "active" : "")" @onclick="SetTabBookings">
+                📅 Bookings
+            </button>
+            <button class="tab-btn @(_activeTab == "settings" ? "active" : "")" @onclick="SetTabSettings">
+                ⚙️ Settings
+            </button>
+        </nav>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            @switch (_activeTab)
+            {
+                case "pets":
+                    <section class="pets-section">
+                        <div class="section-header-row">
+                            <h2>My Furry Family 🐾</h2>
+                            <button class="btn btn-primary">➕ Add Pet</button>
+                        </div>
+                        <div class="pets-grid">
+                            @foreach (var pet in _user.Pets)
+                            {
+                                <div class="pet-card">
+                                    <div class="pet-image">
+                                        <img src="@pet.ImageUrl" alt="@pet.Name" />
+                                    </div>
+                                    <div class="pet-info">
+                                        <h3>@pet.Name @GetPetEmoji(pet.Type)</h3>
+                                        <p class="pet-breed">@pet.Breed</p>
+                                        <p class="pet-age">@pet.Age years old</p>
+                                        <PetBadge Type="@pet.Type" />
+                                    </div>
+                                    <div class="pet-actions">
+                                        <button class="action-btn" title="Edit">✏️</button>
+                                        <button class="action-btn" title="Delete">🗑️</button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </section>
+                    break;
+
+                case "favorites":
+                    <section class="favorites-section">
+                        <h2>My Favorite Venues ❤️</h2>
+                        @if (_favoriteVenues is null || !_favoriteVenues.Any())
+                        {
+                            <div class="empty-section">
+                                <span class="empty-icon">❤️</span>
+                                <h3>No favorites yet</h3>
+                                <p>Start exploring and save your favorite pet-friendly venues!</p>
+                                <button class="btn btn-primary" @onclick="NavigateToVenues">
+                                    Explore Venues
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="favorites-grid">
+                                @foreach (var venue in _favoriteVenues)
+                                {
+                                    <VenueCard Venue="@venue" OnClick="() => NavigateToVenueDetail(venue.Id)" />
+                                }
+                            </div>
+                        }
+                    </section>
+                    break;
+
+                case "bookings":
+                    <section class="bookings-section">
+                        <h2>My Bookings 📅</h2>
+                        @if (_bookings is null || !_bookings.Any())
+                        {
+                            <div class="empty-section">
+                                <span class="empty-icon">📅</span>
+                                <h3>No bookings yet</h3>
+                                <p>Book your first pet-friendly experience!</p>
+                                <button class="btn btn-primary" @onclick="NavigateToBooking">
+                                    Make a Booking
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="bookings-list">
+                                @foreach (var booking in _bookings)
+                                {
+                                    <div class="booking-card @booking.Status.ToString().ToLower()">
+                                        <div class="booking-image">
+                                            <img src="@booking.VenueImage" alt="@booking.VenueName" />
+                                        </div>
+                                        <div class="booking-details">
+                                            <h3>@booking.VenueName</h3>
+                                            <div class="booking-info-row">
+                                                <span>📅 @booking.BookingDate.ToString("MMM d, yyyy")</span>
+                                                <span>⏰ @booking.StartTime.ToString(@"hh\:mm") - @booking.EndTime.ToString(@"hh\:mm")</span>
+                                            </div>
+                                            <div class="booking-pets">
+                                                🐾 @string.Join(", ", booking.PetNames)
+                                            </div>
+                                        </div>
+                                        <div class="booking-status-col">
+                                            <span class="booking-status @booking.Status.ToString().ToLower()">
+                                                @GetStatusEmoji(booking.Status) @booking.Status
+                                            </span>
+                                            <span class="booking-price">$@booking.TotalPrice</span>
+                                        </div>
+                                        <div class="booking-actions">
+                                            @if (booking.Status == BookingStatus.Confirmed)
+                                            {
+                                                <button class="btn btn-outline btn-sm">View Details</button>
+                                                <button class="btn btn-secondary btn-sm" @onclick="() => CancelBooking(booking.Id)">Cancel</button>
+                                            }
+                                            else if (booking.Status == BookingStatus.Completed)
+                                            {
+                                                <button class="btn btn-primary btn-sm">Leave Review</button>
+                                                <button class="btn btn-outline btn-sm">Book Again</button>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </section>
+                    break;
+
+                case "settings":
+                    <section class="settings-section">
+                        <h2>Account Settings ⚙️</h2>
+                        
+                        <div class="settings-card">
+                            <h3>📧 Email Preferences</h3>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Email Notifications</span>
+                                    <span class="setting-desc">Receive updates about bookings and new venues</span>
+                                </div>
+                                <label class="toggle">
+                                    <input type="checkbox" @bind="_user.Preferences.EmailNotifications" />
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Push Notifications</span>
+                                    <span class="setting-desc">Get instant alerts for booking confirmations</span>
+                                </div>
+                                <label class="toggle">
+                                    <input type="checkbox" @bind="_user.Preferences.PushNotifications" />
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-card">
+                            <h3>🔍 Search Preferences</h3>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Search Radius</span>
+                                    <span class="setting-desc">Default distance for venue search</span>
+                                </div>
+                                <select @bind="_user.Preferences.SearchRadius">
+                                    <option value="10">10 miles</option>
+                                    <option value="25">25 miles</option>
+                                    <option value="50">50 miles</option>
+                                    <option value="100">100 miles</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-card danger">
+                            <h3>⚠️ Danger Zone</h3>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <span class="setting-label">Delete Account</span>
+                                    <span class="setting-desc">Permanently delete your account and all data</span>
+                                </div>
+                                <button class="btn btn-danger">Delete Account</button>
+                            </div>
+                        </div>
+                    </section>
+                    break;
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private User? _user;
+    private List<Venue>? _favoriteVenues;
+    private List<Models.Booking>? _bookings;
+    private bool _isLoading = true;
+    private bool _isEditing = false;
+    private string _activeTab = "pets";
+
+    private void SetTabPets() => _activeTab = "pets";
+    private void SetTabFavorites() => _activeTab = "favorites";
+    private void SetTabBookings() => _activeTab = "bookings";
+    private void SetTabSettings() => _activeTab = "settings";
+    
+    private void NavigateToVenues() => Navigation.NavigateTo("/venues");
+    private void NavigateToBooking() => Navigation.NavigateTo("/booking");
+    private void NavigateToVenueDetail(int id) => Navigation.NavigateTo($"/venues/{id}");
+
+    protected override async Task OnInitializedAsync()
+    {
+        _user = await UserService.GetCurrentUserAsync();
+        
+        if (_user is not null)
+        {
+            _favoriteVenues = await UserService.GetFavoriteVenuesAsync();
+            _bookings = await BookingService.GetUserBookingsAsync(_user.Id);
+        }
+        
+        _isLoading = false;
+    }
+
+    private string GetMemberDuration()
+    {
+        if (_user is null) return "";
+        var duration = DateTime.Now - _user.JoinedDate;
+        if (duration.TotalDays < 30) return $"{(int)duration.TotalDays}d";
+        if (duration.TotalDays < 365) return $"{(int)(duration.TotalDays / 30)}mo";
+        return $"{(int)(duration.TotalDays / 365)}y";
+    }
+
+    private string GetPetEmoji(PetType type) => type switch
+    {
+        PetType.Dog => "🐕",
+        PetType.Cat => "🐱",
+        PetType.Bird => "🐦",
+        PetType.Rabbit => "🐰",
+        PetType.SmallPet => "🐹",
+        _ => "🐾"
+    };
+
+    private string GetStatusEmoji(BookingStatus status) => status switch
+    {
+        BookingStatus.Pending => "⏳",
+        BookingStatus.Confirmed => "✅",
+        BookingStatus.Cancelled => "❌",
+        BookingStatus.Completed => "🎉",
+        _ => "📋"
+    };
+
+    private async Task CancelBooking(int bookingId)
+    {
+        await BookingService.CancelBookingAsync(bookingId);
+        if (_user is not null)
+        {
+            _bookings = await BookingService.GetUserBookingsAsync(_user.Id);
+        }
+    }
+}

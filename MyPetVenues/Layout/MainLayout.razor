@@ -1,3 +1,29 @@
 ﻿@inherits LayoutComponentBase
+@using MyPetVenues.Services
+@inject IThemeService ThemeService
+@implements IDisposable
 
-@Body
+<div class="app-container @(ThemeService.IsDarkMode ? "dark-mode" : "light-mode")">
+    <Header />
+    <main class="main-content">
+        @Body
+    </main>
+    <Footer />
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        ThemeService.OnThemeChanged += OnThemeChanged;
+    }
+
+    private void OnThemeChanged()
+    {
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= OnThemeChanged;
+    }
+}

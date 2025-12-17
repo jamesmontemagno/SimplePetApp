@@ -1,0 +1,18 @@
+.amenity-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: var(--tag-bg);
+    color: var(--text-secondary);
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.amenity-tag:hover {
+    background: var(--tag-hover-bg);
+    transform: translateY(-1px);
+}

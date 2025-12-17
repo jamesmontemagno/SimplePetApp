@@ -1,0 +1,102 @@
+@using MyPetVenues.Models
+
+<div class="search-filters">
+    <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" 
+               placeholder="Search venues, cities..." 
+               @bind="SearchTerm" 
+               @bind:event="oninput"
+               @onkeyup="OnSearchKeyUp" />
+        @if (!string.IsNullOrEmpty(SearchTerm))
+        {
+            <button class="clear-btn" @onclick="ClearSearch">✕</button>
+        }
+    </div>
+    
+    <div class="filter-row">
+        <div class="filter-group">
+            <label>Venue Type</label>
+            <select @bind="SelectedVenueType">
+                <option value="">All Types</option>
+                @foreach (var type in Enum.GetValues<VenueType>())
+                {
+                    <option value="@type">@GetVenueTypeDisplay(type)</option>
+                }
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>Pet Type</label>
+            <select @bind="SelectedPetType">
+                <option value="">All Pets</option>
+                @foreach (var type in Enum.GetValues<PetType>())
+                {
+                    <option value="@type">@GetPetTypeDisplay(type)</option>
+                }
+            </select>
+        </div>
+        
+        <button class="search-btn" @onclick="ApplyFilters">
+            🔍 Search
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? SearchTerm { get; set; }
+
+    [Parameter]
+    public VenueType? SelectedVenueType { get; set; }
+
+    [Parameter]
+    public PetType? SelectedPetType { get; set; }
+
+    [Parameter]
+    public EventCallback<(string? SearchTerm, VenueType? VenueType, PetType? PetType)> OnSearch { get; set; }
+
+    private async Task ApplyFilters()
+    {
+        await OnSearch.InvokeAsync((SearchTerm, SelectedVenueType, SelectedPetType));
+    }
+
+    private async Task OnSearchKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await ApplyFilters();
+        }
+    }
+
+    private async Task ClearSearch()
+    {
+        SearchTerm = "";
+        await ApplyFilters();
+    }
+
+    private string GetVenueTypeDisplay(VenueType type) => type switch
+    {
+        VenueType.Park => "🌳 Park",
+        VenueType.Restaurant => "🍽️ Restaurant",
+        VenueType.Cafe => "☕ Café",
+        VenueType.Hotel => "🏨 Hotel",
+        VenueType.Store => "🛍️ Store",
+        VenueType.Beach => "🏖️ Beach",
+        VenueType.DayCare => "🏠 Day Care",
+        VenueType.Grooming => "✂️ Grooming",
+        VenueType.VetClinic => "🏥 Vet Clinic",
+        _ => type.ToString()
+    };
+
+    private string GetPetTypeDisplay(PetType type) => type switch
+    {
+        PetType.Dog => "🐕 Dogs",
+        PetType.Cat => "🐱 Cats",
+        PetType.Bird => "🐦 Birds",
+        PetType.Rabbit => "🐰 Rabbits",
+        PetType.SmallPet => "🐹 Small Pets",
+        PetType.All => "🐾 All Pets",
+        _ => type.ToString()
+    };
+}

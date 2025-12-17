@@ -1,0 +1,244 @@
+@page "/venues/{VenueId:int}"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject IVenueService VenueService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+
+<PageTitle>@(_venue?.Name ?? "Venue Details") - MyPetVenues 🐾</PageTitle>
+
+@if (_isLoading)
+{
+    <div class="loading-state">
+        <span class="loading-emoji">🐾</span>
+        <p>Loading venue details...</p>
+    </div>
+}
+else if (_venue is null)
+{
+    <div class="not-found-state">
+        <span class="not-found-emoji">😿</span>
+        <h2>Venue Not Found</h2>
+        <p>Sorry, we couldn't find the venue you're looking for.</p>
+        <button class="btn btn-primary" @onclick="NavigateToVenues">
+            Browse All Venues
+        </button>
+    </div>
+}
+else
+{
+    <div class="venue-detail-page">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="/">Home</a>
+            <span>/</span>
+            <a href="/venues">Venues</a>
+            <span>/</span>
+            <span>@_venue.Name</span>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="venue-hero">
+            <div class="venue-hero-image">
+                <img src="@_venue.ImageUrl" alt="@_venue.Name" />
+                <div class="venue-hero-overlay">
+                    <VenueTypeBadge Type="@_venue.Type" />
+                </div>
+            </div>
+            <div class="venue-hero-info">
+                <div class="venue-title-row">
+                    <h1>@_venue.Name</h1>
+                    <button class="favorite-btn @(_isFavorite ? "active" : "")" @onclick="ToggleFavorite">
+                        @(_isFavorite ? "❤️" : "🤍")
+                    </button>
+                </div>
+                <p class="venue-location">📍 @_venue.Address, @_venue.City</p>
+                <div class="venue-rating-row">
+                    <StarRating Rating="@_venue.Rating" ShowValue="true" />
+                    <span class="review-count">(@_venue.ReviewCount reviews)</span>
+                </div>
+                <div class="venue-pets-accepted">
+                    <span class="label">Pets Welcome:</span>
+                    @foreach (var pet in _venue.AcceptedPets)
+                    {
+                        <PetBadge Type="@pet" />
+                    }
+                </div>
+                <div class="venue-cta">
+                    @if (_venue.PricePerHour > 0)
+                    {
+                        <div class="venue-price">
+                            <span class="price-label">From</span>
+                            <span class="price-value">$@_venue.PricePerHour</span>
+                            <span class="price-unit">/hour</span>
+                        </div>
+                    }
+                    <button class="btn btn-primary btn-large" @onclick="BookVenue">
+                        📅 Book Now
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <div class="venue-content-grid">
+            <!-- Left Column -->
+            <div class="venue-main-content">
+                <!-- About Section -->
+                <section class="content-section">
+                    <h2>About This Venue ✨</h2>
+                    <p class="venue-description">@_venue.Description</p>
+                </section>
+
+                <!-- Amenities Section -->
+                <section class="content-section">
+                    <h2>Amenities 🎁</h2>
+                    <div class="amenities-grid">
+                        @foreach (var amenity in _venue.Amenities)
+                        {
+                            <div class="amenity-item">
+                                <AmenityTag Amenity="@amenity" />
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <!-- Pet Policy Section -->
+                <section class="content-section">
+                    <h2>Pet Policy 📋</h2>
+                    <div class="policy-card">
+                        <p>@_venue.PetPolicy</p>
+                    </div>
+                </section>
+
+                <!-- Reviews Section -->
+                <section class="content-section">
+                    <div class="section-header-row">
+                        <h2>Reviews 💬</h2>
+                        <button class="btn btn-outline">Write a Review</button>
+                    </div>
+                    @if (_reviews is null || !_reviews.Any())
+                    {
+                        <div class="no-reviews">
+                            <p>No reviews yet. Be the first to share your experience! 🐾</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="reviews-list">
+                            @foreach (var review in _reviews)
+                            {
+                                <ReviewCard Review="@review" />
+                            }
+                        </div>
+                    }
+                </section>
+            </div>
+
+            <!-- Right Column - Sidebar -->
+            <aside class="venue-sidebar">
+                <!-- Contact Info -->
+                <div class="sidebar-card">
+                    <h3>Contact Info 📞</h3>
+                    <div class="contact-item">
+                        <span class="contact-icon">📍</span>
+                        <span>@_venue.Address, @_venue.City</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-icon">📞</span>
+                        <span>@_venue.Phone</span>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-icon">📧</span>
+                        <a href="mailto:@_venue.Email">@_venue.Email</a>
+                    </div>
+                    @if (!string.IsNullOrEmpty(_venue.Website))
+                    {
+                        <div class="contact-item">
+                            <span class="contact-icon">🌐</span>
+                            <a href="https://@_venue.Website" target="_blank">@_venue.Website</a>
+                        </div>
+                    }
+                </div>
+
+                <!-- Hours -->
+                <div class="sidebar-card">
+                    <h3>Hours ⏰</h3>
+                    <p class="hours-text">@_venue.Hours</p>
+                </div>
+
+                <!-- Quick Book -->
+                <div class="sidebar-card highlight">
+                    <h3>Quick Book 🎯</h3>
+                    <p>Ready to visit with your pet?</p>
+                    <button class="btn btn-primary" style="width: 100%;" @onclick="BookVenue">
+                        Reserve Your Spot
+                    </button>
+                </div>
+
+                <!-- Share -->
+                <div class="sidebar-card">
+                    <h3>Share This Venue 📤</h3>
+                    <div class="share-buttons">
+                        <button class="share-btn" title="Copy Link">📋</button>
+                        <button class="share-btn" title="Share on Facebook">📘</button>
+                        <button class="share-btn" title="Share on Twitter">🐦</button>
+                        <button class="share-btn" title="Share via Email">📧</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int VenueId { get; set; }
+
+    private Venue? _venue;
+    private List<Review>? _reviews;
+    private bool _isLoading = true;
+    private bool _isFavorite = false;
+    
+    private void NavigateToVenues() => Navigation.NavigateTo("/venues");
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVenueData();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadVenueData();
+    }
+
+    private async Task LoadVenueData()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        _venue = await VenueService.GetVenueByIdAsync(VenueId);
+        
+        if (_venue is not null)
+        {
+            _reviews = await VenueService.GetVenueReviewsAsync(VenueId);
+            
+            var user = await UserService.GetCurrentUserAsync();
+            _isFavorite = user?.FavoriteVenueIds.Contains(VenueId) ?? false;
+        }
+
+        _isLoading = false;
+    }
+
+    private async Task ToggleFavorite()
+    {
+        await UserService.ToggleFavoriteAsync(VenueId);
+        _isFavorite = !_isFavorite;
+    }
+
+    private void BookVenue()
+    {
+        Navigation.NavigateTo($"/booking?venue={VenueId}");
+    }
+}

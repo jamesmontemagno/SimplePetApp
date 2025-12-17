@@ -1,7 +1,322 @@
 ﻿@page "/"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject IVenueService VenueService
+@inject NavigationManager Navigation
 
-<PageTitle>Home</PageTitle>
+<PageTitle>MyPetVenues - Find Pet-Friendly Places 🐾</PageTitle>
 
-<h1>Hello, world!</h1>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <div class="hero-badge">🎉 Trusted by 50,000+ Pet Parents</div>
+        <h1 class="hero-title">
+            Find <span class="text-gradient">Pawfect</span> Places
+            <br />For Your Furry Friends 🐾
+        </h1>
+        <p class="hero-subtitle">
+            Discover pet-friendly parks, cafés, restaurants, hotels, and more! 
+            <br />Your adventure starts here. 🌟
+        </p>
+        <div class="hero-cta">
+            <button class="btn btn-primary btn-large" @onclick="NavigateToVenues">
+                🔍 Explore Venues
+            </button>
+            <button class="btn btn-outline btn-large" @onclick="NavigateToBooking">
+                📅 Book Now
+            </button>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-number">1,200+</span>
+                <span class="stat-label">Venues</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">50K+</span>
+                <span class="stat-label">Happy Pets</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">4.9</span>
+                <span class="stat-label">⭐ Rating</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <div class="hero-image-grid">
+            <div class="hero-img hero-img-1">
+                <img src="images/pets/dog1.png" alt="Happy dog" loading="lazy" />
+            </div>
+            <div class="hero-img hero-img-2">
+                <img src="images/pets/cat1.jpg" alt="Happy cat" loading="lazy" />
+            </div>
+            <div class="hero-img hero-img-3">
+                <img src="images/pets/dog3.jpg" alt="Playful dog" loading="lazy" />
+            </div>
+            <div class="hero-img hero-img-4">
+                <img src="images/venues/park1.jpg" alt="Pet park" loading="lazy" />
+            </div>
+        </div>
+        <div class="floating-elements">
+            <span class="float-emoji float-1">🐕</span>
+            <span class="float-emoji float-2">🐱</span>
+            <span class="float-emoji float-3">❤️</span>
+            <span class="float-emoji float-4">🦴</span>
+            <span class="float-emoji float-5">🐾</span>
+        </div>
+    </div>
+</section>
 
-Welcome to your new app.
+<!-- Quick Search Section -->
+<section class="quick-search-section">
+    <SearchFilters OnSearch="HandleSearch" />
+</section>
+
+<!-- Venue Types Section -->
+<section class="venue-types-section">
+    <div class="section-header">
+        <h2>Explore By Category 🗂️</h2>
+        <p>Find the perfect spot for every occasion</p>
+    </div>
+    <div class="venue-types-grid">
+        @foreach (var category in _venueCategories)
+        {
+            <div class="venue-type-card" @onclick="() => NavigateToCategory(category.Type)">
+                <span class="type-emoji">@category.Emoji</span>
+                <h3>@category.Name</h3>
+                <p>@category.Description</p>
+                <span class="type-arrow">→</span>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Featured Venues Section -->
+<section class="featured-section">
+    <div class="section-header">
+        <h2>Featured Venues ⭐</h2>
+        <p>Hand-picked favorites from our community</p>
+    </div>
+    @if (_featuredVenues is null)
+    {
+        <div class="loading-state">
+            <span class="loading-emoji">🐾</span>
+            <p>Fetching amazing venues...</p>
+        </div>
+    }
+    else
+    {
+        <div class="venues-grid">
+            @foreach (var venue in _featuredVenues)
+            {
+                <VenueCard Venue="@venue" IsFeatured="true" OnClick="() => NavigateToVenue(venue.Id)" />
+            }
+        </div>
+        <div class="section-cta">
+            <button class="btn btn-secondary" @onclick="NavigateToVenues">
+                View All Venues →
+            </button>
+        </div>
+    }
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="section-header">
+        <h2>Why Pet Parents Love Us 💕</h2>
+        <p>Everything you need to find pet-friendly adventures</p>
+    </div>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <h3>Easy Discovery</h3>
+            <p>Search thousands of verified pet-friendly venues by location, type, and pet preferences.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">⭐</div>
+            <h3>Trusted Reviews</h3>
+            <p>Read honest reviews from real pet owners who've visited with their furry companions.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📅</div>
+            <h3>Easy Booking</h3>
+            <p>Book pet-friendly hotels, daycares, and services directly through our platform.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📋</div>
+            <h3>Detailed Info</h3>
+            <p>Get complete pet policies, amenities, and what to expect before you visit.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">❤️</div>
+            <h3>Save Favorites</h3>
+            <p>Create your personal collection of favorite pet-friendly spots to visit again.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🗺️</div>
+            <h3>Local & Travel</h3>
+            <p>Perfect for daily outings or planning pet-friendly vacations anywhere.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Pet Gallery Section -->
+<section class="pet-gallery-section">
+    <div class="section-header">
+        <h2>Our Happy Visitors 📸</h2>
+        <p>Adorable pets enjoying our featured venues</p>
+    </div>
+    <div class="pet-gallery">
+        <div class="gallery-item">
+            <img src="images/pets/dog4.png" alt="Happy dog at venue" loading="lazy" />
+            <div class="gallery-overlay">
+                <span>🐕 Bailey at the park</span>
+            </div>
+        </div>
+        <div class="gallery-item">
+            <img src="images/pets/cat2.jpg" alt="Cat at cafe" loading="lazy" />
+            <div class="gallery-overlay">
+                <span>🐱 Luna at the café</span>
+            </div>
+        </div>
+        <div class="gallery-item">
+            <img src="images/pets/dog5.jpg" alt="Dog at restaurant" loading="lazy" />
+            <div class="gallery-overlay">
+                <span>🐕 Cooper dining out</span>
+            </div>
+        </div>
+        <div class="gallery-item">
+            <img src="images/pets/bunny.jpg" alt="Bunny at store" loading="lazy" />
+            <div class="gallery-overlay">
+                <span>🐰 Cinnamon shopping</span>
+            </div>
+        </div>
+        <div class="gallery-item">
+            <img src="images/pets/dog6.png" alt="Dog at daycare" loading="lazy" />
+            <div class="gallery-overlay">
+                <span>🐕 Max at daycare</span>
+            </div>
+        </div>
+        <div class="gallery-item">
+            <img src="images/pets/cat3.jpg" alt="Cat relaxing" loading="lazy" />
+            <div class="gallery-overlay">
+                <span>🐱 Mittens chilling</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+    <div class="section-header">
+        <h2>What Pet Parents Say 💬</h2>
+        <p>Join thousands of happy pet owners</p>
+    </div>
+    <div class="testimonials-grid">
+        <div class="testimonial-card">
+            <div class="testimonial-content">
+                <p>"MyPetVenues has made finding dog-friendly restaurants so much easier! Max and I never have to eat alone anymore. 🐕❤️"</p>
+            </div>
+            <div class="testimonial-author">
+                <img src="images/pets/dog7.jpg" alt="Sarah" loading="lazy" />
+                <div>
+                    <strong>Sarah M.</strong>
+                    <span>Dog Mom to Max</span>
+                </div>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-content">
+                <p>"Finally a platform that understands cat owners too! Found the perfect cat-friendly café thanks to this app. 🐱☕"</p>
+            </div>
+            <div class="testimonial-author">
+                <img src="images/pets/cat1.jpg" alt="Emily" loading="lazy" />
+                <div>
+                    <strong>Emily R.</strong>
+                    <span>Cat Mom to Whiskers</span>
+                </div>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-content">
+                <p>"Booked our entire vacation using MyPetVenues. Every hotel was genuinely pet-friendly. Best trip ever! 🏨✈️"</p>
+            </div>
+            <div class="testimonial-author">
+                <img src="images/pets/dog8.jpg" alt="David" loading="lazy" />
+                <div>
+                    <strong>David L.</strong>
+                    <span>Dog Dad to Rocky</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="cta-content">
+        <h2>Ready to Explore? 🚀</h2>
+        <p>Join thousands of pet parents discovering amazing pet-friendly venues every day!</p>
+        <div class="cta-buttons">
+            <button class="btn btn-primary btn-large" @onclick="NavigateToVenues">
+                🔍 Find Venues Near You
+            </button>
+            <button class="btn btn-outline btn-large" @onclick="NavigateToProfile">
+                👤 Create Your Profile
+            </button>
+        </div>
+        <div class="cta-pets">
+            🐕 🐱 🐰 🐦 🐹
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<Venue>? _featuredVenues;
+    
+    private void NavigateToVenues() => Navigation.NavigateTo("/venues");
+    private void NavigateToBooking() => Navigation.NavigateTo("/booking");
+    private void NavigateToProfile() => Navigation.NavigateTo("/profile");
+    
+    private readonly List<VenueCategory> _venueCategories = new()
+    {
+        new("🌳", "Parks", "Off-leash areas & trails", VenueType.Park),
+        new("☕", "Cafés", "Coffee with your pet", VenueType.Cafe),
+        new("🍽️", "Restaurants", "Pet-friendly dining", VenueType.Restaurant),
+        new("🏨", "Hotels", "Pet-friendly stays", VenueType.Hotel),
+        new("🛍️", "Stores", "Shop with your pet", VenueType.Store),
+        new("🏠", "Day Care", "Safe & fun pet care", VenueType.DayCare)
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _featuredVenues = await VenueService.GetFeaturedVenuesAsync();
+    }
+
+    private void NavigateToVenue(int venueId)
+    {
+        Navigation.NavigateTo($"/venues/{venueId}");
+    }
+
+    private void NavigateToCategory(VenueType type)
+    {
+        Navigation.NavigateTo($"/venues?type={type}");
+    }
+
+    private void HandleSearch((string? SearchTerm, VenueType? VenueType, PetType? PetType) filters)
+    {
+        var queryParams = new List<string>();
+        
+        if (!string.IsNullOrWhiteSpace(filters.SearchTerm))
+            queryParams.Add($"search={Uri.EscapeDataString(filters.SearchTerm)}");
+        if (filters.VenueType.HasValue)
+            queryParams.Add($"type={filters.VenueType}");
+        if (filters.PetType.HasValue)
+            queryParams.Add($"pet={filters.PetType}");
+            
+        var query = queryParams.Any() ? "?" + string.Join("&", queryParams) : "";
+        Navigation.NavigateTo($"/venues{query}");
+    }
+
+    private record VenueCategory(string Emoji, string Name, string Description, VenueType Type);
+}

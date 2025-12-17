@@ -1,0 +1,60 @@
+.venue-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+.venue-type-badge:hover {
+    transform: scale(1.05);
+}
+
+.venue-type-badge.park {
+    background: rgba(34, 197, 94, 0.9);
+    color: white;
+}
+
+.venue-type-badge.restaurant {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+}
+
+.venue-type-badge.cafe {
+    background: rgba(168, 85, 247, 0.9);
+    color: white;
+}
+
+.venue-type-badge.hotel {
+    background: rgba(59, 130, 246, 0.9);
+    color: white;
+}
+
+.venue-type-badge.store {
+    background: rgba(249, 115, 22, 0.9);
+    color: white;
+}
+
+.venue-type-badge.beach {
+    background: rgba(6, 182, 212, 0.9);
+    color: white;
+}
+
+.venue-type-badge.daycare {
+    background: rgba(236, 72, 153, 0.9);
+    color: white;
+}
+
+.venue-type-badge.grooming {
+    background: rgba(139, 92, 246, 0.9);
+    color: white;
+}
+
+.venue-type-badge.vetclinic {
+    background: rgba(20, 184, 166, 0.9);
+    color: white;
+}
