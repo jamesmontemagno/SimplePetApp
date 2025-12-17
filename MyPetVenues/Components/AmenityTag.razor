@@ -1,0 +1,36 @@
+<span class="amenity-tag">@GetAmenityEmoji() @Amenity</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Amenity { get; set; } = string.Empty;
+
+    private string GetAmenityEmoji()
+    {
+        return Amenity.ToLower() switch
+        {
+            var a when a.Contains("water") => "💧",
+            var a when a.Contains("wifi") => "📶",
+            var a when a.Contains("parking") => "🅿️",
+            var a when a.Contains("outdoor") => "🌤️",
+            var a when a.Contains("treat") => "🦴",
+            var a when a.Contains("menu") => "📋",
+            var a when a.Contains("spa") => "💆",
+            var a when a.Contains("grooming") => "✂️",
+            var a when a.Contains("play") => "🎾",
+            var a when a.Contains("webcam") => "📹",
+            var a when a.Contains("training") => "🎓",
+            var a when a.Contains("agility") => "🏃",
+            var a when a.Contains("shade") || a.Contains("seating") => "⛱️",
+            var a when a.Contains("waste") => "🗑️",
+            var a when a.Contains("heat") => "🔥",
+            var a when a.Contains("ac") => "❄️",
+            var a when a.Contains("bed") => "🛏️",
+            var a when a.Contains("walk") => "🚶",
+            var a when a.Contains("sit") => "🪑",
+            var a when a.Contains("photo") => "📸",
+            var a when a.Contains("wash") => "🚿",
+            var a when a.Contains("adoption") => "❤️",
+            _ => "✨"
+        };
+    }
+}

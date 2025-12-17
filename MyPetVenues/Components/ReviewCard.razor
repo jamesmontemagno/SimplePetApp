@@ -1,0 +1,57 @@
+@using MyPetVenues.Models
+
+<div class="review-card">
+    <div class="review-header">
+        <div class="reviewer-info">
+            <img src="@Review.UserAvatar" alt="@Review.UserName" class="reviewer-avatar" loading="lazy" />
+            <div class="reviewer-details">
+                <span class="reviewer-name">@Review.UserName</span>
+                <span class="review-date">@GetRelativeDate()</span>
+            </div>
+        </div>
+        <div class="review-pet-info">
+            <PetBadge Type="@Review.PetType" />
+            <span class="pet-name">with @Review.PetName</span>
+        </div>
+    </div>
+    
+    <div class="review-rating">
+        <StarRating Rating="@Review.Rating" />
+    </div>
+    
+    <p class="review-comment">@Review.Comment</p>
+    
+    @if (Review.Photos.Any())
+    {
+        <div class="review-photos">
+            @foreach (var photo in Review.Photos)
+            {
+                <img src="@photo" alt="Review photo" class="review-photo" loading="lazy" />
+            }
+        </div>
+    }
+    
+    <div class="review-footer">
+        <button class="helpful-btn" @onclick="OnHelpful">
+            👍 Helpful (@Review.HelpfulCount)
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Review Review { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnHelpful { get; set; }
+
+    private string GetRelativeDate()
+    {
+        var diff = DateTime.Now - Review.DatePosted;
+        if (diff.TotalDays < 1) return "Today";
+        if (diff.TotalDays < 2) return "Yesterday";
+        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays} days ago";
+        if (diff.TotalDays < 30) return $"{(int)(diff.TotalDays / 7)} weeks ago";
+        return Review.DatePosted.ToString("MMM d, yyyy");
+    }
+}

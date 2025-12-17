@@ -1,0 +1,451 @@
+@page "/booking"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject IVenueService VenueService
+@inject IUserService UserService
+@inject IBookingService BookingService
+@inject NavigationManager Navigation
+
+<PageTitle>Book a Venue - MyPetVenues 🐾</PageTitle>
+
+<div class="booking-page">
+    <header class="page-header">
+        <h1>Book Your Visit 📅</h1>
+        <p>Reserve a spot at your favorite pet-friendly venue</p>
+    </header>
+
+    @if (_isLoading)
+    {
+        <div class="loading-state">
+            <span class="loading-emoji">🐾</span>
+            <p>Loading booking options...</p>
+        </div>
+    }
+    else if (_bookingComplete)
+    {
+        <div class="booking-success">
+            <div class="success-icon">🎉</div>
+            <h2>Booking Confirmed!</h2>
+            <p>Your reservation has been successfully made.</p>
+            <div class="confirmation-details">
+                <div class="detail-row">
+                    <span class="label">Venue:</span>
+                    <span class="value">@_selectedVenue?.Name</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Date:</span>
+                    <span class="value">@_bookingModel.BookingDate.ToString("MMMM d, yyyy")</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Time:</span>
+                    <span class="value">@_bookingModel.StartTime.ToString(@"hh\:mm") - @_bookingModel.EndTime.ToString(@"hh\:mm")</span>
+                </div>
+                <div class="detail-row">
+                    <span class="label">Confirmation #:</span>
+                    <span class="value">#MPV-@_newBooking?.Id.ToString("D6")</span>
+                </div>
+            </div>
+            <div class="success-actions">
+                <button class="btn btn-primary" @onclick="NavigateToProfile">
+                    View My Bookings
+                </button>
+                <button class="btn btn-outline" @onclick="StartNewBooking">
+                    Make Another Booking
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="booking-container">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step @(_currentStep >= 1 ? "active" : "") @(_currentStep > 1 ? "completed" : "")">
+                    <span class="step-number">1</span>
+                    <span class="step-label">Select Venue</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step @(_currentStep >= 2 ? "active" : "") @(_currentStep > 2 ? "completed" : "")">
+                    <span class="step-number">2</span>
+                    <span class="step-label">Choose Date & Time</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step @(_currentStep >= 3 ? "active" : "") @(_currentStep > 3 ? "completed" : "")">
+                    <span class="step-number">3</span>
+                    <span class="step-label">Pet Details</span>
+                </div>
+                <div class="step-line"></div>
+                <div class="step @(_currentStep >= 4 ? "active" : "")">
+                    <span class="step-number">4</span>
+                    <span class="step-label">Confirm</span>
+                </div>
+            </div>
+
+            <!-- Step Content -->
+            <div class="step-content">
+                @switch (_currentStep)
+                {
+                    case 1:
+                        <section class="booking-step">
+                            <h2>Select a Venue 🏠</h2>
+                            <p class="step-description">Choose where you'd like to visit with your pet</p>
+                            
+                            @if (_venues is not null)
+                            {
+                                <div class="venue-selection-grid">
+                                    @foreach (var venue in _venues.Where(v => v.PricePerHour > 0))
+                                    {
+                                        <div class="venue-select-card @(_selectedVenue?.Id == venue.Id ? "selected" : "")"
+                                             @onclick="() => SelectVenue(venue)">
+                                            <div class="venue-select-image">
+                                                <img src="@venue.ImageUrl" alt="@venue.Name" />
+                                                @if (_selectedVenue?.Id == venue.Id)
+                                                {
+                                                    <div class="selected-badge">✓ Selected</div>
+                                                }
+                                            </div>
+                                            <div class="venue-select-info">
+                                                <h3>@venue.Name</h3>
+                                                <p class="venue-select-location">📍 @venue.City</p>
+                                                <div class="venue-select-rating">
+                                                    <StarRating Rating="@venue.Rating" />
+                                                </div>
+                                                <div class="venue-select-price">
+                                                    <span class="price">$@venue.PricePerHour</span>
+                                                    <span class="unit">/hour</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </section>
+                        break;
+
+                    case 2:
+                        <section class="booking-step">
+                            <h2>Choose Date & Time ⏰</h2>
+                            <p class="step-description">Select when you'd like to visit @_selectedVenue?.Name</p>
+                            
+                            <div class="datetime-grid">
+                                <div class="form-group">
+                                    <label>📅 Date</label>
+                                    <input type="date" 
+                                           @bind="_bookingModel.BookingDate" 
+                                           min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                                           max="@DateTime.Now.AddMonths(3).ToString("yyyy-MM-dd")" />
+                                </div>
+                                <div class="form-group">
+                                    <label>🕐 Start Time</label>
+                                    <select @bind="_selectedStartTime">
+                                        @foreach (var time in _availableTimes)
+                                        {
+                                            <option value="@time">@time</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>🕐 End Time</label>
+                                    <select @bind="_selectedEndTime">
+                                        @foreach (var time in _availableTimes.Where(t => TimeSpan.Parse(t) > TimeSpan.Parse(_selectedStartTime)))
+                                        {
+                                            <option value="@time">@time</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="duration-info">
+                                <span class="duration-label">Duration:</span>
+                                <span class="duration-value">@GetDurationText()</span>
+                            </div>
+                        </section>
+                        break;
+
+                    case 3:
+                        <section class="booking-step">
+                            <h2>Pet Details 🐾</h2>
+                            <p class="step-description">Tell us about your furry companions</p>
+                            
+                            @if (_user?.Pets.Any() == true)
+                            {
+                                <div class="pet-selection">
+                                    <label>Select pets joining you:</label>
+                                    <div class="pet-checkboxes">
+                                        @foreach (var pet in _user.Pets)
+                                        {
+                                            <label class="pet-checkbox @(_selectedPets.Contains(pet.Name) ? "selected" : "")">
+                                                <input type="checkbox" 
+                                                       checked="@_selectedPets.Contains(pet.Name)"
+                                                       @onchange="() => TogglePet(pet.Name)" />
+                                                <img src="@pet.ImageUrl" alt="@pet.Name" />
+                                                <span class="pet-checkbox-name">@pet.Name</span>
+                                                <PetBadge Type="@pet.Type" />
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group">
+                                    <label>Number of Pets</label>
+                                    <select @bind="_bookingModel.NumberOfPets">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <option value="@i">@i pet@(i > 1 ? "s" : "")</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <label>📝 Special Requests (Optional)</label>
+                                <textarea @bind="_bookingModel.SpecialRequests" 
+                                          placeholder="Any special requirements or notes for your visit..."
+                                          rows="4"></textarea>
+                            </div>
+                        </section>
+                        break;
+
+                    case 4:
+                        <section class="booking-step">
+                            <h2>Confirm Your Booking ✅</h2>
+                            <p class="step-description">Review your reservation details</p>
+                            
+                            <div class="booking-summary">
+                                <div class="summary-venue">
+                                    <img src="@_selectedVenue?.ImageUrl" alt="@_selectedVenue?.Name" />
+                                    <div class="summary-venue-info">
+                                        <h3>@_selectedVenue?.Name</h3>
+                                        <p>📍 @_selectedVenue?.City</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="summary-details">
+                                    <div class="summary-row">
+                                        <span class="summary-label">📅 Date</span>
+                                        <span class="summary-value">@_bookingModel.BookingDate.ToString("dddd, MMMM d, yyyy")</span>
+                                    </div>
+                                    <div class="summary-row">
+                                        <span class="summary-label">⏰ Time</span>
+                                        <span class="summary-value">@_bookingModel.StartTime.ToString(@"hh\:mm") - @_bookingModel.EndTime.ToString(@"hh\:mm")</span>
+                                    </div>
+                                    <div class="summary-row">
+                                        <span class="summary-label">🐾 Pets</span>
+                                        <span class="summary-value">@string.Join(", ", _selectedPets)</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(_bookingModel.SpecialRequests))
+                                    {
+                                        <div class="summary-row">
+                                            <span class="summary-label">📝 Notes</span>
+                                            <span class="summary-value">@_bookingModel.SpecialRequests</span>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="summary-pricing">
+                                    <div class="pricing-row">
+                                        <span>Rate</span>
+                                        <span>$@_selectedVenue?.PricePerHour/hour</span>
+                                    </div>
+                                    <div class="pricing-row">
+                                        <span>Duration</span>
+                                        <span>@GetDurationText()</span>
+                                    </div>
+                                    <div class="pricing-row total">
+                                        <span>Total</span>
+                                        <span>$@CalculateTotal()</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        break;
+                }
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="booking-navigation">
+                @if (_currentStep > 1)
+                {
+                    <button class="btn btn-secondary" @onclick="PreviousStep">
+                        ← Previous
+                    </button>
+                }
+                else
+                {
+                    <div></div>
+                }
+
+                @if (_currentStep < 4)
+                {
+                    <button class="btn btn-primary" @onclick="NextStep" disabled="@(!CanProceed())">
+                        Next →
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-primary btn-large" @onclick="ConfirmBooking" disabled="@_isSubmitting">
+                        @if (_isSubmitting)
+                        {
+                            <span>Processing...</span>
+                        }
+                        else
+                        {
+                            <span>🎉 Confirm Booking</span>
+                        }
+                    </button>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "venue")]
+    public int? PreselectedVenueId { get; set; }
+
+    private List<Venue>? _venues;
+    private User? _user;
+    private Venue? _selectedVenue;
+    private Models.Booking _bookingModel = new();
+    private Models.Booking? _newBooking;
+    
+    private void NavigateToProfile() => Navigation.NavigateTo("/profile");
+    
+    private int _currentStep = 1;
+    private bool _isLoading = true;
+    private bool _isSubmitting = false;
+    private bool _bookingComplete = false;
+    
+    private List<string> _selectedPets = new();
+    private string _selectedStartTime = "09:00";
+    private string _selectedEndTime = "10:00";
+    
+    private readonly List<string> _availableTimes = new()
+    {
+        "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00",
+        "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _venues = await VenueService.GetAllVenuesAsync();
+        _user = await UserService.GetCurrentUserAsync();
+        
+        if (PreselectedVenueId.HasValue)
+        {
+            _selectedVenue = _venues.FirstOrDefault(v => v.Id == PreselectedVenueId.Value);
+            if (_selectedVenue is not null)
+            {
+                _currentStep = 2;
+            }
+        }
+
+        _bookingModel.BookingDate = DateTime.Now.AddDays(1).Date;
+        _bookingModel.NumberOfPets = 1;
+        
+        _isLoading = false;
+    }
+
+    private void SelectVenue(Venue venue)
+    {
+        _selectedVenue = venue;
+    }
+
+    private void TogglePet(string petName)
+    {
+        if (_selectedPets.Contains(petName))
+            _selectedPets.Remove(petName);
+        else
+            _selectedPets.Add(petName);
+    }
+
+    private void NextStep()
+    {
+        if (CanProceed() && _currentStep < 4)
+        {
+            UpdateModelFromSelections();
+            _currentStep++;
+        }
+    }
+
+    private void PreviousStep()
+    {
+        if (_currentStep > 1)
+            _currentStep--;
+    }
+
+    private void UpdateModelFromSelections()
+    {
+        _bookingModel.StartTime = TimeSpan.Parse(_selectedStartTime);
+        _bookingModel.EndTime = TimeSpan.Parse(_selectedEndTime);
+        _bookingModel.PetNames = _selectedPets.Any() ? _selectedPets : new List<string> { "Pet 1" };
+        _bookingModel.NumberOfPets = _bookingModel.PetNames.Count;
+    }
+
+    private bool CanProceed() => _currentStep switch
+    {
+        1 => _selectedVenue is not null,
+        2 => TimeSpan.Parse(_selectedEndTime) > TimeSpan.Parse(_selectedStartTime),
+        3 => _selectedPets.Any() || _bookingModel.NumberOfPets > 0,
+        _ => true
+    };
+
+    private string GetDurationText()
+    {
+        var start = TimeSpan.Parse(_selectedStartTime);
+        var end = TimeSpan.Parse(_selectedEndTime);
+        var duration = end - start;
+        
+        if (duration.TotalHours < 1) return $"{duration.TotalMinutes} minutes";
+        if (duration.TotalHours == 1) return "1 hour";
+        return $"{duration.TotalHours} hours";
+    }
+
+    private decimal CalculateTotal()
+    {
+        if (_selectedVenue is null) return 0;
+        
+        var start = TimeSpan.Parse(_selectedStartTime);
+        var end = TimeSpan.Parse(_selectedEndTime);
+        var hours = (decimal)(end - start).TotalHours;
+        
+        return Math.Round(hours * _selectedVenue.PricePerHour, 2);
+    }
+
+    private async Task ConfirmBooking()
+    {
+        if (_selectedVenue is null || _user is null) return;
+        
+        _isSubmitting = true;
+        UpdateModelFromSelections();
+        
+        _bookingModel.UserId = _user.Id;
+        _bookingModel.VenueId = _selectedVenue.Id;
+        _bookingModel.VenueName = _selectedVenue.Name;
+        _bookingModel.VenueImage = _selectedVenue.ImageUrl;
+        _bookingModel.TotalPrice = CalculateTotal();
+        
+        await Task.Delay(1500); // Simulate processing
+        
+        _newBooking = await BookingService.CreateBookingAsync(_bookingModel);
+        
+        _isSubmitting = false;
+        _bookingComplete = true;
+    }
+
+    private void StartNewBooking()
+    {
+        _bookingComplete = false;
+        _currentStep = 1;
+        _selectedVenue = null;
+        _selectedPets.Clear();
+        _bookingModel = new Models.Booking
+        {
+            BookingDate = DateTime.Now.AddDays(1).Date,
+            NumberOfPets = 1
+        };
+    }
+}

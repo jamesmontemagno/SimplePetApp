@@ -1,0 +1,24 @@
+@using MyPetVenues.Models
+
+<span class="venue-type-badge @Type.ToString().ToLower()">
+    @GetTypeEmoji() @Type.ToString()
+</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public VenueType Type { get; set; }
+
+    private string GetTypeEmoji() => Type switch
+    {
+        VenueType.Park => "🌳",
+        VenueType.Restaurant => "🍽️",
+        VenueType.Cafe => "☕",
+        VenueType.Hotel => "🏨",
+        VenueType.Store => "🛍️",
+        VenueType.Beach => "🏖️",
+        VenueType.DayCare => "🏠",
+        VenueType.Grooming => "✂️",
+        VenueType.VetClinic => "🏥",
+        _ => "📍"
+    };
+}

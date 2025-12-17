@@ -1,0 +1,49 @@
+@using MyPetVenues.Models
+
+<div class="venue-card @(IsFeatured ? "featured" : "")" @onclick="OnClick">
+    @if (IsFeatured)
+    {
+        <div class="featured-badge">⭐ Featured</div>
+    }
+    <div class="venue-image">
+        <img src="@Venue.ImageUrl" alt="@Venue.Name" loading="lazy" />
+        <div class="venue-type-overlay">
+            <VenueTypeBadge Type="@Venue.Type" />
+        </div>
+    </div>
+    <div class="venue-content">
+        <h3 class="venue-name">@Venue.Name</h3>
+        <p class="venue-location">📍 @Venue.City</p>
+        <div class="venue-rating">
+            <StarRating Rating="@Venue.Rating" />
+            <span class="review-count">(@Venue.ReviewCount reviews)</span>
+        </div>
+        <div class="venue-pets">
+            @foreach (var pet in Venue.AcceptedPets.Take(3))
+            {
+                <PetBadge Type="@pet" />
+            }
+        </div>
+        <div class="venue-amenities">
+            @foreach (var amenity in Venue.Amenities.Take(3))
+            {
+                <AmenityTag Amenity="@amenity" />
+            }
+            @if (Venue.Amenities.Count > 3)
+            {
+                <span class="more-amenities">+@(Venue.Amenities.Count - 3) more</span>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Venue Venue { get; set; } = default!;
+
+    [Parameter]
+    public bool IsFeatured { get; set; }
+
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+}

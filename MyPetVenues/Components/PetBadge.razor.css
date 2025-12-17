@@ -1,0 +1,44 @@
+.pet-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.pet-badge:hover {
+    transform: scale(1.05);
+}
+
+.pet-badge.dog {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+}
+
+.pet-badge.cat {
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    color: #5b21b6;
+}
+
+.pet-badge.bird {
+    background: linear-gradient(135deg, #cffafe, #a5f3fc);
+    color: #0e7490;
+}
+
+.pet-badge.rabbit {
+    background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+    color: #9d174d;
+}
+
+.pet-badge.smallpet {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+}
+
+.pet-badge.all {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+}
