@@ -1,3 +1,27 @@
 ﻿@inherits LayoutComponentBase
+@using MyPetVenues.Services
+@inject IThemeService ThemeService
+@implements IDisposable
 
-@Body
+<div class="app-container">
+    <Header />
+    
+    <main class="main-content">
+        @Body
+    </main>
+    
+    <Footer />
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnThemeChanged += StateHasChanged;
+        await ThemeService.InitializeAsync();
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
+}

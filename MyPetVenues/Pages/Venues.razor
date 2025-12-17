@@ -1,0 +1,188 @@
+@page "/venues"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject IVenueService VenueService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+
+<PageTitle>Venues - PetVenues</PageTitle>
+
+<div class="venues-page">
+    <div class="page-header">
+        <h1 class="page-title">📍 Discover Pet-Friendly Venues</h1>
+        <p class="page-subtitle">
+            Find the perfect spot for you and your furry friend
+        </p>
+    </div>
+    
+    <SearchFilters OnFiltersChanged="HandleFiltersChanged" />
+    
+    <div class="results-header">
+        <p class="results-count">
+            @if (isLoading)
+            {
+                <span>Loading...</span>
+            }
+            else
+            {
+                <span>Found <strong>@filteredVenues.Count</strong> venues</span>
+            }
+        </p>
+        <div class="sort-options">
+            <label class="sort-label">Sort by:</label>
+            <select class="sort-select" @bind="sortBy" @bind:after="ApplySort">
+                <option value="rating">⭐ Highest Rated</option>
+                <option value="reviews">💬 Most Reviews</option>
+                <option value="name">🔤 Name A-Z</option>
+            </select>
+        </div>
+    </div>
+    
+    @if (isLoading)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner">🐾</div>
+            <p>Sniffing out great venues...</p>
+        </div>
+    }
+    else if (filteredVenues.Count == 0)
+    {
+        <div class="empty-state">
+            <span class="empty-icon">🔍</span>
+            <h3>No venues found</h3>
+            <p>Try adjusting your filters or search terms</p>
+            <button class="reset-btn" @onclick="ResetFilters">Reset Filters</button>
+        </div>
+    }
+    else
+    {
+        <div class="venues-grid">
+            @foreach (var venue in filteredVenues)
+            {
+                <VenueCard 
+                    Venue="venue"
+                    IsFeatured="venue.IsFeatured"
+                    IsFavorite="@favoriteIds.Contains(venue.Id)"
+                    OnClick="() => NavigateToVenue(venue.Id)"
+                    OnFavoriteToggle="() => ToggleFavorite(venue.Id)" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "search")]
+    public string? SearchQuery { get; set; }
+    
+    [SupplyParameterFromQuery(Name = "category")]
+    public string? CategoryQuery { get; set; }
+    
+    [SupplyParameterFromQuery(Name = "pet")]
+    public string? PetTypeQuery { get; set; }
+
+    private List<Venue> allVenues = [];
+    private List<Venue> filteredVenues = [];
+    private List<int> favoriteIds = [];
+    private bool isLoading = true;
+    private string sortBy = "rating";
+    
+    private string? currentSearchTerm;
+    private VenueCategory? currentCategory;
+    private PetType? currentPetType;
+    private List<Amenity> currentAmenities = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await UserService.GetCurrentUserAsync();
+        favoriteIds = user.FavoriteVenueIds;
+        
+        allVenues = (await VenueService.GetAllVenuesAsync()).ToList();
+        
+        // Apply initial query parameters
+        currentSearchTerm = SearchQuery;
+        
+        if (!string.IsNullOrEmpty(CategoryQuery) && Enum.TryParse<VenueCategory>(CategoryQuery, out var category))
+            currentCategory = category;
+            
+        if (!string.IsNullOrEmpty(PetTypeQuery) && Enum.TryParse<PetType>(PetTypeQuery, out var petType))
+            currentPetType = petType;
+        
+        await ApplyFilters();
+        isLoading = false;
+    }
+
+    private async Task HandleFiltersChanged((string? SearchTerm, VenueCategory? Category, PetType? PetType, List<Amenity> Amenities) filters)
+    {
+        currentSearchTerm = filters.SearchTerm;
+        currentCategory = filters.Category;
+        currentPetType = filters.PetType;
+        currentAmenities = filters.Amenities;
+        await ApplyFilters();
+    }
+
+    private Task ApplyFilters()
+    {
+        var query = allVenues.AsEnumerable();
+        
+        if (!string.IsNullOrWhiteSpace(currentSearchTerm))
+        {
+            query = query.Where(v => 
+                v.Name.Contains(currentSearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                v.Description.Contains(currentSearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                v.City.Contains(currentSearchTerm, StringComparison.OrdinalIgnoreCase));
+        }
+        
+        if (currentCategory.HasValue)
+        {
+            query = query.Where(v => v.Category == currentCategory.Value);
+        }
+        
+        if (currentPetType.HasValue)
+        {
+            query = query.Where(v => v.AllowedPets.Contains(currentPetType.Value) || v.AllowedPets.Contains(PetType.All));
+        }
+        
+        if (currentAmenities.Count > 0)
+        {
+            query = query.Where(v => currentAmenities.All(a => v.Amenities.Contains(a)));
+        }
+        
+        filteredVenues = query.ToList();
+        ApplySort();
+        
+        return Task.CompletedTask;
+    }
+
+    private void ApplySort()
+    {
+        filteredVenues = sortBy switch
+        {
+            "rating" => filteredVenues.OrderByDescending(v => v.AverageRating).ToList(),
+            "reviews" => filteredVenues.OrderByDescending(v => v.ReviewCount).ToList(),
+            "name" => filteredVenues.OrderBy(v => v.Name).ToList(),
+            _ => filteredVenues
+        };
+    }
+
+    private async Task ResetFilters()
+    {
+        currentSearchTerm = null;
+        currentCategory = null;
+        currentPetType = null;
+        currentAmenities.Clear();
+        filteredVenues = allVenues.ToList();
+        ApplySort();
+    }
+
+    private void NavigateToVenue(int id) => Navigation.NavigateTo($"/venues/{id}");
+
+    private async Task ToggleFavorite(int venueId)
+    {
+        var isFavorite = await UserService.ToggleFavoriteVenueAsync(venueId);
+        if (isFavorite)
+            favoriteIds.Add(venueId);
+        else
+            favoriteIds.Remove(venueId);
+    }
+}

@@ -1,0 +1,265 @@
+@page "/profile"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject IUserService UserService
+@inject IVenueService VenueService
+@inject NavigationManager Navigation
+
+<PageTitle>My Profile - PetVenues</PageTitle>
+
+<div class="profile-page">
+    @if (isLoading)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner">🐾</div>
+            <p>Loading your profile...</p>
+        </div>
+    }
+    else if (user != null)
+    {
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-avatar-section">
+                <img src="@user.AvatarUrl" alt="@user.Name" class="profile-avatar" />
+                <button class="edit-avatar-btn">📷</button>
+            </div>
+            <div class="profile-info">
+                <h1 class="profile-name">@user.Name</h1>
+                <p class="profile-location">📍 @user.Location</p>
+                <p class="profile-bio">@user.Bio</p>
+                <div class="profile-stats">
+                    <div class="profile-stat">
+                        <span class="stat-value">@user.ReviewCount</span>
+                        <span class="stat-label">Reviews</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="stat-value">@user.VenuesAdded</span>
+                        <span class="stat-label">Venues Added</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="stat-value">@user.FavoriteVenueIds.Count</span>
+                        <span class="stat-label">Favorites</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="stat-value">@GetMemberDuration()</span>
+                        <span class="stat-label">Member</span>
+                    </div>
+                </div>
+            </div>
+            <button class="edit-profile-btn" @onclick="() => isEditing = !isEditing">
+                @(isEditing ? "✕ Cancel" : "✏️ Edit Profile")
+            </button>
+        </div>
+
+        @if (isEditing)
+        {
+            <!-- Edit Profile Form -->
+            <div class="edit-form">
+                <h2 class="section-title">✏️ Edit Profile</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-input" @bind="user.Name" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" @bind="user.Email" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" @bind="user.Location" />
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Bio</label>
+                        <textarea class="form-textarea" @bind="user.Bio" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="save-btn" @onclick="SaveProfile">💾 Save Changes</button>
+                </div>
+            </div>
+        }
+
+        <!-- Tabs -->
+        <div class="profile-tabs">
+            <button class="tab-btn @(activeTab == "pets" ? "active" : "")" @onclick="@(() => SetActiveTab("pets"))">
+                🐾 My Pets
+            </button>
+            <button class="tab-btn @(activeTab == "bookings" ? "active" : "")" @onclick="@(() => SetActiveTab("bookings"))">
+                📅 Bookings
+            </button>
+            <button class="tab-btn @(activeTab == "favorites" ? "active" : "")" @onclick="@(() => SetActiveTab("favorites"))">
+                💖 Favorites
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            @if (activeTab == "pets")
+            {
+                <div class="pets-section">
+                    <div class="section-header">
+                        <h2 class="section-title">🐾 My Pets</h2>
+                        <button class="add-btn">➕ Add Pet</button>
+                    </div>
+                    <div class="pets-grid">
+                        @foreach (var pet in user.Pets)
+                        {
+                            <div class="pet-card">
+                                <img src="@pet.ImageUrl" alt="@pet.Name" class="pet-image" />
+                                <div class="pet-info">
+                                    <h3 class="pet-name">@pet.Name</h3>
+                                    <p class="pet-details">@pet.Breed • @pet.Age years old</p>
+                                    <PetBadge PetType="pet.Type" />
+                                </div>
+                                <button class="edit-pet-btn">✏️</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else if (activeTab == "bookings")
+            {
+                <div class="bookings-section">
+                    <h2 class="section-title">📅 My Bookings</h2>
+                    
+                    @if (user.Bookings.Count == 0)
+                    {
+                        <div class="empty-state">
+                            <span class="empty-icon">📅</span>
+                            <h3>No bookings yet</h3>
+                            <p>Start exploring pet-friendly venues and make your first booking!</p>
+                            <a href="/venues" class="explore-btn">Explore Venues</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="bookings-list">
+                            @foreach (var booking in user.Bookings.OrderByDescending(b => b.BookingDate))
+                            {
+                                <div class="booking-card @booking.Status.ToString().ToLower()">
+                                    <img src="@booking.VenueImageUrl" alt="@booking.VenueName" class="booking-image" />
+                                    <div class="booking-info">
+                                        <div class="booking-header">
+                                            <h3 class="booking-venue">@booking.VenueName</h3>
+                                            <span class="booking-status @booking.Status.ToString().ToLower()">
+                                                @GetStatusEmoji(booking.Status) @booking.Status
+                                            </span>
+                                        </div>
+                                        <div class="booking-details">
+                                            <span class="booking-date">📅 @booking.BookingDate.ToString("MMM dd, yyyy")</span>
+                                            <span class="booking-time">🕐 @booking.StartTime.ToString(@"hh\:mm") - @booking.EndTime.ToString(@"hh\:mm")</span>
+                                            <span class="booking-pets">🐾 @string.Join(", ", booking.PetNames)</span>
+                                        </div>
+                                        <div class="booking-footer">
+                                            <span class="booking-price">$@booking.TotalPrice.ToString("0.00")</span>
+                                            @if (booking.Status == BookingStatus.Pending || booking.Status == BookingStatus.Confirmed)
+                                            {
+                                                <button class="cancel-btn">Cancel</button>
+                                            }
+                                            @if (booking.Status == BookingStatus.Completed)
+                                            {
+                                                <button class="review-btn">Write Review</button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            else if (activeTab == "favorites")
+            {
+                <div class="favorites-section">
+                    <h2 class="section-title">💖 Favorite Venues</h2>
+                    
+                    @if (favoriteVenues.Count == 0)
+                    {
+                        <div class="empty-state">
+                            <span class="empty-icon">💖</span>
+                            <h3>No favorites yet</h3>
+                            <p>Start exploring and save your favorite pet-friendly venues!</p>
+                            <a href="/venues" class="explore-btn">Explore Venues</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="venues-grid">
+                            @foreach (var venue in favoriteVenues)
+                            {
+                                var venueId = venue.Id;
+                                <VenueCard 
+                                    Venue="venue"
+                                    IsFavorite="true"
+                                    OnClick="@(() => NavigateToVenue(venueId))"
+                                    OnFavoriteToggle="@(() => RemoveFavorite(venueId))" />
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private User? user;
+    private List<Venue> favoriteVenues = [];
+    private bool isLoading = true;
+    private bool isEditing = false;
+    private string activeTab = "pets";
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserService.GetCurrentUserAsync();
+        
+        if (user != null)
+        {
+            var allVenues = await VenueService.GetAllVenuesAsync();
+            favoriteVenues = allVenues.Where(v => user.FavoriteVenueIds.Contains(v.Id)).ToList();
+        }
+        
+        isLoading = false;
+    }
+
+    private string GetMemberDuration()
+    {
+        if (user == null) return "";
+        var months = (DateTime.Now - user.JoinedDate).Days / 30;
+        return months < 12 ? $"{months}mo" : $"{months / 12}y";
+    }
+
+    private async Task SaveProfile()
+    {
+        if (user != null)
+        {
+            await UserService.UpdateUserAsync(user);
+            isEditing = false;
+        }
+    }
+
+    private async Task RemoveFavorite(int venueId)
+    {
+        if (user != null)
+        {
+            await UserService.ToggleFavoriteVenueAsync(venueId);
+            user.FavoriteVenueIds.Remove(venueId);
+            favoriteVenues.RemoveAll(v => v.Id == venueId);
+        }
+    }
+
+    private void SetActiveTab(string tab) => activeTab = tab;
+
+    private void NavigateToVenue(int venueId) => Navigation.NavigateTo($"/venues/{venueId}");
+
+    private static string GetStatusEmoji(BookingStatus status) => status switch
+    {
+        BookingStatus.Pending => "⏳",
+        BookingStatus.Confirmed => "✅",
+        BookingStatus.Cancelled => "❌",
+        BookingStatus.Completed => "🎉",
+        _ => "📋"
+    };
+}

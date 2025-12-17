@@ -1,0 +1,32 @@
+.amenity-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.amenity-tag:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+    color: var(--primary-dark);
+}
+
+.amenity-tag.small {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+}
+
+.amenity-tag.medium {
+    font-size: 0.8rem;
+}
+
+.amenity-tag.large {
+    font-size: 0.9rem;
+    padding: 0.35rem 0.6rem;
+}

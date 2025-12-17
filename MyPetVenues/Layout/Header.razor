@@ -1,0 +1,71 @@
+@using MyPetVenues.Services
+@inject NavigationManager Navigation
+@inject IThemeService ThemeService
+@implements IDisposable
+
+<header class="main-header">
+    <div class="header-container">
+        <a href="/" class="logo" @onclick:preventDefault @onclick="NavigateHome">
+            <span class="logo-icon">🐾</span>
+            <span class="logo-text">PetVenues</span>
+        </a>
+        
+        <button class="mobile-menu-btn" @onclick="ToggleMobileMenu">
+            @(IsMobileMenuOpen ? "✕" : "☰")
+        </button>
+        
+        <nav class="main-nav @(IsMobileMenuOpen ? "open" : "")">
+            <a href="/" class="nav-link @(IsActive("/") ? "active" : "")" @onclick="CloseMobileMenu">
+                🏠 Home
+            </a>
+            <a href="/venues" class="nav-link @(IsActive("/venues") ? "active" : "")" @onclick="CloseMobileMenu">
+                📍 Venues
+            </a>
+            <a href="/booking" class="nav-link @(IsActive("/booking") ? "active" : "")" @onclick="CloseMobileMenu">
+                📅 Book
+            </a>
+            <a href="/profile" class="nav-link @(IsActive("/profile") ? "active" : "")" @onclick="CloseMobileMenu">
+                👤 Profile
+            </a>
+        </nav>
+        
+        <div class="header-actions">
+            <button class="theme-toggle" @onclick="ToggleTheme" title="Toggle theme">
+                @(ThemeService.IsDarkMode ? "☀️" : "🌙")
+            </button>
+            <a href="/profile" class="user-avatar-link">
+                <img src="images/pets/dog1.png" alt="User" class="user-avatar" />
+            </a>
+        </div>
+    </div>
+</header>
+
+@code {
+    private bool IsMobileMenuOpen { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        ThemeService.OnThemeChanged += StateHasChanged;
+    }
+
+    private void ToggleMobileMenu() => IsMobileMenuOpen = !IsMobileMenuOpen;
+    
+    private void CloseMobileMenu() => IsMobileMenuOpen = false;
+
+    private async Task ToggleTheme() => await ThemeService.ToggleThemeAsync();
+
+    private void NavigateHome() => Navigation.NavigateTo("/");
+
+    private bool IsActive(string path)
+    {
+        var currentPath = Navigation.ToBaseRelativePath(Navigation.Uri);
+        if (string.IsNullOrEmpty(currentPath) && path == "/")
+            return true;
+        return $"/{currentPath}".StartsWith(path) && path != "/" || ($"/{currentPath}" == path);
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
+}

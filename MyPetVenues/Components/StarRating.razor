@@ -1,0 +1,53 @@
+@using MyPetVenues.Models
+
+<div class="star-rating">
+    @for (int i = 1; i <= 5; i++)
+    {
+        var starIndex = i;
+        <span class="star @(GetStarClass(starIndex))" @onclick="() => OnStarClick(starIndex)">
+            @GetStarEmoji(starIndex)
+        </span>
+    }
+    @if (ShowValue)
+    {
+        <span class="rating-value">@Rating.ToString("0.0")</span>
+    }
+    @if (ShowCount && ReviewCount > 0)
+    {
+        <span class="review-count">(@ReviewCount reviews)</span>
+    }
+</div>
+
+@code {
+    [Parameter] public double Rating { get; set; }
+    [Parameter] public int ReviewCount { get; set; }
+    [Parameter] public bool ShowValue { get; set; } = true;
+    [Parameter] public bool ShowCount { get; set; } = true;
+    [Parameter] public bool IsInteractive { get; set; } = false;
+    [Parameter] public EventCallback<int> OnRatingChanged { get; set; }
+    [Parameter] public string Size { get; set; } = "medium";
+
+    private string GetStarClass(int index)
+    {
+        var classes = new List<string> { Size };
+        if (IsInteractive) classes.Add("interactive");
+        if (index <= Rating) classes.Add("filled");
+        else if (index - 0.5 <= Rating) classes.Add("half");
+        return string.Join(" ", classes);
+    }
+
+    private string GetStarEmoji(int index)
+    {
+        if (index <= Rating) return "⭐";
+        if (index - 0.5 <= Rating) return "⭐";
+        return "☆";
+    }
+
+    private async Task OnStarClick(int index)
+    {
+        if (IsInteractive)
+        {
+            await OnRatingChanged.InvokeAsync(index);
+        }
+    }
+}

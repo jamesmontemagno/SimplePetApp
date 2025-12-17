@@ -1,29 +1,3 @@
----
-agent: agent
-description: 'Generate app'
----
- 
-Based on the PRD below, let's the following
-1. Landing page for the app that highlights the key features and benefits to users.
-2. Venues and venues details pages that showcase the venues with images, descriptions, and user reviews.
-3. User profile page where users can view and edit their personal information, preferences, and booking history.
-4. Booking page that allows users to select a venue, choose a date and time, and confirm their booking.
-5. Use mock data to populate the pages and demonstrate the app's functionality.
-6. Ensure we use SOLID principals and best practices for code organization and maintainability.
-7. Use reusable components where possible to reduce code duplication and improve consistency across the app.
-8. Use scoped css for styling to avoid conflicts and ensure styles are applied only to the intended components.
-9. anything else you think is necessary to make a great app based on the PRD below.
-
-With the following in mind:
-
-- Let's use a modern style with graident colors that are in dark pink hues, nice fonts, and plenty of emoji, and have nice hover effects throughout brining it to live. 
-- Make sure we have nice headers for navigation and a footer as well with standard links and copyright information. 
-- The site should be responsive and look good on both desktop and mobile devices and work in light and dark modes with a toggle take some time reflect on the design and make it look good. make sure all of the key features are highlighted. 
-- I have some pet photos in the wwwroot/images/pets and venue images in wwwroot/images/venues that we could use. Update the existing Home.razor file for the home. 
-
-PRD: 
-
-
 # Product Requirements Document (PRD)
 ## PetVenues - Pet-Friendly Location Finder
 
@@ -126,4 +100,3 @@ For the initial release, focus on:
 
 *Document Version: 1.0*  
 *Last Updated: December 2025*
-
