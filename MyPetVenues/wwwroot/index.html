@@ -4,19 +4,93 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MyPetVenues</title>
+    <title>PetVenues - Find Pet-Friendly Places 🐾</title>
+    <meta name="description" content="Discover pet-friendly venues near you. Parks, cafés, hotels, and more — all welcoming your furry friends!" />
+    <meta name="theme-color" content="#ec4899" />
     <base href="/" />
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="css/app.css" />
     <link href="MyPetVenues.styles.css" rel="stylesheet" />
+    
+    <style>
+        /* Loading screen styles - only applies before Blazor loads */
+        #app:has(.loading-content) {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #fbcfe8 100%);
+        }
+        
+        /* Reset #app after Blazor loads */
+        #app:not(:has(.loading-content)) {
+            background: transparent !important;
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .loading-logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 1s infinite;
+        }
+        
+        .loading-title {
+            font-family: 'Inter', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2rem;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .loading-progress {
+            margin: 0 auto 1rem;
+        }
+        
+        .loading-progress circle:first-child {
+            stroke: #fce7f3;
+        }
+        
+        .loading-progress circle:last-child {
+            stroke: #ec4899;
+        }
+        
+        .loading-progress-text {
+            position: static;
+            inset: auto;
+            color: #be185d;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
 
 <body>
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div class="loading-content">
+            <div class="loading-logo">🐾</div>
+            <div class="loading-title">PetVenues</div>
+            <svg class="loading-progress">
+                <circle r="40%" cx="50%" cy="50%" />
+                <circle r="40%" cx="50%" cy="50%" />
+            </svg>
+            <div class="loading-progress-text"></div>
+        </div>
     </div>
 
     <div id="blazor-error-ui">

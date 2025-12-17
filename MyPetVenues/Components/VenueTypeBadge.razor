@@ -1,0 +1,39 @@
+@using MyPetVenues.Models
+
+<span class="venue-type-badge @GetCategoryClass()">
+    @GetCategoryEmoji() @GetCategoryName()
+</span>
+
+@code {
+    [Parameter, EditorRequired] public VenueCategory Category { get; set; }
+
+    private string GetCategoryClass() => Category.ToString().ToLower();
+
+    private string GetCategoryEmoji() => Category switch
+    {
+        VenueCategory.Park => "🌳",
+        VenueCategory.Restaurant => "🍽️",
+        VenueCategory.Cafe => "☕",
+        VenueCategory.Hotel => "🏨",
+        VenueCategory.Beach => "🏖️",
+        VenueCategory.Store => "🛒",
+        VenueCategory.Grooming => "✂️",
+        VenueCategory.Veterinary => "🏥",
+        VenueCategory.DayCare => "🏠",
+        _ => "📍"
+    };
+
+    private string GetCategoryName() => Category switch
+    {
+        VenueCategory.Park => "Park",
+        VenueCategory.Restaurant => "Restaurant",
+        VenueCategory.Cafe => "Café",
+        VenueCategory.Hotel => "Hotel",
+        VenueCategory.Beach => "Beach",
+        VenueCategory.Store => "Store",
+        VenueCategory.Grooming => "Grooming",
+        VenueCategory.Veterinary => "Vet",
+        VenueCategory.DayCare => "Daycare",
+        _ => "Other"
+    };
+}

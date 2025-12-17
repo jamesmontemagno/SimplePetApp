@@ -1,0 +1,33 @@
+@using MyPetVenues.Models
+
+<span class="pet-badge @GetPetClass()">
+    @GetPetEmoji() @GetPetName()
+</span>
+
+@code {
+    [Parameter, EditorRequired] public PetType PetType { get; set; }
+
+    private string GetPetClass() => PetType.ToString().ToLower();
+
+    private string GetPetEmoji() => PetType switch
+    {
+        PetType.Dogs => "🐕",
+        PetType.Cats => "🐱",
+        PetType.SmallAnimals => "🐹",
+        PetType.Birds => "🦜",
+        PetType.Reptiles => "🦎",
+        PetType.All => "🐾",
+        _ => "🐾"
+    };
+
+    private string GetPetName() => PetType switch
+    {
+        PetType.Dogs => "Dogs",
+        PetType.Cats => "Cats",
+        PetType.SmallAnimals => "Small Pets",
+        PetType.Birds => "Birds",
+        PetType.Reptiles => "Reptiles",
+        PetType.All => "All Pets",
+        _ => "Pets"
+    };
+}

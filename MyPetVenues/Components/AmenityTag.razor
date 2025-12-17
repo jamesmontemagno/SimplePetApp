@@ -1,0 +1,48 @@
+@using MyPetVenues.Models
+
+<span class="amenity-tag @Size">
+    @GetAmenityEmoji() @GetAmenityName()
+</span>
+
+@code {
+    [Parameter, EditorRequired] public Amenity Amenity { get; set; }
+    [Parameter] public string Size { get; set; } = "medium";
+
+    private string GetAmenityEmoji() => Amenity switch
+    {
+        Amenity.WaterBowls => "💧",
+        Amenity.PetMenu => "🍖",
+        Amenity.OffLeashArea => "🏃",
+        Amenity.FencedArea => "🏞️",
+        Amenity.WasteBags => "🗑️",
+        Amenity.PetTreats => "🦴",
+        Amenity.OutdoorSeating => "☀️",
+        Amenity.IndoorPetFriendly => "🏠",
+        Amenity.PetWashStation => "🚿",
+        Amenity.DogPark => "🐕",
+        Amenity.AgilityEquipment => "🎯",
+        Amenity.ShadedAreas => "🌳",
+        Amenity.ParkingAvailable => "🅿️",
+        Amenity.WheelchairAccessible => "♿",
+        _ => "✨"
+    };
+
+    private string GetAmenityName() => Amenity switch
+    {
+        Amenity.WaterBowls => "Water Bowls",
+        Amenity.PetMenu => "Pet Menu",
+        Amenity.OffLeashArea => "Off-Leash",
+        Amenity.FencedArea => "Fenced",
+        Amenity.WasteBags => "Waste Bags",
+        Amenity.PetTreats => "Treats",
+        Amenity.OutdoorSeating => "Outdoor",
+        Amenity.IndoorPetFriendly => "Indoor Pets OK",
+        Amenity.PetWashStation => "Wash Station",
+        Amenity.DogPark => "Dog Park",
+        Amenity.AgilityEquipment => "Agility",
+        Amenity.ShadedAreas => "Shaded",
+        Amenity.ParkingAvailable => "Parking",
+        Amenity.WheelchairAccessible => "Accessible",
+        _ => "Other"
+    };
+}

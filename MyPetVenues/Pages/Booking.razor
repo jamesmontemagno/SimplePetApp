@@ -1,0 +1,347 @@
+@page "/booking"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject IVenueService VenueService
+@inject IUserService UserService
+@inject IBookingService BookingService
+@inject NavigationManager Navigation
+
+<PageTitle>Book a Visit - PetVenues</PageTitle>
+
+<div class="booking-page">
+    <div class="page-header">
+        <h1 class="page-title">📅 Book a Visit</h1>
+        <p class="page-subtitle">Reserve your spot at pet-friendly venues</p>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner">🐾</div>
+            <p>Loading booking options...</p>
+        </div>
+    }
+    else
+    {
+        <div class="booking-container">
+            <!-- Booking Form -->
+            <div class="booking-form">
+                <div class="form-section">
+                    <h2 class="section-title">📍 Select Venue</h2>
+                    <div class="venue-selector">
+                        @foreach (var venue in bookableVenues)
+                        {
+                            <div class="venue-option @(selectedVenueId == venue.Id ? "selected" : "")" 
+                                 @onclick="() => SelectVenue(venue.Id)">
+                                <img src="@venue.ImageUrl" alt="@venue.Name" class="venue-thumb" />
+                                <div class="venue-option-info">
+                                    <span class="venue-option-name">@venue.Name</span>
+                                    <span class="venue-option-category">
+                                        <VenueTypeBadge Category="venue.Category" />
+                                    </span>
+                                </div>
+                                <span class="select-indicator">@(selectedVenueId == venue.Id ? "✓" : "")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">📆 Select Date & Time</h2>
+                    <div class="datetime-grid">
+                        <div class="form-group">
+                            <label class="form-label">Date</label>
+                            <input type="date" 
+                                   class="form-input" 
+                                   @bind="selectedDate"
+                                   min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Start Time</label>
+                            <select class="form-select" @bind="selectedStartTime">
+                                <option value="">Select time</option>
+                                @foreach (var slot in availableTimeSlots)
+                                {
+                                    <option value="@slot.ToString(@"hh\:mm")">@FormatTimeSlot(slot)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Duration</label>
+                            <select class="form-select" @bind="selectedDuration">
+                                <option value="60">1 hour</option>
+                                <option value="120">2 hours</option>
+                                <option value="180">3 hours</option>
+                                <option value="240">4 hours</option>
+                                <option value="480">Full day (8 hours)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">🐾 Select Pets</h2>
+                    <div class="pets-selector">
+                        @foreach (var pet in user?.Pets ?? [])
+                        {
+                            <label class="pet-checkbox">
+                                <input type="checkbox" 
+                                       checked="@selectedPetIds.Contains(pet.Id)"
+                                       @onchange="() => TogglePet(pet.Id)" />
+                                <div class="pet-checkbox-content">
+                                    <img src="@pet.ImageUrl" alt="@pet.Name" class="pet-checkbox-img" />
+                                    <div class="pet-checkbox-info">
+                                        <span class="pet-checkbox-name">@pet.Name</span>
+                                        <span class="pet-checkbox-breed">@pet.Breed</span>
+                                    </div>
+                                </div>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">📝 Special Requests</h2>
+                    <textarea class="form-textarea" 
+                              placeholder="Any special requirements or notes for your visit..."
+                              @bind="specialRequests"
+                              rows="3"></textarea>
+                </div>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="booking-summary">
+                <h2 class="summary-title">📋 Booking Summary</h2>
+                
+                @if (selectedVenue != null)
+                {
+                    <div class="summary-venue">
+                        <img src="@selectedVenue.ImageUrl" alt="@selectedVenue.Name" class="summary-venue-img" />
+                        <div class="summary-venue-info">
+                            <h3>@selectedVenue.Name</h3>
+                            <p>📍 @selectedVenue.City</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="summary-placeholder">
+                        <span class="placeholder-icon">📍</span>
+                        <span>Select a venue to continue</span>
+                    </div>
+                }
+
+                <div class="summary-details">
+                    <div class="summary-row">
+                        <span class="summary-label">📅 Date</span>
+                        <span class="summary-value">@(selectedDate?.ToString("MMM dd, yyyy") ?? "Not selected")</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">🕐 Time</span>
+                        <span class="summary-value">@(string.IsNullOrEmpty(selectedStartTime) ? "Not selected" : selectedStartTime)</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">⏱️ Duration</span>
+                        <span class="summary-value">@GetDurationText()</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-label">🐾 Pets</span>
+                        <span class="summary-value">@(selectedPetIds.Count > 0 ? $"{selectedPetIds.Count} pet(s)" : "None selected")</span>
+                    </div>
+                </div>
+
+                <div class="summary-pricing">
+                    <div class="price-row">
+                        <span>Service fee</span>
+                        <span>$@CalculatePrice().ToString("0.00")</span>
+                    </div>
+                    <div class="price-row">
+                        <span>Platform fee</span>
+                        <span>$2.50</span>
+                    </div>
+                    <div class="price-row total">
+                        <span>Total</span>
+                        <span>$@((CalculatePrice() + 2.50m).ToString("0.00"))</span>
+                    </div>
+                </div>
+
+                <button class="confirm-btn" 
+                        disabled="@(!IsFormValid())"
+                        @onclick="ConfirmBooking">
+                    @if (isSubmitting)
+                    {
+                        <span class="btn-loading">🐾</span>
+                        <span>Processing...</span>
+                    }
+                    else
+                    {
+                        <span>✅ Confirm Booking</span>
+                    }
+                </button>
+
+                @if (bookingSuccess)
+                {
+                    <div class="success-message">
+                        🎉 Booking confirmed! Check your profile for details.
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "venue")]
+    public int? VenueIdQuery { get; set; }
+
+    private User? user;
+    private List<Venue> bookableVenues = [];
+    private Venue? selectedVenue;
+    private List<TimeSpan> availableTimeSlots = [];
+    
+    private int? selectedVenueId;
+    private DateTime? selectedDate = DateTime.Now.AddDays(1);
+    private string selectedStartTime = string.Empty;
+    private int selectedDuration = 120;
+    private List<int> selectedPetIds = [];
+    private string specialRequests = string.Empty;
+    
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+    private bool bookingSuccess = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserService.GetCurrentUserAsync();
+        var allVenues = await VenueService.GetAllVenuesAsync();
+        
+        // Filter to bookable venues (Hotels, Grooming, DayCare, etc.)
+        bookableVenues = allVenues.Where(v => 
+            v.Category is VenueCategory.Hotel or 
+                          VenueCategory.Grooming or 
+                          VenueCategory.DayCare or
+                          VenueCategory.Veterinary).ToList();
+        
+        // Pre-select venue if provided in query
+        if (VenueIdQuery.HasValue)
+        {
+            await SelectVenue(VenueIdQuery.Value);
+        }
+        
+        // Generate time slots
+        await LoadTimeSlots();
+        
+        isLoading = false;
+    }
+
+    private async Task SelectVenue(int venueId)
+    {
+        selectedVenueId = venueId;
+        selectedVenue = bookableVenues.FirstOrDefault(v => v.Id == venueId) 
+                       ?? await VenueService.GetVenueByIdAsync(venueId);
+        await LoadTimeSlots();
+    }
+
+    private async Task LoadTimeSlots()
+    {
+        if (selectedVenueId.HasValue && selectedDate.HasValue)
+        {
+            availableTimeSlots = (await BookingService.GetAvailableTimeSlotsAsync(
+                selectedVenueId.Value, selectedDate.Value)).ToList();
+        }
+        else
+        {
+            // Default time slots
+            availableTimeSlots = [];
+            for (int hour = 8; hour < 20; hour++)
+            {
+                availableTimeSlots.Add(new TimeSpan(hour, 0, 0));
+                availableTimeSlots.Add(new TimeSpan(hour, 30, 0));
+            }
+        }
+    }
+
+    private void TogglePet(int petId)
+    {
+        if (selectedPetIds.Contains(petId))
+            selectedPetIds.Remove(petId);
+        else
+            selectedPetIds.Add(petId);
+    }
+
+    private string GetDurationText() => selectedDuration switch
+    {
+        60 => "1 hour",
+        120 => "2 hours",
+        180 => "3 hours",
+        240 => "4 hours",
+        480 => "Full day",
+        _ => $"{selectedDuration} min"
+    };
+
+    private string FormatTimeSlot(TimeSpan slot)
+    {
+        var dateTime = DateTime.Today.Add(slot);
+        return dateTime.ToString("h:mm tt");
+    }
+
+    private decimal CalculatePrice()
+    {
+        var basePrice = selectedVenue?.Category switch
+        {
+            VenueCategory.Hotel => 50m,
+            VenueCategory.Grooming => 35m,
+            VenueCategory.DayCare => 40m,
+            VenueCategory.Veterinary => 75m,
+            _ => 30m
+        };
+        
+        var durationMultiplier = selectedDuration / 60m;
+        var petMultiplier = Math.Max(1, selectedPetIds.Count);
+        
+        return basePrice * durationMultiplier * petMultiplier;
+    }
+
+    private bool IsFormValid()
+    {
+        return selectedVenueId.HasValue &&
+               selectedDate.HasValue &&
+               !string.IsNullOrEmpty(selectedStartTime) &&
+               selectedPetIds.Count > 0;
+    }
+
+    private async Task ConfirmBooking()
+    {
+        if (!IsFormValid() || user == null || selectedVenue == null) return;
+
+        isSubmitting = true;
+
+        var startTime = TimeSpan.Parse(selectedStartTime);
+        var endTime = startTime.Add(TimeSpan.FromMinutes(selectedDuration));
+
+        var newBooking = new Models.Booking
+        {
+            VenueId = selectedVenueId!.Value,
+            VenueName = selectedVenue.Name,
+            VenueImageUrl = selectedVenue.ImageUrl,
+            UserId = user.Id,
+            BookingDate = selectedDate!.Value,
+            StartTime = startTime,
+            EndTime = endTime,
+            NumberOfPets = selectedPetIds.Count,
+            PetNames = user.Pets.Where(p => selectedPetIds.Contains(p.Id)).Select(p => p.Name).ToList(),
+            SpecialRequests = specialRequests,
+            TotalPrice = CalculatePrice() + 2.50m
+        };
+
+        await BookingService.CreateBookingAsync(newBooking);
+        
+        isSubmitting = false;
+        bookingSuccess = true;
+
+        // Redirect after a short delay
+        await Task.Delay(2000);
+        Navigation.NavigateTo("/profile");
+    }
+}

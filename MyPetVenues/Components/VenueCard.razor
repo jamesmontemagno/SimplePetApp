@@ -1,0 +1,66 @@
+@using MyPetVenues.Models
+
+<div class="venue-card @(IsFeatured ? "featured" : "")" @onclick="OnCardClick">
+    <div class="venue-image-container">
+        <img src="@Venue.ImageUrl" alt="@Venue.Name" class="venue-image" />
+        @if (IsFeatured)
+        {
+            <span class="featured-badge">⭐ Featured</span>
+        }
+        <button class="favorite-btn @(IsFavorite ? "active" : "")" @onclick="OnFavoriteClick" @onclick:stopPropagation="true">
+            @(IsFavorite ? "💖" : "🤍")
+        </button>
+        <div class="category-badge">
+            <VenueTypeBadge Category="Venue.Category" />
+        </div>
+    </div>
+    <div class="venue-content">
+        <h3 class="venue-name">@Venue.Name</h3>
+        <p class="venue-location">📍 @Venue.City</p>
+        <div class="venue-rating">
+            <StarRating Rating="@Venue.AverageRating" ReviewCount="@Venue.ReviewCount" ShowValue="true" ShowCount="true" Size="small" />
+        </div>
+        <p class="venue-description">@TruncateDescription(Venue.Description, 100)</p>
+        <div class="venue-pets">
+            @foreach (var pet in Venue.AllowedPets.Take(3))
+            {
+                <PetBadge PetType="pet" />
+            }
+        </div>
+        <div class="venue-amenities">
+            @foreach (var amenity in Venue.Amenities.Take(3))
+            {
+                <AmenityTag Amenity="amenity" Size="small" />
+            }
+            @if (Venue.Amenities.Count > 3)
+            {
+                <span class="more-amenities">+@(Venue.Amenities.Count - 3) more</span>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Venue Venue { get; set; } = default!;
+    [Parameter] public bool IsFeatured { get; set; }
+    [Parameter] public bool IsFavorite { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public EventCallback OnFavoriteToggle { get; set; }
+
+    private async Task OnCardClick()
+    {
+        await OnClick.InvokeAsync();
+    }
+
+    private async Task OnFavoriteClick()
+    {
+        await OnFavoriteToggle.InvokeAsync();
+    }
+
+    private static string TruncateDescription(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            return text;
+        return text[..maxLength].TrimEnd() + "...";
+    }
+}

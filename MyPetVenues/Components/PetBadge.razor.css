@@ -1,0 +1,68 @@
+.pet-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.pet-badge.dogs {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: #b45309;
+}
+
+.pet-badge.cats {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+    border-color: rgba(168, 85, 247, 0.3);
+    color: #7c3aed;
+}
+
+.pet-badge.smallanimals {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(219, 39, 119, 0.15) 100%);
+    border-color: rgba(236, 72, 153, 0.3);
+    color: #be185d;
+}
+
+.pet-badge.birds {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.15) 100%);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #15803d;
+}
+
+.pet-badge.reptiles {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(2, 132, 199, 0.15) 100%);
+    border-color: rgba(14, 165, 233, 0.3);
+    color: #0369a1;
+}
+
+.pet-badge.all {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-lighter) 100%);
+    border-color: var(--primary-color);
+    color: var(--primary-dark);
+}
+
+:global(.dark) .pet-badge.dogs {
+    color: #fbbf24;
+}
+
+:global(.dark) .pet-badge.cats {
+    color: #a78bfa;
+}
+
+:global(.dark) .pet-badge.smallanimals {
+    color: #f472b6;
+}
+
+:global(.dark) .pet-badge.birds {
+    color: #4ade80;
+}
+
+:global(.dark) .pet-badge.reptiles {
+    color: #38bdf8;
+}

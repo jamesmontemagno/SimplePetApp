@@ -1,0 +1,180 @@
+@page "/venues/{Id:int}"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject IVenueService VenueService
+@inject IUserService UserService
+@inject NavigationManager Navigation
+
+<PageTitle>@(venue?.Name ?? "Venue Details") - PetVenues</PageTitle>
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="loading-spinner">🐾</div>
+        <p>Loading venue details...</p>
+    </div>
+}
+else if (venue == null)
+{
+    <div class="not-found">
+        <span class="not-found-icon">😿</span>
+        <h2>Venue Not Found</h2>
+        <p>Sorry, we couldn't find the venue you're looking for.</p>
+        <a href="/venues" class="back-btn">← Back to Venues</a>
+    </div>
+}
+else
+{
+    <div class="venue-details">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb">
+            <a href="/">Home</a>
+            <span class="separator">›</span>
+            <a href="/venues">Venues</a>
+            <span class="separator">›</span>
+            <span class="current">@venue.Name</span>
+        </nav>
+        
+        <!-- Hero Section -->
+        <div class="venue-hero">
+            <div class="hero-image-container">
+                <img src="@venue.ImageUrl" alt="@venue.Name" class="hero-image" />
+                <button class="favorite-btn @(isFavorite ? "active" : "")" @onclick="ToggleFavorite">
+                    @(isFavorite ? "💖 Saved" : "🤍 Save")
+                </button>
+            </div>
+            <div class="hero-content">
+                <div class="venue-badges">
+                    <VenueTypeBadge Category="venue.Category" />
+                    @if (venue.IsFeatured)
+                    {
+                        <span class="featured-badge">⭐ Featured</span>
+                    }
+                </div>
+                <h1 class="venue-name">@venue.Name</h1>
+                <p class="venue-location">📍 @venue.Address, @venue.City</p>
+                
+                <div class="venue-rating-large">
+                    <StarRating Rating="@venue.AverageRating" ReviewCount="@venue.ReviewCount" Size="large" />
+                </div>
+                
+                <p class="venue-description">@venue.Description</p>
+                
+                <div class="venue-quick-info">
+                    <div class="quick-info-item">
+                        <span class="info-icon">🕐</span>
+                        <span class="info-text">@venue.Hours</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(venue.Phone))
+                    {
+                        <div class="quick-info-item">
+                            <span class="info-icon">📞</span>
+                            <span class="info-text">@venue.Phone</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(venue.Website))
+                    {
+                        <div class="quick-info-item">
+                            <span class="info-icon">🌐</span>
+                            <a href="@venue.Website" target="_blank" class="info-link">Visit Website</a>
+                        </div>
+                    }
+                </div>
+                
+                <div class="venue-actions">
+                    <a href="/booking?venue=@venue.Id" class="action-btn primary">
+                        📅 Book Now
+                    </a>
+                    <button class="action-btn secondary" @onclick="ShareVenue">
+                        📤 Share
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pet Types & Amenities -->
+        <div class="info-sections">
+            <div class="info-section">
+                <h2 class="section-title">🐾 Welcome Pets</h2>
+                <div class="pets-list">
+                    @foreach (var pet in venue.AllowedPets)
+                    {
+                        <PetBadge PetType="pet" />
+                    }
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h2 class="section-title">✨ Amenities</h2>
+                <div class="amenities-list">
+                    @foreach (var amenity in venue.Amenities)
+                    {
+                        <AmenityTag Amenity="amenity" Size="large" />
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reviews Section -->
+        <div class="reviews-section">
+            <div class="reviews-header">
+                <h2 class="section-title">💬 Reviews (@venue.ReviewCount)</h2>
+                <button class="write-review-btn">
+                    ✍️ Write a Review
+                </button>
+            </div>
+            
+            <div class="reviews-summary">
+                <div class="rating-breakdown">
+                    <div class="overall-rating">
+                        <span class="rating-number">@venue.AverageRating.ToString("0.0")</span>
+                        <StarRating Rating="@venue.AverageRating" ShowValue="false" ShowCount="false" Size="medium" />
+                        <span class="rating-count">@venue.ReviewCount reviews</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="reviews-list">
+                @foreach (var review in venue.Reviews)
+                {
+                    <ReviewCard Review="review" ShowDetails="true" />
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    
+    private Venue? venue;
+    private bool isLoading = true;
+    private bool isFavorite;
+
+    protected override async Task OnInitializedAsync()
+    {
+        venue = await VenueService.GetVenueByIdAsync(Id);
+        
+        if (venue != null)
+        {
+            var user = await UserService.GetCurrentUserAsync();
+            isFavorite = user.FavoriteVenueIds.Contains(venue.Id);
+        }
+        
+        isLoading = false;
+    }
+
+    private async Task ToggleFavorite()
+    {
+        if (venue == null) return;
+        isFavorite = await UserService.ToggleFavoriteVenueAsync(venue.Id);
+    }
+
+    private void ShareVenue()
+    {
+        // In a real app, this would trigger native share or copy link
+        // For now, it's a placeholder
+    }
+}

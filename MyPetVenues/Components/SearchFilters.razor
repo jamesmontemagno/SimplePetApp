@@ -1,0 +1,215 @@
+@using MyPetVenues.Models
+
+<div class="search-filters">
+    <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="text" 
+               placeholder="Search venues, cities..." 
+               @bind="SearchTerm" 
+               @bind:event="oninput"
+               @onkeyup="OnSearchKeyUp"
+               class="search-input" />
+        @if (!string.IsNullOrEmpty(SearchTerm))
+        {
+            <button class="clear-btn" @onclick="ClearSearch">✕</button>
+        }
+    </div>
+    
+    <div class="filter-row">
+        <div class="filter-group">
+            <label class="filter-label">📂 Category</label>
+            <select class="filter-select" @bind="SelectedCategory">
+                <option value="">All Categories</option>
+                @foreach (VenueCategory category in Enum.GetValues<VenueCategory>())
+                {
+                    <option value="@category">@GetCategoryName(category)</option>
+                }
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label">🐾 Pet Type</label>
+            <select class="filter-select" @bind="SelectedPetType">
+                <option value="">All Pets</option>
+                @foreach (PetType petType in Enum.GetValues<PetType>())
+                {
+                    <option value="@petType">@GetPetTypeName(petType)</option>
+                }
+            </select>
+        </div>
+        
+        <button class="filter-toggle-btn" @onclick="ToggleAmenities">
+            ✨ Amenities @(ShowAmenities ? "▲" : "▼")
+        </button>
+        
+        <button class="search-btn" @onclick="ApplyFilters">
+            Search 🔍
+        </button>
+    </div>
+    
+    @if (ShowAmenities)
+    {
+        <div class="amenities-panel">
+            <div class="amenities-grid">
+                @foreach (Amenity amenity in Enum.GetValues<Amenity>())
+                {
+                    <label class="amenity-checkbox">
+                        <input type="checkbox" 
+                               checked="@SelectedAmenities.Contains(amenity)"
+                               @onchange="() => ToggleAmenity(amenity)" />
+                        <span class="checkbox-label">
+                            @GetAmenityEmoji(amenity) @GetAmenityName(amenity)
+                        </span>
+                    </label>
+                }
+            </div>
+        </div>
+    }
+    
+    @if (HasActiveFilters)
+    {
+        <div class="active-filters">
+            <span class="active-label">Active filters:</span>
+            @if (!string.IsNullOrEmpty(SearchTerm))
+            {
+                <span class="filter-chip" @onclick="ClearSearch">
+                    "@SearchTerm" ✕
+                </span>
+            }
+            @if (SelectedCategory.HasValue)
+            {
+                <span class="filter-chip" @onclick="() => SelectedCategory = null">
+                    @GetCategoryName(SelectedCategory.Value) ✕
+                </span>
+            }
+            @if (SelectedPetType.HasValue)
+            {
+                <span class="filter-chip" @onclick="() => SelectedPetType = null">
+                    @GetPetTypeName(SelectedPetType.Value) ✕
+                </span>
+            }
+            @foreach (var amenity in SelectedAmenities)
+            {
+                <span class="filter-chip" @onclick="() => ToggleAmenity(amenity)">
+                    @GetAmenityName(amenity) ✕
+                </span>
+            }
+            <button class="clear-all-btn" @onclick="ClearAllFilters">Clear All</button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public EventCallback<(string? SearchTerm, VenueCategory? Category, PetType? PetType, List<Amenity> Amenities)> OnFiltersChanged { get; set; }
+
+    private string SearchTerm { get; set; } = string.Empty;
+    private VenueCategory? SelectedCategory { get; set; }
+    private PetType? SelectedPetType { get; set; }
+    private List<Amenity> SelectedAmenities { get; set; } = [];
+    private bool ShowAmenities { get; set; } = false;
+
+    private bool HasActiveFilters => !string.IsNullOrEmpty(SearchTerm) || 
+                                     SelectedCategory.HasValue || 
+                                     SelectedPetType.HasValue || 
+                                     SelectedAmenities.Count > 0;
+
+    private void ToggleAmenities() => ShowAmenities = !ShowAmenities;
+
+    private void ToggleAmenity(Amenity amenity)
+    {
+        if (SelectedAmenities.Contains(amenity))
+            SelectedAmenities.Remove(amenity);
+        else
+            SelectedAmenities.Add(amenity);
+    }
+
+    private async Task OnSearchKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await ApplyFilters();
+        }
+    }
+
+    private async Task ApplyFilters()
+    {
+        await OnFiltersChanged.InvokeAsync((SearchTerm, SelectedCategory, SelectedPetType, SelectedAmenities));
+    }
+
+    private void ClearSearch()
+    {
+        SearchTerm = string.Empty;
+    }
+
+    private async Task ClearAllFilters()
+    {
+        SearchTerm = string.Empty;
+        SelectedCategory = null;
+        SelectedPetType = null;
+        SelectedAmenities.Clear();
+        await ApplyFilters();
+    }
+
+    private static string GetCategoryName(VenueCategory category) => category switch
+    {
+        VenueCategory.Park => "🌳 Parks",
+        VenueCategory.Restaurant => "🍽️ Restaurants",
+        VenueCategory.Cafe => "☕ Cafés",
+        VenueCategory.Hotel => "🏨 Hotels",
+        VenueCategory.Beach => "🏖️ Beaches",
+        VenueCategory.Store => "🛒 Stores",
+        VenueCategory.Grooming => "✂️ Grooming",
+        VenueCategory.Veterinary => "🏥 Veterinary",
+        VenueCategory.DayCare => "🏠 Daycare",
+        _ => "📍 Other"
+    };
+
+    private static string GetPetTypeName(PetType petType) => petType switch
+    {
+        PetType.Dogs => "🐕 Dogs",
+        PetType.Cats => "🐱 Cats",
+        PetType.SmallAnimals => "🐹 Small Animals",
+        PetType.Birds => "🦜 Birds",
+        PetType.Reptiles => "🦎 Reptiles",
+        PetType.All => "🐾 All Pets",
+        _ => "🐾 Other"
+    };
+
+    private static string GetAmenityEmoji(Amenity amenity) => amenity switch
+    {
+        Amenity.WaterBowls => "💧",
+        Amenity.PetMenu => "🍖",
+        Amenity.OffLeashArea => "🏃",
+        Amenity.FencedArea => "🏞️",
+        Amenity.WasteBags => "🗑️",
+        Amenity.PetTreats => "🦴",
+        Amenity.OutdoorSeating => "☀️",
+        Amenity.IndoorPetFriendly => "🏠",
+        Amenity.PetWashStation => "🚿",
+        Amenity.DogPark => "🐕",
+        Amenity.AgilityEquipment => "🎯",
+        Amenity.ShadedAreas => "🌳",
+        Amenity.ParkingAvailable => "🅿️",
+        Amenity.WheelchairAccessible => "♿",
+        _ => "✨"
+    };
+
+    private static string GetAmenityName(Amenity amenity) => amenity switch
+    {
+        Amenity.WaterBowls => "Water Bowls",
+        Amenity.PetMenu => "Pet Menu",
+        Amenity.OffLeashArea => "Off-Leash Area",
+        Amenity.FencedArea => "Fenced Area",
+        Amenity.WasteBags => "Waste Bags",
+        Amenity.PetTreats => "Pet Treats",
+        Amenity.OutdoorSeating => "Outdoor Seating",
+        Amenity.IndoorPetFriendly => "Indoor Pet Friendly",
+        Amenity.PetWashStation => "Pet Wash Station",
+        Amenity.DogPark => "Dog Park",
+        Amenity.AgilityEquipment => "Agility Equipment",
+        Amenity.ShadedAreas => "Shaded Areas",
+        Amenity.ParkingAvailable => "Parking Available",
+        Amenity.WheelchairAccessible => "Wheelchair Accessible",
+        _ => "Other"
+    };
+}

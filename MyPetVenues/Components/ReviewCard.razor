@@ -1,0 +1,56 @@
+@using MyPetVenues.Models
+
+<div class="review-card">
+    <div class="review-header">
+        <img src="@Review.UserAvatar" alt="@Review.UserName" class="reviewer-avatar" />
+        <div class="reviewer-info">
+            <span class="reviewer-name">@Review.UserName</span>
+            <span class="review-date">@Review.DatePosted.ToString("MMM dd, yyyy")</span>
+        </div>
+        <div class="review-rating">
+            <StarRating Rating="@Review.Rating" ShowValue="false" ShowCount="false" Size="small" />
+        </div>
+    </div>
+    
+    <div class="review-pet-info">
+        <PetBadge PetType="@Review.PetType" />
+        <span class="pet-name">with @Review.PetName</span>
+    </div>
+    
+    <p class="review-comment">@Review.Comment</p>
+    
+    @if (ShowDetails)
+    {
+        <div class="review-details">
+            <div class="detail-item">
+                <span class="detail-label">👋 Staff Friendliness</span>
+                <StarRating Rating="@Review.StaffFriendlinessRating" ShowValue="false" ShowCount="false" Size="small" />
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">✨ Cleanliness</span>
+                <StarRating Rating="@Review.CleanlinessRating" ShowValue="false" ShowCount="false" Size="small" />
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">🐾 Pet Amenities</span>
+                <StarRating Rating="@Review.PetAmenitiesRating" ShowValue="false" ShowCount="false" Size="small" />
+            </div>
+        </div>
+    }
+    
+    <div class="review-footer">
+        <button class="helpful-btn" @onclick="OnHelpfulClick">
+            👍 Helpful (@Review.HelpfulCount)
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Review Review { get; set; } = default!;
+    [Parameter] public bool ShowDetails { get; set; } = true;
+    [Parameter] public EventCallback OnHelpfulClicked { get; set; }
+
+    private async Task OnHelpfulClick()
+    {
+        await OnHelpfulClicked.InvokeAsync();
+    }
+}
