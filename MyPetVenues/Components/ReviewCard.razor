@@ -1,0 +1,51 @@
+@using MyPetVenues.Models
+
+<div class="review-card">
+    <div class="review-header">
+        <div class="review-avatar">@GetInitials(Review.ReviewerName)</div>
+        <div class="review-info">
+            <h4 class="review-author">@Review.ReviewerName</h4>
+            <div class="review-meta">
+                <RatingStars Rating="@Review.Rating" ShowNumber="false" />
+                <span class="review-date">@FormatDate(Review.ReviewDate)</span>
+            </div>
+        </div>
+    </div>
+    <p class="review-comment">@Review.Comment</p>
+</div>
+
+@code {
+    [Parameter]
+    public required Review Review { get; set; }
+
+    private string GetInitials(string name)
+    {
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+        {
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        }
+        return parts.Length > 0 ? parts[0][0].ToString().ToUpper() : "?";
+    }
+
+    private string FormatDate(DateTime date)
+    {
+        var diff = DateTime.Now - date;
+        if (diff.TotalDays < 1)
+        {
+            return "Today";
+        }
+        else if (diff.TotalDays < 7)
+        {
+            return $"{(int)diff.TotalDays} days ago";
+        }
+        else if (diff.TotalDays < 30)
+        {
+            return $"{(int)(diff.TotalDays / 7)} weeks ago";
+        }
+        else
+        {
+            return date.ToString("MMM dd, yyyy");
+        }
+    }
+}

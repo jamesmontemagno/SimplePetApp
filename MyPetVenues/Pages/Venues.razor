@@ -1,0 +1,170 @@
+@page "/venues"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@using MyPetVenues.Components
+@inject IVenueService VenueService
+@inject NavigationManager Navigation
+
+<PageTitle>Browse Venues - MyPetVenues</PageTitle>
+
+<div class="venues-page">
+    <div class="page-header">
+        <h1 class="page-title">🔍 Discover Pet-Friendly Venues</h1>
+        <p class="page-subtitle">Find the perfect spot for you and your furry, feathered, or scaly friends!</p>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="search-filters">
+        <div class="search-box">
+            <input type="text" 
+                   class="search-input" 
+                   placeholder="🔍 Search venues..." 
+                   @bind="searchTerm"
+                   @bind:event="oninput"
+                   @onkeyup="HandleSearch" />
+        </div>
+
+        <div class="filters-row">
+            <div class="filter-group">
+                <label class="filter-label">Category</label>
+                <select class="filter-select" @bind="selectedCategory" @bind:after="ApplyFilters">
+                    <option value="">All Categories</option>
+                    @foreach (var category in Enum.GetValues<VenueCategory>())
+                    {
+                        <option value="@category">@GetCategoryEmoji(category) @category</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">Pet Type</label>
+                <select class="filter-select" @bind="selectedPetType" @bind:after="ApplyFilters">
+                    <option value="">All Pets</option>
+                    @foreach (var petType in Enum.GetValues<PetType>())
+                    {
+                        <option value="@petType">@GetPetEmoji(petType) @petType</option>
+                    }
+                </select>
+            </div>
+
+            <button class="btn btn-secondary" @onclick="ClearFilters">
+                Clear Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="results-info">
+        <p>Found <strong>@filteredVenues.Count</strong> venues</p>
+    </div>
+
+    <!-- Venues Grid -->
+    @if (isLoading)
+    {
+        <div class="loading-state">
+            <div class="loading-spinner">🐾</div>
+            <p>Loading venues...</p>
+        </div>
+    }
+    else if (filteredVenues.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-icon">😔</div>
+            <h3>No venues found</h3>
+            <p>Try adjusting your search or filters</p>
+            <button class="btn btn-primary" @onclick="ClearFilters">Clear Filters</button>
+        </div>
+    }
+    else
+    {
+        <div class="venues-grid">
+            @foreach (var venue in filteredVenues)
+            {
+                <VenueCard Venue="@venue" OnVenueClick="HandleVenueClick" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<Venue> allVenues = new();
+    private List<Venue> filteredVenues = new();
+    private bool isLoading = true;
+    private string searchTerm = string.Empty;
+    private string selectedCategory = string.Empty;
+    private string selectedPetType = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVenues();
+    }
+
+    private async Task LoadVenues()
+    {
+        isLoading = true;
+        allVenues = await VenueService.GetAllVenuesAsync();
+        filteredVenues = allVenues;
+        isLoading = false;
+    }
+
+    private async Task HandleSearch()
+    {
+        await ApplyFilters();
+    }
+
+    private async Task ApplyFilters()
+    {
+        VenueCategory? category = string.IsNullOrEmpty(selectedCategory) 
+            ? null 
+            : Enum.Parse<VenueCategory>(selectedCategory);
+        
+        PetType? petType = string.IsNullOrEmpty(selectedPetType) 
+            ? null 
+            : Enum.Parse<PetType>(selectedPetType);
+
+        filteredVenues = await VenueService.SearchVenuesAsync(searchTerm, category, petType);
+    }
+
+    private async Task ClearFilters()
+    {
+        searchTerm = string.Empty;
+        selectedCategory = string.Empty;
+        selectedPetType = string.Empty;
+        await ApplyFilters();
+    }
+
+    private void HandleVenueClick(int venueId)
+    {
+        Navigation.NavigateTo($"/venue/{venueId}");
+    }
+
+    private string GetCategoryEmoji(VenueCategory category)
+    {
+        return category switch
+        {
+            VenueCategory.Cafe => "☕",
+            VenueCategory.Restaurant => "🍽️",
+            VenueCategory.Park => "🌳",
+            VenueCategory.Hotel => "🏨",
+            VenueCategory.Store => "🛍️",
+            VenueCategory.Veterinary => "🏥",
+            VenueCategory.Grooming => "✂️",
+            VenueCategory.Home => "🏠",
+            _ => "📍"
+        };
+    }
+
+    private string GetPetEmoji(PetType petType)
+    {
+        return petType switch
+        {
+            PetType.Dogs => "🐕",
+            PetType.Cats => "🐈",
+            PetType.Rabbits => "🐰",
+            PetType.Birds => "🦜",
+            PetType.Reptiles => "🦎",
+            PetType.SmallAnimals => "🐹",
+            _ => "🐾"
+        };
+    }
+}

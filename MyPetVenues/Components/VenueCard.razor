@@ -1,0 +1,97 @@
+@using MyPetVenues.Models
+
+<div class="venue-card" @onclick="HandleClick">
+    <div class="venue-card-image">
+        <img src="@Venue.ImageUrl" alt="@Venue.Name" loading="lazy" />
+        <div class="venue-card-category">@GetCategoryEmoji() @Venue.Category</div>
+    </div>
+    <div class="venue-card-content">
+        <h3 class="venue-card-title">@Venue.Name</h3>
+        <p class="venue-card-location">📍 @Venue.Location</p>
+        <div class="venue-card-pets">
+            @foreach (var petType in Venue.PetTypesAllowed)
+            {
+                <span class="pet-badge">@GetPetEmoji(petType) @petType</span>
+            }
+        </div>
+        <div class="venue-card-rating">
+            <RatingStars Rating="@Venue.AverageRating" ShowNumber="true" />
+            <span class="review-count">(@Venue.Reviews.Count reviews)</span>
+        </div>
+        @if (Venue.Amenities.Count > 0)
+        {
+            <div class="venue-card-amenities">
+                @foreach (var amenity in Venue.Amenities.Take(3))
+                {
+                    <span class="amenity-icon" title="@amenity">@GetAmenityEmoji(amenity)</span>
+                }
+                @if (Venue.Amenities.Count > 3)
+                {
+                    <span class="amenity-more">+@(Venue.Amenities.Count - 3) more</span>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public required Venue Venue { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnVenueClick { get; set; }
+
+    private async Task HandleClick()
+    {
+        await OnVenueClick.InvokeAsync(Venue.Id);
+    }
+
+    private string GetCategoryEmoji()
+    {
+        return Venue.Category switch
+        {
+            VenueCategory.Cafe => "☕",
+            VenueCategory.Restaurant => "🍽️",
+            VenueCategory.Park => "🌳",
+            VenueCategory.Hotel => "🏨",
+            VenueCategory.Store => "🛍️",
+            VenueCategory.Veterinary => "🏥",
+            VenueCategory.Grooming => "✂️",
+            VenueCategory.Home => "🏠",
+            _ => "📍"
+        };
+    }
+
+    private string GetPetEmoji(PetType petType)
+    {
+        return petType switch
+        {
+            PetType.Dogs => "🐕",
+            PetType.Cats => "🐈",
+            PetType.Rabbits => "🐰",
+            PetType.Birds => "🦜",
+            PetType.Reptiles => "🦎",
+            PetType.SmallAnimals => "🐹",
+            _ => "🐾"
+        };
+    }
+
+    private string GetAmenityEmoji(Amenity amenity)
+    {
+        return amenity switch
+        {
+            Amenity.WaterBowls => "💧",
+            Amenity.OutdoorSeating => "🪑",
+            Amenity.PetMenu => "🍖",
+            Amenity.Treats => "🦴",
+            Amenity.OffLeashArea => "🏃",
+            Amenity.WasteBags => "🗑️",
+            Amenity.Parking => "🅿️",
+            Amenity.Indoor => "🏠",
+            Amenity.Outdoor => "🌤️",
+            Amenity.Shade => "⛱️",
+            Amenity.PetWashStation => "🚿",
+            _ => "✓"
+        };
+    }
+}

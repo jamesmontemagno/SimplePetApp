@@ -1,0 +1,33 @@
+@if (Rating > 0)
+{
+    <div class="rating-stars" title="@Rating.ToString("0.0") stars">
+        @for (int i = 1; i <= 5; i++)
+        {
+            var starNumber = i;
+            if (starNumber <= Math.Floor(Rating))
+            {
+                <span class="star filled">★</span>
+            }
+            else if (starNumber - 0.5 <= Rating)
+            {
+                <span class="star half">★</span>
+            }
+            else
+            {
+                <span class="star empty">★</span>
+            }
+        }
+        @if (ShowNumber)
+        {
+            <span class="rating-number">@Rating.ToString("0.0")</span>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public double Rating { get; set; }
+
+    [Parameter]
+    public bool ShowNumber { get; set; } = true;
+}

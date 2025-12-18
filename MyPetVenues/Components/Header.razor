@@ -1,0 +1,98 @@
+@inject IJSRuntime JS
+
+<header class="app-header">
+    <div class="header-container">
+        <div class="header-brand">
+            <a href="/" class="brand-link">
+                <span class="brand-icon">🐾</span>
+                <span class="brand-name">MyPetVenues</span>
+            </a>
+        </div>
+
+        <button class="mobile-menu-toggle" @onclick="ToggleMobileMenu" aria-label="Toggle menu">
+            <span class="hamburger">☰</span>
+        </button>
+
+        <nav class="header-nav @(isMobileMenuOpen ? "mobile-open" : "")">
+            <a href="/" class="nav-link" @onclick="CloseMobileMenu">
+                <span class="nav-icon">🏠</span>
+                <span>Home</span>
+            </a>
+            <a href="/venues" class="nav-link" @onclick="CloseMobileMenu">
+                <span class="nav-icon">🔍</span>
+                <span>Browse Venues</span>
+            </a>
+            <a href="/add-venue" class="nav-link" @onclick="CloseMobileMenu">
+                <span class="nav-icon">➕</span>
+                <span>Add Venue</span>
+            </a>
+            <a href="/about" class="nav-link" @onclick="CloseMobileMenu">
+                <span class="nav-icon">ℹ️</span>
+                <span>About</span>
+            </a>
+        </nav>
+
+        <div class="header-actions">
+            <button class="theme-toggle" @onclick="ToggleTheme" aria-label="Toggle theme" title="Toggle dark/light mode">
+                @if (isDarkMode)
+                {
+                    <span class="theme-icon">☀️</span>
+                }
+                else
+                {
+                    <span class="theme-icon">🌙</span>
+                }
+            </button>
+        </div>
+    </div>
+</header>
+
+@code {
+    private bool isDarkMode = false;
+    private bool isMobileMenuOpen = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadThemePreference();
+        }
+    }
+
+    private async Task LoadThemePreference()
+    {
+        try
+        {
+            var theme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+            isDarkMode = theme == "dark";
+            await ApplyTheme();
+            StateHasChanged();
+        }
+        catch
+        {
+            // LocalStorage might not be available yet
+        }
+    }
+
+    private async Task ToggleTheme()
+    {
+        isDarkMode = !isDarkMode;
+        await ApplyTheme();
+        await JS.InvokeVoidAsync("localStorage.setItem", "theme", isDarkMode ? "dark" : "light");
+    }
+
+    private async Task ApplyTheme()
+    {
+        await JS.InvokeVoidAsync("eval", $"document.documentElement.setAttribute('data-theme', '{(isDarkMode ? "dark" : "light")}')");
+    }
+
+    private void ToggleMobileMenu()
+    {
+        isMobileMenuOpen = !isMobileMenuOpen;
+    }
+
+    private void CloseMobileMenu()
+    {
+        isMobileMenuOpen = false;
+    }
+}

@@ -1,0 +1,312 @@
+@page "/add-venue"
+@using MyPetVenues.Models
+@using MyPetVenues.Services
+@inject IVenueService VenueService
+@inject NavigationManager Navigation
+
+<PageTitle>Add Venue - MyPetVenues</PageTitle>
+
+<div class="add-venue-page">
+    <div class="page-header">
+        <h1 class="page-title">➕ Add a Pet-Friendly Venue</h1>
+        <p class="page-subtitle">Help grow our community by sharing your favorite pet-friendly spot!</p>
+    </div>
+
+    <div class="form-container">
+        @if (isSubmitted)
+        {
+            <div class="success-message">
+                <div class="success-icon">✅</div>
+                <h2>Venue Added Successfully!</h2>
+                <p>Thank you for contributing to our community. Your venue has been added.</p>
+                <div class="success-actions">
+                    <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo($"/venue/{newVenueId}")'>
+                        View Venue
+                    </button>
+                    <button class="btn btn-secondary" @onclick="ResetForm">
+                        Add Another Venue
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="venue-form">
+                <div class="form-section">
+                    <h3 class="form-section-title">Basic Information</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Venue Name <span class="required">*</span></label>
+                        <input type="text" class="form-control" @bind="newVenue.Name" placeholder="e.g., Pawsitive Cafe" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Category <span class="required">*</span></label>
+                        <select class="form-control" @bind="newVenue.Category">
+                            @foreach (var category in Enum.GetValues<VenueCategory>())
+                            {
+                                <option value="@category">@GetCategoryEmoji(category) @category</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Location <span class="required">*</span></label>
+                        <input type="text" class="form-control" @bind="newVenue.Location" placeholder="e.g., 123 Main St, City" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description <span class="required">*</span></label>
+                        <textarea class="form-control" rows="4" @bind="newVenue.Description" placeholder="Describe what makes this venue pet-friendly..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Contact Information</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" @bind="newVenue.Phone" placeholder="(555) 123-4567" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Website</label>
+                        <input type="url" class="form-control" @bind="newVenue.Website" placeholder="https://example.com" />
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Pet Information</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">What types of pets are welcome? <span class="required">*</span></label>
+                        <div class="checkbox-group">
+                            @foreach (var petType in Enum.GetValues<PetType>())
+                            {
+                                <label class="checkbox-label">
+                                    <input type="checkbox" 
+                                           checked="@newVenue.PetTypesAllowed.Contains(petType)"
+                                           @onchange="@(e => TogglePetType(petType, (bool)(e.Value ?? false)))" />
+                                    <span>@GetPetEmoji(petType) @petType</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="form-section-title">Amenities</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">What amenities does this venue offer?</label>
+                        <div class="checkbox-group">
+                            @foreach (var amenity in Enum.GetValues<Amenity>())
+                            {
+                                <label class="checkbox-label">
+                                    <input type="checkbox" 
+                                           checked="@newVenue.Amenities.Contains(amenity)"
+                                           @onchange="@(e => ToggleAmenity(amenity, (bool)(e.Value ?? false)))" />
+                                    <span>@GetAmenityEmoji(amenity) @FormatAmenityName(amenity)</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="error-alert">
+                        ⚠️ @errorMessage
+                    </div>
+                }
+
+                <div class="form-actions">
+                    <button class="btn btn-primary btn-large" @onclick="SubmitVenue" disabled="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span>Submitting...</span>
+                        }
+                        else
+                        {
+                            <span>Add Venue</span>
+                        }
+                    </button>
+                    <button class="btn btn-secondary" @onclick='() => Navigation.NavigateTo("/venues")'>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private Venue newVenue = new() { Category = VenueCategory.Cafe };
+    private bool isSubmitting = false;
+    private bool isSubmitted = false;
+    private int newVenueId = 0;
+    private string errorMessage = string.Empty;
+
+    private void TogglePetType(PetType petType, bool isChecked)
+    {
+        if (isChecked)
+        {
+            if (!newVenue.PetTypesAllowed.Contains(petType))
+            {
+                newVenue.PetTypesAllowed.Add(petType);
+            }
+        }
+        else
+        {
+            newVenue.PetTypesAllowed.Remove(petType);
+        }
+    }
+
+    private void ToggleAmenity(Amenity amenity, bool isChecked)
+    {
+        if (isChecked)
+        {
+            if (!newVenue.Amenities.Contains(amenity))
+            {
+                newVenue.Amenities.Add(amenity);
+            }
+        }
+        else
+        {
+            newVenue.Amenities.Remove(amenity);
+        }
+    }
+
+    private async Task SubmitVenue()
+    {
+        errorMessage = string.Empty;
+
+        // Validation
+        if (string.IsNullOrWhiteSpace(newVenue.Name))
+        {
+            errorMessage = "Please enter a venue name.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newVenue.Location))
+        {
+            errorMessage = "Please enter a location.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newVenue.Description))
+        {
+            errorMessage = "Please enter a description.";
+            return;
+        }
+
+        if (newVenue.PetTypesAllowed.Count == 0)
+        {
+            errorMessage = "Please select at least one pet type.";
+            return;
+        }
+
+        isSubmitting = true;
+
+        // Set default image based on category
+        newVenue.ImageUrl = GetDefaultImageForCategory(newVenue.Category);
+
+        var addedVenue = await VenueService.AddVenueAsync(newVenue);
+        newVenueId = addedVenue.Id;
+        
+        isSubmitting = false;
+        isSubmitted = true;
+    }
+
+    private void ResetForm()
+    {
+        newVenue = new Venue { Category = VenueCategory.Cafe };
+        isSubmitted = false;
+        newVenueId = 0;
+        errorMessage = string.Empty;
+    }
+
+    private string GetDefaultImageForCategory(VenueCategory category)
+    {
+        return category switch
+        {
+            VenueCategory.Cafe => "/images/venues/cafe1.jpg",
+            VenueCategory.Restaurant => "/images/venues/cafe1.jpg",
+            VenueCategory.Park => "/images/venues/park1.jpg",
+            VenueCategory.Hotel => "/images/venues/hotel1.jpg",
+            VenueCategory.Store => "/images/venues/store1.jpg",
+            VenueCategory.Veterinary => "/images/venues/home1.jpg",
+            VenueCategory.Grooming => "/images/venues/store1.jpg",
+            VenueCategory.Home => "/images/venues/home1.jpg",
+            _ => "/images/venues/cafe1.jpg"
+        };
+    }
+
+    private string GetCategoryEmoji(VenueCategory category)
+    {
+        return category switch
+        {
+            VenueCategory.Cafe => "☕",
+            VenueCategory.Restaurant => "🍽️",
+            VenueCategory.Park => "🌳",
+            VenueCategory.Hotel => "🏨",
+            VenueCategory.Store => "🛍️",
+            VenueCategory.Veterinary => "🏥",
+            VenueCategory.Grooming => "✂️",
+            VenueCategory.Home => "🏠",
+            _ => "📍"
+        };
+    }
+
+    private string GetPetEmoji(PetType petType)
+    {
+        return petType switch
+        {
+            PetType.Dogs => "🐕",
+            PetType.Cats => "🐈",
+            PetType.Rabbits => "🐰",
+            PetType.Birds => "🦜",
+            PetType.Reptiles => "🦎",
+            PetType.SmallAnimals => "��",
+            _ => "🐾"
+        };
+    }
+
+    private string GetAmenityEmoji(Amenity amenity)
+    {
+        return amenity switch
+        {
+            Amenity.WaterBowls => "💧",
+            Amenity.OutdoorSeating => "🪑",
+            Amenity.PetMenu => "🍖",
+            Amenity.Treats => "🦴",
+            Amenity.OffLeashArea => "🏃",
+            Amenity.WasteBags => "🗑️",
+            Amenity.Parking => "🅿️",
+            Amenity.Indoor => "🏠",
+            Amenity.Outdoor => "🌤️",
+            Amenity.Shade => "⛱️",
+            Amenity.PetWashStation => "🚿",
+            _ => "✓"
+        };
+    }
+
+    private string FormatAmenityName(Amenity amenity)
+    {
+        return amenity switch
+        {
+            Amenity.WaterBowls => "Water Bowls",
+            Amenity.OutdoorSeating => "Outdoor Seating",
+            Amenity.PetMenu => "Pet Menu",
+            Amenity.Treats => "Treats Available",
+            Amenity.OffLeashArea => "Off-Leash Area",
+            Amenity.WasteBags => "Waste Bags",
+            Amenity.Parking => "Parking",
+            Amenity.Indoor => "Indoor Space",
+            Amenity.Outdoor => "Outdoor Space",
+            Amenity.Shade => "Shaded Areas",
+            Amenity.PetWashStation => "Pet Wash Station",
+            _ => amenity.ToString()
+        };
+    }
+}

@@ -1,7 +1,173 @@
-﻿@page "/"
+@page "/"
+@inject NavigationManager Navigation
 
-<PageTitle>Home</PageTitle>
+<PageTitle>MyPetVenues - Discover Pet-Friendly Places</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="home-page">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="gradient-text">Find Perfect Places</span>
+                <br />
+                for You & Your Pets 🐾
+            </h1>
+            <p class="hero-subtitle">
+                Discover pet-friendly cafes, parks, hotels, and more. Join our community of pet lovers
+                and share your favorite spots!
+            </p>
+            <div class="hero-actions">
+                <button class="btn btn-primary btn-large" @onclick='() => Navigation.NavigateTo("/venues")'>
+                    🔍 Browse Venues
+                </button>
+                <button class="btn btn-secondary btn-large" @onclick='() => Navigation.NavigateTo("/add-venue")'>
+                    ➕ Add a Venue
+                </button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="hero-image-grid">
+                <img src="/images/pets/dog1.png" alt="Happy dog" class="hero-img hero-img-1" />
+                <img src="/images/pets/cat1.jpg" alt="Cute cat" class="hero-img hero-img-2" />
+                <img src="/images/pets/bunny.jpg" alt="Adorable bunny" class="hero-img hero-img-3" />
+            </div>
+        </div>
+    </section>
 
-Welcome to your new app.
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number">15+</div>
+                <div class="stat-label">Pet-Friendly Venues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">32</div>
+                <div class="stat-label">Community Reviews</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">6</div>
+                <div class="stat-label">Pet Types Supported</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4.8</div>
+                <div class="stat-label">Average Rating</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <h2 class="section-title">Why Pet Owners Love Us ❤️</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3 class="feature-title">Easy Discovery</h3>
+                <p class="feature-description">
+                    Search and filter venues by location, pet type, and amenities to find the perfect spot for your furry friend.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⭐</div>
+                <h3 class="feature-title">Trusted Reviews</h3>
+                <p class="feature-description">
+                    Read authentic reviews from fellow pet owners to make informed decisions about where to take your pets.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏆</div>
+                <h3 class="feature-title">Quality Venues</h3>
+                <p class="feature-description">
+                    Discover cafes, parks, hotels, and stores that truly welcome pets with proper amenities and caring staff.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3 class="feature-title">Community Driven</h3>
+                <p class="feature-description">
+                    Join a growing community of pet lovers sharing their favorite pet-friendly locations and experiences.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3 class="feature-title">Always Updated</h3>
+                <p class="feature-description">
+                    Get the latest information about pet-friendly venues including new openings and updated amenities.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💡</div>
+                <h3 class="feature-title">Detailed Info</h3>
+                <p class="feature-description">
+                    Find out about water bowls, pet menus, off-leash areas, and other amenities before you visit.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+        <h2 class="section-title">What Pet Owners Say 💬</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-text">
+                    "This app has been a game-changer for me and my golden retriever! We've discovered so many amazing 
+                    pet-friendly cafes and parks we never knew existed."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">SM</div>
+                    <div class="author-info">
+                        <div class="author-name">Sarah M.</div>
+                        <div class="author-pet">Owner of Max 🐕</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-text">
+                    "As a cat owner, I always struggled to find places that welcome cats. MyPetVenues made it so easy! 
+                    Luna and I now have regular spots we visit."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">MT</div>
+                    <div class="author-info">
+                        <div class="author-name">Mike T.</div>
+                        <div class="author-pet">Owner of Luna 🐈</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-rating">⭐⭐⭐⭐⭐</div>
+                <p class="testimonial-text">
+                    "The reviews are so helpful! I can see what other rabbit owners think before taking my bunny to a new place. 
+                    Community-driven content at its best!"
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">LM</div>
+                    <div class="author-info">
+                        <div class="author-name">Lisa M.</div>
+                        <div class="author-pet">Owner of Fluffy 🐰</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2 class="cta-title">Ready to Explore? 🚀</h2>
+            <p class="cta-subtitle">
+                Join thousands of pet owners discovering amazing pet-friendly venues every day!
+            </p>
+            <button class="btn btn-primary btn-large" @onclick='() => Navigation.NavigateTo("/venues")'>
+                Start Browsing Now
+            </button>
+        </div>
+    </section>
+</div>
+
+@code {
+    
+}

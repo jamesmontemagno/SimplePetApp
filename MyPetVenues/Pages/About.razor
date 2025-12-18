@@ -1,0 +1,168 @@
+@page "/about"
+@inject NavigationManager Navigation
+
+<PageTitle>About Us - MyPetVenues</PageTitle>
+
+<div class="about-page">
+    <div class="page-header">
+        <h1 class="page-title">About MyPetVenues 🐾</h1>
+        <p class="page-subtitle">Connecting pet lovers with pet-friendly places worldwide</p>
+    </div>
+
+    <div class="about-content">
+        <section class="about-section">
+            <h2 class="section-title">Our Mission 🎯</h2>
+            <p class="section-text">
+                MyPetVenues was created with a simple yet powerful mission: to make it easier for pet owners 
+                to find welcoming, pet-friendly venues where they can enjoy quality time with their furry, 
+                feathered, or scaly companions. We believe that pets are family, and they deserve to be included 
+                in our daily adventures.
+            </p>
+        </section>
+
+        <section class="about-section">
+            <h2 class="section-title">How It Works 🔄</h2>
+            <div class="how-it-works">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Discover</h3>
+                    <p class="step-description">
+                        Browse our growing database of pet-friendly cafes, restaurants, parks, hotels, 
+                        and more. Use filters to find exactly what you're looking for.
+                    </p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Review</h3>
+                    <p class="step-description">
+                        Read authentic reviews from fellow pet owners who have visited these venues. 
+                        Learn about amenities, atmosphere, and pet-friendliness.
+                    </p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Share</h3>
+                    <p class="step-description">
+                        Contribute to our community by adding new venues and writing reviews based on 
+                        your experiences. Help other pet owners make informed decisions.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="about-section">
+            <h2 class="section-title">What We Offer 💎</h2>
+            <div class="features-list">
+                <div class="feature-item">
+                    <span class="feature-icon">🔍</span>
+                    <div class="feature-content">
+                        <h3>Comprehensive Search</h3>
+                        <p>Find venues by location, pet type, category, and amenities</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">⭐</span>
+                    <div class="feature-content">
+                        <h3>Community Reviews</h3>
+                        <p>Authentic feedback from real pet owners who've been there</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">📝</span>
+                    <div class="feature-content">
+                        <h3>Detailed Information</h3>
+                        <p>Learn about amenities, contact info, and what makes each venue special</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">🌍</span>
+                    <div class="feature-content">
+                        <h3>Growing Database</h3>
+                        <p>Constantly expanding collection of pet-friendly locations</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about-section">
+            <h2 class="section-title">Community Guidelines 📋</h2>
+            <div class="guidelines">
+                <div class="guideline">
+                    <span class="guideline-icon">✅</span>
+                    <p><strong>Be Honest:</strong> Share your genuine experiences, both positive and constructive</p>
+                </div>
+                <div class="guideline">
+                    <span class="guideline-icon">✅</span>
+                    <p><strong>Be Respectful:</strong> Treat venue owners and fellow community members with respect</p>
+                </div>
+                <div class="guideline">
+                    <span class="guideline-icon">✅</span>
+                    <p><strong>Be Helpful:</strong> Provide detailed information that will help other pet owners</p>
+                </div>
+                <div class="guideline">
+                    <span class="guideline-icon">✅</span>
+                    <p><strong>Be Accurate:</strong> Ensure venue information and reviews are current and correct</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="about-section">
+            <h2 class="section-title">Pet Types We Support 🐾</h2>
+            <div class="pet-types-grid">
+                <div class="pet-type">
+                    <span class="pet-type-icon">🐕</span>
+                    <span class="pet-type-name">Dogs</span>
+                </div>
+                <div class="pet-type">
+                    <span class="pet-type-icon">🐈</span>
+                    <span class="pet-type-name">Cats</span>
+                </div>
+                <div class="pet-type">
+                    <span class="pet-type-icon">🐰</span>
+                    <span class="pet-type-name">Rabbits</span>
+                </div>
+                <div class="pet-type">
+                    <span class="pet-type-icon">🦜</span>
+                    <span class="pet-type-name">Birds</span>
+                </div>
+                <div class="pet-type">
+                    <span class="pet-type-icon">🦎</span>
+                    <span class="pet-type-name">Reptiles</span>
+                </div>
+                <div class="pet-type">
+                    <span class="pet-type-icon">🐹</span>
+                    <span class="pet-type-name">Small Animals</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="about-section cta-section">
+            <h2 class="section-title">Join Our Community 🎉</h2>
+            <p class="section-text">
+                Whether you're a dog parent, cat lover, bird enthusiast, or exotic pet owner, 
+                MyPetVenues welcomes you! Start exploring pet-friendly venues today and help us 
+                build the ultimate resource for pet owners everywhere.
+            </p>
+            <div class="cta-buttons">
+                <button class="btn btn-primary btn-large" @onclick='() => Navigation.NavigateTo("/venues")'>
+                    Browse Venues
+                </button>
+                <button class="btn btn-secondary btn-large" @onclick='() => Navigation.NavigateTo("/add-venue")'>
+                    Add a Venue
+                </button>
+            </div>
+        </section>
+
+        <section class="about-section">
+            <h2 class="section-title">Contact Us 📬</h2>
+            <p class="section-text">
+                Have questions, suggestions, or feedback? We'd love to hear from you!
+            </p>
+            <div class="contact-info">
+                <p>📧 Email: <a href="mailto:hello@mypetvenues.com">hello@mypetvenues.com</a></p>
+                <p>🐦 Twitter: <a href="#twitter">@@MyPetVenues</a></p>
+                <p>📷 Instagram: <a href="#instagram">@@MyPetVenues</a></p>
+            </div>
+        </section>
+    </div>
+</div>
