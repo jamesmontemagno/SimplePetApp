@@ -1,4 +1,5 @@
 @page "/venue/{Id:int}"
+@implements IDisposable
 @inject IVenueService VenueService
 @inject IReviewService ReviewService
 @inject NavigationManager NavigationManager
@@ -246,6 +247,7 @@ else
     private bool showReviewForm = false;
     private bool reviewSubmitted = false;
     private Review newReview = new Review();
+    private CancellationTokenSource? _cts;
 
     protected override async Task OnInitializedAsync()
     {
@@ -288,10 +290,19 @@ else
         showReviewForm = false;
         reviewSubmitted = true;
         
-        // Hide success message after 3 seconds
-        await Task.Delay(3000);
-        reviewSubmitted = false;
-        StateHasChanged();
+        // Hide success message after 3 seconds with cancellation support
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(3000, _cts.Token);
+            reviewSubmitted = false;
+            StateHasChanged();
+        }
+        catch (TaskCanceledException)
+        {
+            // Component was disposed or delay was cancelled, ignore
+        }
     }
 
     private string GetRandomPetImage(PetType petType)
@@ -391,4 +402,10 @@ else
         Amenity.CatRoom => "Cat Room",
         _ => amenity.ToString()
     };
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
 }

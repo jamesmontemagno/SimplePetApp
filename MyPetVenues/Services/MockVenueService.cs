@@ -294,12 +294,11 @@ public class MockVenueService : IVenueService, IReviewService
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            var term = searchTerm.ToLower();
             query = query.Where(v =>
-                v.Name.ToLower().Contains(term) ||
-                v.Description.ToLower().Contains(term) ||
-                v.City.ToLower().Contains(term) ||
-                v.State.ToLower().Contains(term));
+                v.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                v.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                v.City.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                v.State.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
         }
 
         if (venueType.HasValue)
