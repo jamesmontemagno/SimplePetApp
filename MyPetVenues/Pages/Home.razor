@@ -2,16 +2,30 @@
 @inject IVenueService VenueService
 @inject IReviewService ReviewService
 
-<PageTitle>MyPetVenues - Find Pet-Friendly Places</PageTitle>
+<PageTitle>MyPetVenues - Find Pet-Friendly Places 🐾</PageTitle>
 
 <!-- Hero Section -->
 <section class="hero">
     <div class="hero-content">
-        <h1>Find the Perfect Place for You & Your Pet</h1>
-        <p>Discover pet-friendly venues, parks, cafés, and more in your area</p>
+        <h1>Find the <span class="hero-emoji">🐾</span> Perfect Place for You & Your Pet</h1>
+        <p>Discover amazing pet-friendly venues, parks, cafés, hotels, and more in your area! 🐕🐈🐰</p>
         <div class="hero-search">
-            <input type="text" @bind="searchTerm" @bind:event="oninput" placeholder="Search venues, cities, or activities..." />
+            <input type="text" @bind="searchTerm" @bind:event="oninput" placeholder="🔍 Search venues, cities, or activities..." />
             <a href="@GetSearchUrl()" class="btn btn-primary">Search</a>
+        </div>
+        <div class="hero-features">
+            <div class="hero-feature">
+                <span class="hero-feature-icon">📍</span>
+                <span>10+ Venues</span>
+            </div>
+            <div class="hero-feature">
+                <span class="hero-feature-icon">⭐</span>
+                <span>100+ Reviews</span>
+            </div>
+            <div class="hero-feature">
+                <span class="hero-feature-icon">🐾</span>
+                <span>All Pet Types</span>
+            </div>
         </div>
     </div>
 </section>
@@ -19,7 +33,8 @@
 <!-- Category Navigation -->
 <section class="categories">
     <div class="container">
-        <h2>Browse by Category</h2>
+        <h2>🗺️ Browse by Category</h2>
+        <p class="categories-subtitle">Find the perfect spot for your next adventure with your furry friend!</p>
         <div class="category-grid">
             <a href="/venues?type=Park" class="category-card">
                 <span class="category-icon">🌳</span>
@@ -39,7 +54,7 @@
             </a>
             <a href="/venues?type=Store" class="category-card">
                 <span class="category-icon">🛍️</span>
-                <span class="category-name">Stores</span>
+                <span class="category-name">Pet Stores</span>
             </a>
             <a href="/venues?type=Beach" class="category-card">
                 <span class="category-icon">🏖️</span>
@@ -57,16 +72,46 @@
     </div>
 </section>
 
+<!-- Key Features Section -->
+<section class="features-section">
+    <div class="container">
+        <h2>✨ Why Choose MyPetVenues?</h2>
+        <p class="features-subtitle">Everything you need to find pet-friendly places!</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🔍</span>
+                <h3>Easy Discovery</h3>
+                <p>Search and filter venues by type, pet type, amenities, and location. Find exactly what you and your pet need!</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">⭐</span>
+                <h3>Real Reviews</h3>
+                <p>Read honest reviews from fellow pet owners. Know what to expect before you visit!</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🐾</span>
+                <h3>All Pets Welcome</h3>
+                <p>Dogs, cats, birds, rabbits, and more! Find venues that welcome your specific type of pet.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📍</span>
+                <h3>Detailed Info</h3>
+                <p>Get complete venue details including amenities, hours, contact info, and photos!</p>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Featured Venues -->
 <section class="featured-venues">
     <div class="container">
         <div class="section-header">
-            <h2>Featured Pet-Friendly Venues</h2>
+            <h2><span class="section-emoji">🌟</span> Featured Pet-Friendly Venues</h2>
             <a href="/venues" class="view-all">View All →</a>
         </div>
         @if (featuredVenues == null)
         {
-            <div class="loading">Loading venues...</div>
+            <div class="loading">✨ Loading amazing venues...</div>
         }
         else
         {
@@ -76,6 +121,7 @@
                     <a href="/venue/@venue.Id" class="venue-card">
                         <div class="venue-image">
                             <img src="@venue.ImageUrl" alt="@venue.Name" loading="lazy" />
+                            <div class="venue-image-overlay"></div>
                             <span class="venue-type-badge">@GetVenueTypeEmoji(venue.Type) @venue.Type</span>
                         </div>
                         <div class="venue-info">
@@ -91,7 +137,7 @@
                             <div class="pet-types">
                                 @foreach (var pet in venue.AcceptedPetTypes.Take(3))
                                 {
-                                    <span class="pet-badge">@GetPetTypeEmoji(pet)</span>
+                                    <span class="pet-badge" title="@pet">@GetPetTypeEmoji(pet)</span>
                                 }
                                 @if (venue.AcceptedPetTypes.Count > 3)
                                 {
@@ -106,13 +152,72 @@
     </div>
 </section>
 
+<!-- Pet Showcase -->
+<section class="pets-showcase">
+    <div class="container">
+        <h2>🐾 Meet Our Pet Community</h2>
+        <div class="pets-scroll">
+            <div class="pet-showcase-card">
+                <img src="images/pets/dog1.png" alt="Happy Dog" />
+                <span>Max 🐕</span>
+            </div>
+            <div class="pet-showcase-card">
+                <img src="images/pets/cat1.jpg" alt="Cute Cat" />
+                <span>Whiskers 🐈</span>
+            </div>
+            <div class="pet-showcase-card">
+                <img src="images/pets/dog3.jpg" alt="Friendly Dog" />
+                <span>Buddy 🐕</span>
+            </div>
+            <div class="pet-showcase-card">
+                <img src="images/pets/cat2.jpg" alt="Sweet Cat" />
+                <span>Luna 🐈</span>
+            </div>
+            <div class="pet-showcase-card">
+                <img src="images/pets/bunny.jpg" alt="Cute Bunny" />
+                <span>Hoppy 🐰</span>
+            </div>
+            <div class="pet-showcase-card">
+                <img src="images/pets/dog4.png" alt="Playful Dog" />
+                <span>Bella 🐕</span>
+            </div>
+            <div class="pet-showcase-card">
+                <img src="images/pets/cat3.jpg" alt="Lovely Cat" />
+                <span>Shadow 🐈</span>
+            </div>
+            <div class="pet-showcase-card">
+                <img src="images/pets/dog5.jpg" alt="Happy Pup" />
+                <span>Charlie 🐕</span>
+            </div>
+            <!-- Duplicate for seamless scroll -->
+            <div class="pet-showcase-card">
+                <img src="images/pets/dog1.png" alt="Happy Dog" />
+                <span>Max 🐕</span>
+            </div>
+            <div class="pet-showcase-card">
+                <img src="images/pets/cat1.jpg" alt="Cute Cat" />
+                <span>Whiskers 🐈</span>
+            </div>
+            <div class="pet-showcase-card">
+                <img src="images/pets/dog3.jpg" alt="Friendly Dog" />
+                <span>Buddy 🐕</span>
+            </div>
+            <div class="pet-showcase-card">
+                <img src="images/pets/cat2.jpg" alt="Sweet Cat" />
+                <span>Luna 🐈</span>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- Recent Reviews -->
 <section class="recent-reviews">
     <div class="container">
-        <h2>What Pet Owners Are Saying</h2>
+        <h2>💬 What Pet Owners Are Saying</h2>
+        <p class="reviews-subtitle">Real reviews from our amazing pet parent community!</p>
         @if (recentReviews == null)
         {
-            <div class="loading">Loading reviews...</div>
+            <div class="loading">✨ Loading reviews...</div>
         }
         else
         {
@@ -143,9 +248,9 @@
 <section class="cta-section">
     <div class="container">
         <div class="cta-content">
-            <h2>Know a Great Pet-Friendly Spot?</h2>
-            <p>Help fellow pet owners discover amazing venues by adding your favorite places!</p>
-            <a href="/add-venue" class="btn btn-secondary">Add a Venue</a>
+            <h2>🌟 Know a Great Pet-Friendly Spot?</h2>
+            <p>Help fellow pet owners discover amazing venues by adding your favorite places! Share the love! 💖</p>
+            <a href="/add-venue" class="btn">➕ Add a Venue</a>
         </div>
     </div>
 </section>

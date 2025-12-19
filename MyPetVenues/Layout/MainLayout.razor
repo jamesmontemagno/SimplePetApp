@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="app-container">
+<div class="app-container" data-theme="@currentTheme">
     <header class="navbar">
         <div class="container">
             <a href="/" class="brand">
@@ -8,9 +8,12 @@
                 <span class="brand-text">MyPetVenues</span>
             </a>
             <nav class="nav-links">
-                <NavLink href="/" Match="NavLinkMatch.All">Home</NavLink>
-                <NavLink href="/venues">Find Venues</NavLink>
-                <NavLink href="/add-venue" class="btn-nav">Add Venue</NavLink>
+                <NavLink href="/" Match="NavLinkMatch.All">🏠 Home</NavLink>
+                <NavLink href="/venues">🔍 Find Venues</NavLink>
+                <NavLink href="/add-venue" class="btn-nav">➕ Add Venue</NavLink>
+                <button class="theme-toggle" @onclick="ToggleTheme" title="Toggle dark mode">
+                    @(currentTheme == "dark" ? "☀️" : "🌙")
+                </button>
             </nav>
             <button class="nav-toggle" @onclick="ToggleMenu">☰</button>
         </div>
@@ -19,9 +22,12 @@
     @if (showMobileMenu)
     {
         <div class="mobile-nav">
-            <NavLink href="/" Match="NavLinkMatch.All" @onclick="ToggleMenu">Home</NavLink>
-            <NavLink href="/venues" @onclick="ToggleMenu">Find Venues</NavLink>
-            <NavLink href="/add-venue" @onclick="ToggleMenu">Add Venue</NavLink>
+            <NavLink href="/" Match="NavLinkMatch.All" @onclick="ToggleMenu">🏠 Home</NavLink>
+            <NavLink href="/venues" @onclick="ToggleMenu">🔍 Find Venues</NavLink>
+            <NavLink href="/add-venue" @onclick="ToggleMenu">➕ Add Venue</NavLink>
+            <button class="theme-toggle" @onclick="ToggleTheme">
+                @(currentTheme == "dark" ? "☀️ Light Mode" : "🌙 Dark Mode")
+            </button>
         </div>
     }
 
@@ -31,17 +37,66 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; @DateTime.Now.Year MyPetVenues. All rights reserved.</p>
-            <p class="footer-tagline">Made with ❤️ for pet lovers everywhere</p>
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-brand">🐾 MyPetVenues</div>
+                    <p class="footer-description">
+                        Discover the best pet-friendly venues in your area. Find parks, cafés, hotels, and more where your furry friends are always welcome! 🐕🐈🐰
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" title="Facebook">📘</a>
+                        <a href="#" title="Twitter">🐦</a>
+                        <a href="#" title="Instagram">📸</a>
+                        <a href="#" title="TikTok">🎵</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>🗺️ Explore</h4>
+                    <ul class="footer-links">
+                        <li><a href="/venues?type=Park">🌳 Parks</a></li>
+                        <li><a href="/venues?type=Cafe">☕ Cafés</a></li>
+                        <li><a href="/venues?type=Hotel">🏨 Hotels</a></li>
+                        <li><a href="/venues?type=Restaurant">🍽️ Restaurants</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>🐾 Pet Types</h4>
+                    <ul class="footer-links">
+                        <li><a href="/venues?pet=Dog">🐕 Dogs</a></li>
+                        <li><a href="/venues?pet=Cat">🐈 Cats</a></li>
+                        <li><a href="/venues?pet=Bird">🐦 Birds</a></li>
+                        <li><a href="/venues?pet=SmallMammal">🐹 Small Pets</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>💡 Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="/add-venue">➕ Add a Venue</a></li>
+                        <li><a href="/venues">🔍 Find Venues</a></li>
+                        <li><a href="#">📧 Contact Us</a></li>
+                        <li><a href="#">❓ Help & FAQ</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; @DateTime.Now.Year MyPetVenues. All rights reserved.</p>
+                <p class="footer-tagline">Made with 💖 for pet lovers everywhere 🐾</p>
+            </div>
         </div>
     </footer>
 </div>
 
 @code {
     private bool showMobileMenu = false;
+    private string currentTheme = "light";
 
     private void ToggleMenu()
     {
         showMobileMenu = !showMobileMenu;
+    }
+
+    private void ToggleTheme()
+    {
+        currentTheme = currentTheme == "light" ? "dark" : "light";
     }
 }
