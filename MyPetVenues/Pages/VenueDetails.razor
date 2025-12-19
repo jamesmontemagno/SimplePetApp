@@ -1,0 +1,266 @@
+@page "/venues/{Id:int}"
+@inject MockVenueService VenueService
+@inject NavigationManager Navigation
+
+<PageTitle>@(venue?.Name ?? "Venue")</PageTitle>
+
+@if (isLoading)
+{
+    <p>Loading venue...</p>
+}
+else if (venue is null)
+{
+    <section class="section">
+        <h1>Venue not found</h1>
+        <p class="muted">This venue doesn't exist yet. Want to add it?</p>
+        <button class="btn primary" @onclick="@(() => Navigation.NavigateTo("/add"))">Add a venue</button>
+        <button class="btn ghost" @onclick="@(() => Navigation.NavigateTo("/venues"))">Back to explore</button>
+    </section>
+}
+else
+{
+    <section class="venue-hero" style="background-image: url('@venue.ImageUrl');">
+        <div class="hero-overlay">
+            <p class="eyebrow">@venue.Category</p>
+            <h1>@venue.Name</h1>
+            <p class="muted">@venue.City@(!string.IsNullOrWhiteSpace(venue.Neighborhood) ? $" · {venue.Neighborhood}" : string.Empty)</p>
+            <div class="rating-group">
+                <span class="rating-pill">★ @venue.AverageRating</span>
+                <span class="pill">@venue.ReviewCount reviews</span>
+            </div>
+            <div class="tag-row">
+                @foreach (var pet in venue.PetTypes)
+                {
+                    <span class="chip info">@pet</span>
+                }
+            </div>
+            <div class="tag-row">
+                @foreach (var amenity in venue.Amenities.Take(5))
+                {
+                    <span class="chip">@amenity</span>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="detail-grid">
+            <article class="card surface">
+                <h2>About</h2>
+                <p>@venue.Description</p>
+                <div class="detail-list">
+                    <div>
+                        <p class="muted label">Address</p>
+                        <p>@venue.Address</p>
+                    </div>
+                    <div>
+                        <p class="muted label">Hours</p>
+                        <p>@(string.IsNullOrWhiteSpace(venue.Hours) ? "See website" : venue.Hours)</p>
+                    </div>
+                    <div>
+                        <p class="muted label">Reservation</p>
+                        <p>@(venue.ReservationsRequired ? "Reservation recommended/required" : "Walk-ins welcome")</p>
+                    </div>
+                    <div>
+                        <p class="muted label">Contact</p>
+                        <p>@(string.IsNullOrWhiteSpace(venue.Contact) ? "—" : venue.Contact)</p>
+                    </div>
+                    <div>
+                        <p class="muted label">Website</p>
+                        @if (string.IsNullOrWhiteSpace(venue.Website))
+                        {
+                            <p>—</p>
+                        }
+                        else
+                        {
+                            <a href="@venue.Website" target="_blank" rel="noreferrer">@venue.Website</a>
+                        }
+                    </div>
+                </div>
+                <div class="tag-row">
+                    @foreach (var amenity in venue.Amenities)
+                    {
+                        <span class="chip">@amenity</span>
+                    }
+                </div>
+            </article>
+
+            <article class="card surface">
+                <h2>Leave a review</h2>
+                <p class="muted">Share how your pet experienced this venue.</p>
+                <EditForm Model="reviewModel" OnValidSubmit="SubmitReview">
+                    <DataAnnotationsValidator />
+                    <div class="grid two">
+                        <div class="stacked">
+                            <label>Display name</label>
+                            <InputText class="input" @bind-Value="reviewModel.Author" />
+                            <ValidationMessage For="@(() => reviewModel.Author)" />
+                        </div>
+                        <div class="stacked">
+                            <label>Pet type</label>
+                            <InputSelect class="input" @bind-Value="reviewModel.PetType">
+                                <option value="">Select</option>
+                                @foreach (var pet in VenueService.PetTypes)
+                                {
+                                    <option value="@pet">@pet</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => reviewModel.PetType)" />
+                        </div>
+                    </div>
+                    <div class="stacked">
+                        <label>Rating (1-5)</label>
+                        <InputNumber class="input" @bind-Value="reviewModel.Rating" />
+                        <ValidationMessage For="@(() => reviewModel.Rating)" />
+                    </div>
+                    <div class="stacked">
+                        <label>Comment</label>
+                        <InputTextArea class="input" @bind-Value="reviewModel.Comment" rows="3" />
+                        <ValidationMessage For="@(() => reviewModel.Comment)" />
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(successMessage))
+                    {
+                        <p class="success">@successMessage</p>
+                    }
+                    <button class="btn primary" type="submit">Post review</button>
+                </EditForm>
+            </article>
+        </div>
+    </section>
+
+    <section class="section surface">
+        <div class="section-header">
+            <div>
+                <p class="eyebrow">Community feedback</p>
+                <h2>Reviews</h2>
+            </div>
+        </div>
+        <div class="reviews">
+            @if (!reviews.Any())
+            {
+                <p class="muted">No reviews yet. Be the first to share your experience.</p>
+            }
+            else
+            {
+                @foreach (var review in reviews)
+                {
+                    <article class="review-card" @key="review.Author + review.CreatedAt">
+                        <div class="review-head">
+                            <div>
+                                <strong>@review.Author</strong>
+                                <p class="muted">@review.PetType</p>
+                            </div>
+                            <span class="rating-pill">★ @review.Rating</span>
+                        </div>
+                        <p>@review.Comment</p>
+                        <p class="muted small">@review.CreatedAt.ToLocalTime().ToString("MMM dd")</p>
+                    </article>
+                }
+            }
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <div>
+                <p class="eyebrow">Similar options</p>
+                <h2>More places you may like</h2>
+            </div>
+        </div>
+        <div class="card-grid minimal">
+            @if (!suggestedVenues.Any())
+            {
+                <p class="muted">No similar venues yet.</p>
+            }
+            else
+            {
+                @foreach (var suggestion in suggestedVenues)
+                {
+                    <article class="card condensed" @key="suggestion.Id">
+                        <div>
+                            <p class="eyebrow">@suggestion.Category</p>
+                            <h3>@suggestion.Name</h3>
+                            <p class="muted">@suggestion.City</p>
+                            <div class="tag-row">
+                                @foreach (var amenity in suggestion.Amenities.Take(2))
+                                {
+                                    <span class="chip">@amenity</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <span class="rating-pill">★ @suggestion.AverageRating</span>
+                            <button class="btn ghost" @onclick="@(() => Navigation.NavigateTo($"/venues/{suggestion.Id}"))">View</button>
+                        </div>
+                    </article>
+                }
+            }
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private PetVenue? venue;
+    private List<VenueReview> reviews = [];
+    private List<PetVenue> suggestedVenues = [];
+    private bool isLoading = true;
+    private ReviewInput reviewModel = new();
+    private string? successMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = true;
+        venue = await VenueService.GetVenueAsync(Id);
+        if (venue is not null)
+        {
+            reviews = await VenueService.GetReviewsAsync(Id);
+            var allVenues = await VenueService.GetVenuesAsync();
+            suggestedVenues = allVenues
+                .Where(v => v.Id != Id && (v.Category.Equals(venue.Category, StringComparison.OrdinalIgnoreCase) || v.City.Equals(venue.City, StringComparison.OrdinalIgnoreCase)))
+                .Take(3)
+                .ToList();
+        }
+        isLoading = false;
+    }
+
+    private async Task SubmitReview()
+    {
+        if (venue is null)
+        {
+            return;
+        }
+
+        var review = new VenueReview
+        {
+            Author = reviewModel.Author,
+            Comment = reviewModel.Comment,
+            PetType = reviewModel.PetType,
+            Rating = reviewModel.Rating,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await VenueService.AddReviewAsync(venue.Id, review);
+        reviews = await VenueService.GetReviewsAsync(venue.Id);
+        venue = await VenueService.GetVenueAsync(venue.Id);
+        successMessage = "Thanks for sharing! Your review was added.";
+        reviewModel = new ReviewInput();
+        StateHasChanged();
+    }
+
+    private class ReviewInput
+    {
+        [Required, StringLength(60, MinimumLength = 2)]
+        public string Author { get; set; } = string.Empty;
+
+        [Required]
+        public string PetType { get; set; } = string.Empty;
+
+        [Range(1, 5)]
+        public int Rating { get; set; } = 5;
+
+        [Required, StringLength(400, MinimumLength = 10)]
+        public string Comment { get; set; } = string.Empty;
+    }
+}

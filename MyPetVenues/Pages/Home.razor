@@ -1,7 +1,236 @@
-﻿@page "/"
+@page "/"
+@inject MockVenueService VenueService
+@inject NavigationManager Navigation
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Pet-friendly places</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="hero">
+    <div class="hero-text">
+        <p class="eyebrow">Pet-friendly planning, simplified</p>
+        <h1>Find spots that truly welcome your pets.</h1>
+        <p class="lede">
+            Browse trusted, pet-focused reviews and amenities so you can plan meetups, weekend adventures, or errands without second guessing.
+        </p>
+        <div class="hero-actions">
+            <button class="btn primary" @onclick="@(() => Navigation.NavigateTo("/venues"))">Explore venues</button>
+            <button class="btn ghost" @onclick="@(() => Navigation.NavigateTo("/add"))">Add a venue</button>
+        </div>
+        <div class="hero-meta">
+            <div>
+                <strong>@venues.Count</strong>
+                <span>venues</span>
+            </div>
+            <div>
+                <strong>@venues.Sum(v => v.ReviewCount)</strong>
+                <span>reviews logged</span>
+            </div>
+            <div>
+                <strong>@avgRating.ToString("0.0")</strong>
+                <span>avg rating across spots</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-card">
+        <h3>Quick search</h3>
+        <div class="stacked">
+            <label>Keyword</label>
+            <input class="input" @bind="searchTerm" placeholder="City, venue, or vibe..." />
+        </div>
+        <div class="grid two">
+            <div class="stacked">
+                <label>Pet type</label>
+                <select class="input" @bind="selectedPetType">
+                    <option value="Any">Any</option>
+                    @foreach (var pet in petTypes)
+                    {
+                        <option value="@pet">@pet</option>
+                    }
+                </select>
+            </div>
+            <div class="stacked">
+                <label>Amenity</label>
+                <select class="input" @bind="selectedAmenity">
+                    <option value="Any">Any</option>
+                    @foreach (var amenity in amenityOptions)
+                    {
+                        <option value="@amenity">@amenity</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="stacked">
+            <label>Top matches (@filteredVenues.Count())</label>
+            <div class="mini-cards">
+                @if (!filteredVenues.Any())
+                {
+                    <p class="muted">No matches yet. Try clearing filters.</p>
+                }
+                else
+                {
+                    @foreach (var venue in filteredVenues.Take(3))
+                    {
+                        <article class="mini-card" @key="venue.Id">
+                            <div>
+                                <p class="eyebrow">@venue.Category</p>
+                                <h4>@venue.Name</h4>
+                                <p class="muted">@venue.City</p>
+                                <div class="tag-row">
+                                    @foreach (var amenity in venue.Amenities.Take(2))
+                                    {
+                                        <span class="chip">@amenity</span>
+                                    }
+                                    @if (venue.Amenities.Count > 2)
+                                    {
+                                        <span class="chip muted">+@((venue.Amenities.Count) - 2)</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="mini-card-actions">
+                                <span class="rating-pill">★ @venue.AverageRating</span>
+                                <button class="btn ghost" @onclick="@(() => Navigation.NavigateTo($"/venues/{venue.Id}"))">View</button>
+                            </div>
+                        </article>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</section>
 
-Welcome to your new app.
+<section class="section">
+    <div class="section-header">
+        <div>
+            <p class="eyebrow">Featured picks</p>
+            <h2>Trusted, pet-welcoming standouts</h2>
+        </div>
+        <button class="btn ghost" @onclick="@(() => Navigation.NavigateTo("/venues"))">View all</button>
+    </div>
+    <div class="card-grid">
+        @foreach (var venue in featuredVenues)
+        {
+            <article class="card" @key="venue.Id">
+                <img src="@venue.ImageUrl" alt="@venue.Name" class="card-img" />
+                <div class="card-body">
+                    <div class="card-title">
+                        <div>
+                            <p class="eyebrow">@venue.Category</p>
+                            <h3>@venue.Name</h3>
+                            <p class="muted">@venue.City@(!string.IsNullOrWhiteSpace(venue.Neighborhood) ? $" · {venue.Neighborhood}" : string.Empty)</p>
+                        </div>
+                        <span class="rating-pill">★ @venue.AverageRating (@venue.ReviewCount)</span>
+                    </div>
+                    <p>@venue.Description</p>
+                    <div class="tag-row">
+                        @foreach (var pet in venue.PetTypes)
+                        {
+                            <span class="chip info">@pet</span>
+                        }
+                    </div>
+                    <div class="tag-row">
+                        @foreach (var amenity in venue.Amenities.Take(3))
+                        {
+                            <span class="chip">@amenity</span>
+                        }
+                        @if (venue.Amenities.Count > 3)
+                        {
+                            <span class="chip muted">+@((venue.Amenities.Count) - 3)</span>
+                        }
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn primary" @onclick="@(() => Navigation.NavigateTo($"/venues/{venue.Id}"))">See details</button>
+                        <button class="btn ghost" @onclick="@(() => Navigation.NavigateTo("/add"))">Add similar venue</button>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+</section>
+
+<section class="section surface">
+    <div class="section-header">
+        <div>
+            <p class="eyebrow">How it works</p>
+            <h2>Build pet-friendly plans in minutes</h2>
+        </div>
+    </div>
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="icon-dot">🔎</div>
+            <h3>Search & filter</h3>
+            <p>Use keyword, pet type, amenity, and category filters to find the right spot quickly.</p>
+        </div>
+        <div class="info-card">
+            <div class="icon-dot">✅</div>
+            <h3>Check the fit</h3>
+            <p>See pet policies, amenities, and community reviews so you know what to expect before you go.</p>
+        </div>
+        <div class="info-card">
+            <div class="icon-dot">✨</div>
+            <h3>Share back</h3>
+            <p>Add venues or reviews to help other pet parents roam confidently.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <div>
+            <p class="eyebrow">Freshly added</p>
+            <h2>Newest pet-friendly locations</h2>
+        </div>
+        <button class="btn ghost" @onclick="@(() => Navigation.NavigateTo("/add"))">Add yours</button>
+    </div>
+    <div class="card-grid minimal">
+        @foreach (var venue in recentVenues)
+        {
+            <article class="card condensed" @key="venue.Id">
+                <div>
+                    <p class="eyebrow">@venue.Category</p>
+                    <h3>@venue.Name</h3>
+                    <p class="muted">@venue.City@(!string.IsNullOrWhiteSpace(venue.Neighborhood) ? $" · {venue.Neighborhood}" : string.Empty)</p>
+                    <div class="tag-row">
+                        @foreach (var amenity in venue.Amenities.Take(2))
+                        {
+                            <span class="chip">@amenity</span>
+                        }
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <span class="rating-pill">★ @venue.AverageRating</span>
+                    <button class="btn ghost" @onclick="@(() => Navigation.NavigateTo($"/venues/{venue.Id}"))">View</button>
+                </div>
+            </article>
+        }
+    </div>
+</section>
+
+@code {
+    private List<PetVenue> venues = [];
+    private List<PetVenue> featuredVenues = [];
+    private List<PetVenue> recentVenues = [];
+    private string searchTerm = string.Empty;
+    private string selectedPetType = "Any";
+    private string selectedAmenity = "Any";
+    private double avgRating;
+    private IReadOnlyList<string> petTypes => VenueService.PetTypes;
+    private IEnumerable<string> amenityOptions => VenueService.Amenities;
+
+    private IEnumerable<PetVenue> filteredVenues =>
+        venues.Where(v =>
+            (string.IsNullOrWhiteSpace(searchTerm) ||
+             v.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+             v.City.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+             v.Neighborhood.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) &&
+            (selectedPetType == "Any" || v.PetTypes.Contains(selectedPetType, StringComparer.OrdinalIgnoreCase)) &&
+            (selectedAmenity == "Any" || v.Amenities.Contains(selectedAmenity, StringComparer.OrdinalIgnoreCase)));
+
+    protected override async Task OnInitializedAsync()
+    {
+        venues = await VenueService.GetVenuesAsync();
+        featuredVenues = venues.Take(3).ToList();
+        recentVenues = venues.OrderByDescending(v => v.Id).Take(3).ToList();
+        var totalScore = venues.Sum(v => v.AverageRating * v.ReviewCount);
+        var totalReviews = venues.Sum(v => v.ReviewCount);
+        avgRating = totalReviews > 0 ? totalScore / totalReviews : 0;
+    }
+}

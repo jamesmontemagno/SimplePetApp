@@ -1,3 +1,37 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
-@Body
+<div class="layout-shell">
+    <header class="app-header">
+        <nav class="nav-shell">
+            <NavLink href="/" class="brand" Match="NavLinkMatch.All">
+                <span class="brand-mark">🐾</span>
+                <span>SimplePetApp</span>
+            </NavLink>
+            <div class="nav-links">
+                <NavLink href="/venues" class="nav-link" Match="NavLinkMatch.Prefix">Explore</NavLink>
+                <NavLink href="/add" class="nav-link">Add a venue</NavLink>
+            </div>
+        </nav>
+    </header>
+
+    <main class="page-content">
+        @Body
+    </main>
+
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div>
+                <div class="brand-inline">
+                    <span class="brand-mark">🐾</span>
+                    <strong>SimplePetApp</strong>
+                </div>
+                <p class="footnote">Find pet-welcoming spots, add your favorites, and help fellow pet parents roam confidently.</p>
+            </div>
+            <div class="footer-links">
+                <a href="/venues">Explore</a>
+                <a href="/add">Add a venue</a>
+                <a href="/">Home</a>
+            </div>
+        </div>
+    </footer>
+</div>

@@ -1,0 +1,242 @@
+@page "/add"
+@inject MockVenueService VenueService
+@inject NavigationManager Navigation
+
+<PageTitle>Add a pet-friendly venue</PageTitle>
+
+<section class="section">
+    <div class="section-header">
+        <div>
+            <p class="eyebrow">Contribute</p>
+            <h1>Add a new pet-friendly location</h1>
+            <p class="lede">Share details so other pet parents know what to expect.</p>
+        </div>
+        <button class="btn ghost" @onclick="@(() => Navigation.NavigateTo("/venues"))">Back to explore</button>
+    </div>
+
+    <article class="card surface">
+        <EditForm Model="venueForm" OnValidSubmit="SubmitVenue">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="grid two">
+                <div class="stacked">
+                    <label>Name</label>
+                    <InputText class="input" @bind-Value="venueForm.Name" />
+                    <ValidationMessage For="@(() => venueForm.Name)" />
+                </div>
+                <div class="stacked">
+                    <label>Category</label>
+                    <InputText class="input" @bind-Value="venueForm.Category" placeholder="Cafe, Park, Hotel, Store..." />
+                    <ValidationMessage For="@(() => venueForm.Category)" />
+                </div>
+            </div>
+
+            <div class="grid two">
+                <div class="stacked">
+                    <label>City</label>
+                    <InputText class="input" @bind-Value="venueForm.City" />
+                    <ValidationMessage For="@(() => venueForm.City)" />
+                </div>
+                <div class="stacked">
+                    <label>Neighborhood / Area</label>
+                    <InputText class="input" @bind-Value="venueForm.Neighborhood" />
+                </div>
+            </div>
+
+            <div class="grid two">
+                <div class="stacked">
+                    <label>Address</label>
+                    <InputText class="input" @bind-Value="venueForm.Address" />
+                    <ValidationMessage For="@(() => venueForm.Address)" />
+                </div>
+                <div class="stacked">
+                    <label>Hours</label>
+                    <InputText class="input" @bind-Value="venueForm.Hours" placeholder="e.g., Daily · 7a – 7p" />
+                </div>
+            </div>
+
+            <div class="stacked">
+                <label>Description</label>
+                <InputTextArea class="input" rows="3" @bind-Value="venueForm.Description" />
+                <ValidationMessage For="@(() => venueForm.Description)" />
+            </div>
+
+            <div class="grid two">
+                <div class="stacked">
+                    <label>Website (optional)</label>
+                    <InputText class="input" @bind-Value="venueForm.Website" />
+                </div>
+                <div class="stacked">
+                    <label>Contact (optional)</label>
+                    <InputText class="input" @bind-Value="venueForm.Contact" placeholder="email or phone" />
+                </div>
+            </div>
+
+            <div class="stacked">
+                <label>Pet types allowed</label>
+                <div class="pill-row">
+                    @foreach (var pet in VenueService.PetTypes)
+                    {
+                        <label class="checkbox-pill">
+                            <InputCheckbox @bind-Value="petSelections[pet]" />
+                            <span>@pet</span>
+                        </label>
+                    }
+                </div>
+                @if (petSelections.Values.All(selected => !selected))
+                {
+                    <p class="validation-message">Select at least one pet type.</p>
+                }
+            </div>
+
+            <div class="stacked">
+                <label>Amenities</label>
+                <div class="pill-row wrap">
+                    @foreach (var amenity in VenueService.Amenities)
+                    {
+                        <label class="checkbox-pill">
+                            <InputCheckbox @bind-Value="amenitySelections[amenity]" />
+                            <span>@amenity</span>
+                        </label>
+                    }
+                </div>
+                @if (amenitySelections.Values.All(selected => !selected))
+                {
+                    <p class="validation-message">Select at least one amenity.</p>
+                }
+            </div>
+
+            <div class="grid two">
+                <div class="stacked">
+                    <label>Image</label>
+                    <select class="input" @bind="venueForm.ImageUrl">
+                        @foreach (var image in imageChoices)
+                        {
+                            <option value="@image.Path">@image.Label</option>
+                        }
+                    </select>
+                </div>
+                <div class="stacked checkbox-inline">
+                    <InputCheckbox @bind-Value="venueForm.ReservationsRequired" />
+                    <label>Reservations recommended/required</label>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(successMessage))
+            {
+                <div class="success">
+                    @successMessage
+                    @if (createdVenueId is int id)
+                    {
+                        <a class="link" href="@($"/venues/{id}")">View the venue</a>
+                    }
+                </div>
+            }
+
+            <button class="btn primary" type="submit">Save venue</button>
+        </EditForm>
+    </article>
+</section>
+
+@code {
+    private readonly Dictionary<string, bool> petSelections = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, bool> amenitySelections = new(StringComparer.OrdinalIgnoreCase);
+
+    private NewVenueForm venueForm = new();
+    private string? successMessage;
+    private int? createdVenueId;
+
+    private readonly List<(string Path, string Label)> imageChoices =
+    [
+        ("images/venues/cafe1.jpg", "Cafe"),
+        ("images/venues/park1.jpg", "Park"),
+        ("images/venues/hotel1.jpg", "Hotel"),
+        ("images/venues/moochs1.jpg", "Store"),
+        ("images/venues/home1.jpg", "Trail")
+    ];
+
+    protected override void OnInitialized()
+    {
+        foreach (var pet in VenueService.PetTypes)
+        {
+            petSelections[pet] = false;
+        }
+
+        foreach (var amenity in VenueService.Amenities)
+        {
+            amenitySelections[amenity] = false;
+        }
+
+        venueForm.ImageUrl = imageChoices.First().Path;
+    }
+
+    private async Task SubmitVenue()
+    {
+        successMessage = null;
+        createdVenueId = null;
+        var selectedPets = petSelections.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
+        var selectedAmenities = amenitySelections.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
+
+        if (!selectedPets.Any() || !selectedAmenities.Any())
+        {
+            successMessage = "Please choose at least one pet type and amenity.";
+            return;
+        }
+
+        var venue = new PetVenue
+        {
+            Name = venueForm.Name,
+            Category = venueForm.Category,
+            City = venueForm.City,
+            Neighborhood = venueForm.Neighborhood,
+            Address = venueForm.Address,
+            Description = venueForm.Description,
+            PetTypes = selectedPets,
+            Amenities = selectedAmenities,
+            ImageUrl = venueForm.ImageUrl,
+            Website = venueForm.Website ?? string.Empty,
+            Contact = venueForm.Contact ?? string.Empty,
+            ReservationsRequired = venueForm.ReservationsRequired,
+            Hours = venueForm.Hours
+        };
+
+        var created = await VenueService.AddVenueAsync(venue);
+        successMessage = $"Added! You can view it now.";
+        createdVenueId = created.Id;
+    }
+
+    private class NewVenueForm
+    {
+        [Required, StringLength(120, MinimumLength = 3)]
+        public string Name { get; set; } = string.Empty;
+
+        [Required, StringLength(60, MinimumLength = 3)]
+        public string Category { get; set; } = string.Empty;
+
+        [Required, StringLength(80, MinimumLength = 2)]
+        public string City { get; set; } = string.Empty;
+
+        [Required, StringLength(140, MinimumLength = 5)]
+        public string Address { get; set; } = string.Empty;
+
+        [StringLength(80)]
+        public string Neighborhood { get; set; } = string.Empty;
+
+        [Required, StringLength(400, MinimumLength = 20)]
+        public string Description { get; set; } = string.Empty;
+
+        [StringLength(120)]
+        public string? Website { get; set; }
+
+        [StringLength(120)]
+        public string? Contact { get; set; }
+
+        [StringLength(60)]
+        public string? Hours { get; set; }
+
+        public bool ReservationsRequired { get; set; }
+
+        public string ImageUrl { get; set; } = string.Empty;
+    }
+}
