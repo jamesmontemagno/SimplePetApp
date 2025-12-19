@@ -6,14 +6,14 @@
 
 <section class="hero">
     <div class="hero-text">
-        <p class="eyebrow">Pet-friendly planning, simplified</p>
-        <h1>Find spots that truly welcome your pets.</h1>
+        <p class="eyebrow">✨ Pet-friendly planning</p>
+        <h1>Discover, plan, and share pet-welcoming spots.</h1>
         <p class="lede">
-            Browse trusted, pet-focused reviews and amenities so you can plan meetups, weekend adventures, or errands without second guessing.
+            Browse trusted, pet-focused reviews and amenities so you can plan meetups, weekend adventures, or errands without second guessing. Built for cats, pups, hedgies, and every furry (or spiky) friend. 🐶🐱🦔
         </p>
         <div class="hero-actions">
-            <button class="btn primary" @onclick="@(() => Navigation.NavigateTo("/venues"))">Explore venues</button>
-            <button class="btn ghost" @onclick="@(() => Navigation.NavigateTo("/add"))">Add a venue</button>
+            <button class="btn primary" @onclick="@(() => Navigation.NavigateTo("/venues"))">🚀 Explore venues</button>
+            <button class="btn ghost" @onclick="@(() => Navigation.NavigateTo("/add"))">➕ Add a venue</button>
         </div>
         <div class="hero-meta">
             <div>
@@ -26,12 +26,12 @@
             </div>
             <div>
                 <strong>@avgRating.ToString("0.0")</strong>
-                <span>avg rating across spots</span>
+                <span>avg rating</span>
             </div>
         </div>
     </div>
     <div class="hero-card">
-        <h3>Quick search</h3>
+        <h3>Quick search 🔍</h3>
         <div class="stacked">
             <label>Keyword</label>
             <input class="input" @bind="searchTerm" placeholder="City, venue, or vibe..." />
@@ -149,6 +149,45 @@
 <section class="section surface">
     <div class="section-header">
         <div>
+            <p class="eyebrow">Why pet parents love us</p>
+            <h2>Key features at a glance</h2>
+        </div>
+    </div>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🗺️</div>
+            <div>
+                <h3>Smart discovery</h3>
+                <p class="muted">Search by vibe, city, pet type, and amenities to find the perfect fit.</p>
+            </div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <div>
+                <h3>Reviews that matter</h3>
+                <p class="muted">Pet-focused tips about shade, water bowls, off-leash policies, and more.</p>
+            </div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">➕</div>
+            <div>
+                <h3>Add your spots</h3>
+                <p class="muted">Share new parks, cafés, or hotels so the community can enjoy them.</p>
+            </div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🎨</div>
+            <div>
+                <h3>Light & dark modes</h3>
+                <p class="muted">Toggle themes anytime—perfect for night-time planners.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section surface">
+    <div class="section-header">
+        <div>
             <p class="eyebrow">How it works</p>
             <h2>Build pet-friendly plans in minutes</h2>
         </div>
@@ -201,6 +240,23 @@
                 </div>
             </article>
         }
+    </div>
+</section>
+
+<section class="section surface">
+    <div class="section-header">
+        <div>
+            <p class="eyebrow">Meet the crew</p>
+            <h2>Happy pets at our favorite venues</h2>
+        </div>
+    </div>
+    <div class="gallery-grid">
+        <img src="images/pets/dog1.png" alt="Happy dog" />
+        <img src="images/pets/cat1.jpg" alt="Curious cat" />
+        <img src="images/pets/dog3.jpg" alt="Pup at park" />
+        <img src="images/pets/bunny.jpg" alt="Bunny" />
+        <img src="images/pets/hedgehog.jpg" alt="Hedgehog" />
+        <img src="images/venues/cafe1.jpg" alt="Cafe patio" />
     </div>
 </section>
 

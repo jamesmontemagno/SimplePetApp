@@ -1,6 +1,6 @@
 @inherits LayoutComponentBase
 
-<div class="layout-shell">
+<div class="layout-shell @(isDark ? "theme-dark" : "theme-light")">
     <header class="app-header">
         <nav class="nav-shell">
             <NavLink href="/" class="brand" Match="NavLinkMatch.All">
@@ -10,6 +10,9 @@
             <div class="nav-links">
                 <NavLink href="/venues" class="nav-link" Match="NavLinkMatch.Prefix">Explore</NavLink>
                 <NavLink href="/add" class="nav-link">Add a venue</NavLink>
+                <button class="btn ghost toggle" @onclick="ToggleTheme" title="Toggle theme">
+                    @(isDark ? "🌞 Light" : "🌙 Dark")
+                </button>
             </div>
         </nav>
     </header>
@@ -26,12 +29,23 @@
                     <strong>SimplePetApp</strong>
                 </div>
                 <p class="footnote">Find pet-welcoming spots, add your favorites, and help fellow pet parents roam confidently.</p>
+                <p class="muted small">© @DateTime.UtcNow.Year SimplePetApp. All rights reserved.</p>
             </div>
             <div class="footer-links">
                 <a href="/venues">Explore</a>
                 <a href="/add">Add a venue</a>
                 <a href="/">Home</a>
+                <a href="https://github.com/jamesmontemagno/SimplePetApp" target="_blank" rel="noreferrer">GitHub</a>
             </div>
         </div>
     </footer>
 </div>
+
+@code {
+    private bool isDark;
+
+    private void ToggleTheme()
+    {
+        isDark = !isDark;
+    }
+}
