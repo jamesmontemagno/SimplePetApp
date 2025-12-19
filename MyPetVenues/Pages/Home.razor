@@ -16,11 +16,11 @@
         <div class="hero-features">
             <div class="hero-feature">
                 <span class="hero-feature-icon">📍</span>
-                <span>10+ Venues</span>
+                <span>@venueCount+ Venues</span>
             </div>
             <div class="hero-feature">
                 <span class="hero-feature-icon">⭐</span>
-                <span>100+ Reviews</span>
+                <span>@reviewCount+ Reviews</span>
             </div>
             <div class="hero-feature">
                 <span class="hero-feature-icon">🐾</span>
@@ -259,11 +259,18 @@
     private List<Venue>? featuredVenues;
     private List<Review>? recentReviews;
     private string searchTerm = "";
+    private int venueCount = 0;
+    private int reviewCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
         featuredVenues = await VenueService.GetFeaturedVenuesAsync(6);
         recentReviews = await ReviewService.GetRecentReviewsAsync(4);
+        
+        // Get total counts for display
+        var allVenues = await VenueService.GetVenuesAsync();
+        venueCount = allVenues?.Count ?? 0;
+        reviewCount = allVenues?.Sum(v => v.ReviewCount) ?? 0;
     }
 
     private string GetSearchUrl()

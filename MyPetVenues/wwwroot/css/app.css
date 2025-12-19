@@ -2101,3 +2101,36 @@ textarea.form-control {
 code {
     color: #c02d76;
 }
+
+/* ===============================================
+   Accessibility - Reduced Motion
+   =============================================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .hero::before {
+        animation: none;
+    }
+    
+    .pets-scroll {
+        animation: none;
+    }
+    
+    .brand-icon {
+        animation: none;
+    }
+    
+    .hero-emoji {
+        animation: none;
+    }
+    
+    .cta-section::before {
+        animation: none;
+    }
+}
