@@ -1,0 +1,394 @@
+@page "/venue/{Id:int}"
+@inject IVenueService VenueService
+@inject IReviewService ReviewService
+@inject NavigationManager NavigationManager
+
+<PageTitle>@(venue?.Name ?? "Venue Details") - MyPetVenues</PageTitle>
+
+@if (isLoading)
+{
+    <div class="loading-page">
+        <div class="loading">Loading venue details...</div>
+    </div>
+}
+else if (venue == null)
+{
+    <div class="container error-page">
+        <h1>Venue Not Found</h1>
+        <p>Sorry, we couldn't find the venue you're looking for.</p>
+        <a href="/venues" class="btn btn-primary">Browse All Venues</a>
+    </div>
+}
+else
+{
+    <div class="venue-detail-page">
+        <!-- Hero Section -->
+        <section class="venue-hero">
+            <img src="@venue.ImageUrl" alt="@venue.Name" class="venue-hero-image" />
+            <div class="venue-hero-overlay">
+                <div class="container">
+                    <span class="venue-type-badge large">@GetVenueTypeEmoji(venue.Type) @venue.Type</span>
+                    <h1>@venue.Name</h1>
+                    <p class="venue-location">📍 @venue.Address, @venue.City, @venue.State @venue.ZipCode</p>
+                    <div class="venue-rating-large">
+                        @GetStarRating(venue.AverageRating)
+                        <span class="rating-value">@venue.AverageRating.ToString("0.0")</span>
+                        <span class="review-count">(@venue.ReviewCount reviews)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="container venue-content">
+            <!-- Main Info -->
+            <div class="venue-main">
+                <!-- Description -->
+                <section class="venue-section">
+                    <h2>About This Venue</h2>
+                    <p class="venue-description">@venue.Description</p>
+                </section>
+
+                <!-- Accepted Pets -->
+                <section class="venue-section">
+                    <h2>Welcome Pets</h2>
+                    <div class="pet-types-large">
+                        @foreach (var pet in venue.AcceptedPetTypes)
+                        {
+                            <div class="pet-type-card">
+                                <span class="pet-emoji">@GetPetTypeEmoji(pet)</span>
+                                <span class="pet-name">@pet</span>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <!-- Amenities -->
+                <section class="venue-section">
+                    <h2>Amenities</h2>
+                    <div class="amenities-grid">
+                        @foreach (var amenity in venue.Amenities)
+                        {
+                            <div class="amenity-card">
+                                <span class="amenity-icon">@GetAmenityIcon(amenity)</span>
+                                <span class="amenity-name">@GetAmenityName(amenity)</span>
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                <!-- Reviews Section -->
+                <section class="venue-section reviews-section">
+                    <div class="section-header">
+                        <h2>Reviews (@reviews?.Count)</h2>
+                        <button class="btn btn-primary" @onclick="() => showReviewForm = !showReviewForm">
+                            @(showReviewForm ? "Cancel" : "Write a Review")
+                        </button>
+                    </div>
+
+                    @if (showReviewForm)
+                    {
+                        <div class="review-form-container">
+                            <EditForm Model="@newReview" OnValidSubmit="@SubmitReview" FormName="reviewForm">
+                                <DataAnnotationsValidator />
+                                
+                                <div class="form-group">
+                                    <label>Your Rating</label>
+                                    <div class="star-rating-input">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            var starValue = i;
+                                            <button type="button" class="star-btn @(newReview.Rating >= starValue ? "active" : "")" 
+                                                    @onclick="() => SetRating(starValue)">
+                                                @(newReview.Rating >= starValue ? "★" : "☆")
+                                            </button>
+                                        }
+                                    </div>
+                                    @if (newReview.Rating == 0)
+                                    {
+                                        <span class="validation-message">Please select a rating</span>
+                                    }
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="reviewerName">Your Name</label>
+                                    <InputText id="reviewerName" @bind-Value="newReview.ReviewerName" class="form-control" placeholder="Enter your name" />
+                                    <ValidationMessage For="@(() => newReview.ReviewerName)" />
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="petName">Pet's Name</label>
+                                        <InputText id="petName" @bind-Value="newReview.PetName" class="form-control" placeholder="Enter your pet's name" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="petType">Pet Type</label>
+                                        <InputSelect id="petType" @bind-Value="newReview.PetType" class="form-control">
+                                            @foreach (PetType type in Enum.GetValues<PetType>())
+                                            {
+                                                <option value="@type">@GetPetTypeEmoji(type) @type</option>
+                                            }
+                                        </InputSelect>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="comment">Your Review</label>
+                                    <InputTextArea id="comment" @bind-Value="newReview.Comment" class="form-control" rows="4" placeholder="Tell us about your experience..." />
+                                    <ValidationMessage For="@(() => newReview.Comment)" />
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" disabled="@(newReview.Rating == 0 || string.IsNullOrWhiteSpace(newReview.ReviewerName))">
+                                    Submit Review
+                                </button>
+                            </EditForm>
+                        </div>
+                    }
+
+                    @if (reviewSubmitted)
+                    {
+                        <div class="success-message">
+                            <span>✅</span> Thank you for your review!
+                        </div>
+                    }
+
+                    @if (reviews == null || !reviews.Any())
+                    {
+                        <div class="no-reviews">
+                            <p>No reviews yet. Be the first to review this venue!</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="reviews-list">
+                            @foreach (var review in reviews)
+                            {
+                                <div class="review-card-detail">
+                                    <div class="review-header">
+                                        <img src="@(string.IsNullOrEmpty(review.PetImageUrl) ? "images/pets/dog1.png" : review.PetImageUrl)" 
+                                             alt="@review.PetName" class="pet-avatar" />
+                                        <div class="review-meta">
+                                            <span class="reviewer-name">@review.ReviewerName</span>
+                                            <span class="review-rating">@GetStarRating(review.Rating)</span>
+                                            <span class="review-date">@review.DatePosted.ToString("MMM d, yyyy")</span>
+                                        </div>
+                                    </div>
+                                    <p class="review-comment">@review.Comment</p>
+                                    <div class="review-footer">
+                                        <span class="pet-info">🐾 Visited with @review.PetName (@review.PetType)</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </section>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="venue-sidebar">
+                <div class="sidebar-card">
+                    <h3>Contact Information</h3>
+                    <div class="contact-info">
+                        @if (!string.IsNullOrEmpty(venue.Phone))
+                        {
+                            <div class="contact-item">
+                                <span class="contact-icon">📞</span>
+                                <span>@venue.Phone</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(venue.Website))
+                        {
+                            <div class="contact-item">
+                                <span class="contact-icon">🌐</span>
+                                <a href="@venue.Website" target="_blank" rel="noopener">Visit Website</a>
+                            </div>
+                        }
+                        <div class="contact-item">
+                            <span class="contact-icon">📍</span>
+                            <span>@venue.Address<br />@venue.City, @venue.State @venue.ZipCode</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Hours of Operation</h3>
+                    <p class="operating-hours">@venue.OperatingHours</p>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Quick Stats</h3>
+                    <div class="quick-stats">
+                        <div class="stat">
+                            <span class="stat-value">@venue.AcceptedPetTypes.Count</span>
+                            <span class="stat-label">Pet Types Welcome</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">@venue.Amenities.Count</span>
+                            <span class="stat-label">Amenities</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value">@venue.ReviewCount</span>
+                            <span class="stat-label">Reviews</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Venue? venue;
+    private List<Review>? reviews;
+    private bool isLoading = true;
+    private bool showReviewForm = false;
+    private bool reviewSubmitted = false;
+    private Review newReview = new Review();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVenue();
+    }
+
+    private async Task LoadVenue()
+    {
+        isLoading = true;
+        venue = await VenueService.GetVenueByIdAsync(Id);
+        if (venue != null)
+        {
+            reviews = await ReviewService.GetReviewsByVenueIdAsync(Id);
+        }
+        newReview = new Review { VenueId = Id, PetType = PetType.Dog };
+        isLoading = false;
+    }
+
+    private void SetRating(int rating)
+    {
+        newReview.Rating = rating;
+    }
+
+    private async Task SubmitReview()
+    {
+        if (newReview.Rating == 0 || string.IsNullOrWhiteSpace(newReview.ReviewerName))
+            return;
+
+        newReview.VenueId = Id;
+        newReview.PetImageUrl = GetRandomPetImage(newReview.PetType);
+        
+        await ReviewService.AddReviewAsync(newReview);
+        
+        // Reload venue and reviews
+        venue = await VenueService.GetVenueByIdAsync(Id);
+        reviews = await ReviewService.GetReviewsByVenueIdAsync(Id);
+        
+        // Reset form
+        newReview = new Review { VenueId = Id, PetType = PetType.Dog };
+        showReviewForm = false;
+        reviewSubmitted = true;
+        
+        // Hide success message after 3 seconds
+        await Task.Delay(3000);
+        reviewSubmitted = false;
+        StateHasChanged();
+    }
+
+    private string GetRandomPetImage(PetType petType)
+    {
+        return petType switch
+        {
+            PetType.Cat => "images/pets/cat1.jpg",
+            PetType.Rabbit => "images/pets/bunny.jpg",
+            _ => "images/pets/dog1.png"
+        };
+    }
+
+    private string GetStarRating(decimal rating)
+    {
+        int fullStars = (int)rating;
+        bool halfStar = rating - fullStars >= 0.5m;
+        var stars = new string('★', fullStars);
+        if (halfStar) stars += "½";
+        stars += new string('☆', 5 - fullStars - (halfStar ? 1 : 0));
+        return stars;
+    }
+
+    private string GetStarRating(int rating)
+    {
+        return new string('★', rating) + new string('☆', 5 - rating);
+    }
+
+    private string GetVenueTypeEmoji(VenueType type) => type switch
+    {
+        VenueType.Park => "🌳",
+        VenueType.Cafe => "☕",
+        VenueType.Restaurant => "🍽️",
+        VenueType.Hotel => "🏨",
+        VenueType.Store => "🛍️",
+        VenueType.Home => "🏠",
+        VenueType.Beach => "🏖️",
+        VenueType.Trail => "🥾",
+        VenueType.Veterinary => "🏥",
+        VenueType.Grooming => "✂️",
+        _ => "📍"
+    };
+
+    private string GetPetTypeEmoji(PetType type) => type switch
+    {
+        PetType.Dog => "🐕",
+        PetType.Cat => "🐈",
+        PetType.Bird => "🐦",
+        PetType.Rabbit => "🐰",
+        PetType.Reptile => "🦎",
+        PetType.Fish => "🐟",
+        PetType.SmallMammal => "🐹",
+        _ => "🐾"
+    };
+
+    private string GetAmenityIcon(Amenity amenity) => amenity switch
+    {
+        Amenity.OutdoorSeating => "🪑",
+        Amenity.WaterBowls => "💧",
+        Amenity.TreatBar => "🦴",
+        Amenity.FencedArea => "🚧",
+        Amenity.OffLeashAllowed => "🐕‍🦺",
+        Amenity.PetMenu => "📋",
+        Amenity.WasteStations => "🗑️",
+        Amenity.ParkingAvailable => "🅿️",
+        Amenity.WheelchairAccessible => "♿",
+        Amenity.PetWashStation => "🚿",
+        Amenity.PlayArea => "🎾",
+        Amenity.ShadedAreas => "🌳",
+        Amenity.AirConditioned => "❄️",
+        Amenity.PetSupplies => "🛒",
+        Amenity.GroomingServices => "✂️",
+        Amenity.BoardingAvailable => "🏠",
+        Amenity.DogPark => "🐕",
+        Amenity.CatRoom => "🐈",
+        _ => "✓"
+    };
+
+    private string GetAmenityName(Amenity amenity) => amenity switch
+    {
+        Amenity.OutdoorSeating => "Outdoor Seating",
+        Amenity.WaterBowls => "Water Bowls",
+        Amenity.TreatBar => "Treat Bar",
+        Amenity.FencedArea => "Fenced Area",
+        Amenity.OffLeashAllowed => "Off-Leash Allowed",
+        Amenity.PetMenu => "Pet Menu",
+        Amenity.WasteStations => "Waste Stations",
+        Amenity.ParkingAvailable => "Parking Available",
+        Amenity.WheelchairAccessible => "Wheelchair Accessible",
+        Amenity.PetWashStation => "Pet Wash Station",
+        Amenity.PlayArea => "Play Area",
+        Amenity.ShadedAreas => "Shaded Areas",
+        Amenity.AirConditioned => "Air Conditioned",
+        Amenity.PetSupplies => "Pet Supplies",
+        Amenity.GroomingServices => "Grooming Services",
+        Amenity.BoardingAvailable => "Boarding Available",
+        Amenity.DogPark => "Dog Park",
+        Amenity.CatRoom => "Cat Room",
+        _ => amenity.ToString()
+    };
+}

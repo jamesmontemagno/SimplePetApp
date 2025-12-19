@@ -1,7 +1,228 @@
 ﻿@page "/"
+@inject IVenueService VenueService
+@inject IReviewService ReviewService
 
-<PageTitle>Home</PageTitle>
+<PageTitle>MyPetVenues - Find Pet-Friendly Places</PageTitle>
 
-<h1>Hello, world!</h1>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Find the Perfect Place for You & Your Pet</h1>
+        <p>Discover pet-friendly venues, parks, cafés, and more in your area</p>
+        <div class="hero-search">
+            <input type="text" @bind="searchTerm" @bind:event="oninput" placeholder="Search venues, cities, or activities..." />
+            <a href="@GetSearchUrl()" class="btn btn-primary">Search</a>
+        </div>
+    </div>
+</section>
 
-Welcome to your new app.
+<!-- Category Navigation -->
+<section class="categories">
+    <div class="container">
+        <h2>Browse by Category</h2>
+        <div class="category-grid">
+            <a href="/venues?type=Park" class="category-card">
+                <span class="category-icon">🌳</span>
+                <span class="category-name">Parks</span>
+            </a>
+            <a href="/venues?type=Cafe" class="category-card">
+                <span class="category-icon">☕</span>
+                <span class="category-name">Cafés</span>
+            </a>
+            <a href="/venues?type=Restaurant" class="category-card">
+                <span class="category-icon">🍽️</span>
+                <span class="category-name">Restaurants</span>
+            </a>
+            <a href="/venues?type=Hotel" class="category-card">
+                <span class="category-icon">🏨</span>
+                <span class="category-name">Hotels</span>
+            </a>
+            <a href="/venues?type=Store" class="category-card">
+                <span class="category-icon">🛍️</span>
+                <span class="category-name">Stores</span>
+            </a>
+            <a href="/venues?type=Beach" class="category-card">
+                <span class="category-icon">🏖️</span>
+                <span class="category-name">Beaches</span>
+            </a>
+            <a href="/venues?type=Trail" class="category-card">
+                <span class="category-icon">🥾</span>
+                <span class="category-name">Trails</span>
+            </a>
+            <a href="/venues?type=Veterinary" class="category-card">
+                <span class="category-icon">🏥</span>
+                <span class="category-name">Veterinary</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Venues -->
+<section class="featured-venues">
+    <div class="container">
+        <div class="section-header">
+            <h2>Featured Pet-Friendly Venues</h2>
+            <a href="/venues" class="view-all">View All →</a>
+        </div>
+        @if (featuredVenues == null)
+        {
+            <div class="loading">Loading venues...</div>
+        }
+        else
+        {
+            <div class="venue-grid">
+                @foreach (var venue in featuredVenues)
+                {
+                    <a href="/venue/@venue.Id" class="venue-card">
+                        <div class="venue-image">
+                            <img src="@venue.ImageUrl" alt="@venue.Name" loading="lazy" />
+                            <span class="venue-type-badge">@GetVenueTypeEmoji(venue.Type) @venue.Type</span>
+                        </div>
+                        <div class="venue-info">
+                            <h3>@venue.Name</h3>
+                            <p class="venue-location">📍 @venue.City, @venue.State</p>
+                            <div class="venue-meta">
+                                <span class="venue-rating">
+                                    @GetStarRating(venue.AverageRating)
+                                    <span class="rating-value">@venue.AverageRating.ToString("0.0")</span>
+                                    <span class="review-count">(@venue.ReviewCount)</span>
+                                </span>
+                            </div>
+                            <div class="pet-types">
+                                @foreach (var pet in venue.AcceptedPetTypes.Take(3))
+                                {
+                                    <span class="pet-badge">@GetPetTypeEmoji(pet)</span>
+                                }
+                                @if (venue.AcceptedPetTypes.Count > 3)
+                                {
+                                    <span class="pet-badge">+@(venue.AcceptedPetTypes.Count - 3)</span>
+                                }
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Recent Reviews -->
+<section class="recent-reviews">
+    <div class="container">
+        <h2>What Pet Owners Are Saying</h2>
+        @if (recentReviews == null)
+        {
+            <div class="loading">Loading reviews...</div>
+        }
+        else
+        {
+            <div class="reviews-grid">
+                @foreach (var review in recentReviews)
+                {
+                    <div class="review-card">
+                        <div class="review-header">
+                            <img src="@review.PetImageUrl" alt="@review.PetName" class="pet-avatar" />
+                            <div class="review-meta">
+                                <span class="reviewer-name">@review.ReviewerName</span>
+                                <span class="review-rating">@GetStarRating(review.Rating)</span>
+                            </div>
+                        </div>
+                        <p class="review-comment">"@TruncateText(review.Comment, 120)"</p>
+                        <div class="review-footer">
+                            <span class="pet-info">🐾 @review.PetName (@review.PetType)</span>
+                            <span class="review-date">@GetRelativeTime(review.DatePosted)</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Know a Great Pet-Friendly Spot?</h2>
+            <p>Help fellow pet owners discover amazing venues by adding your favorite places!</p>
+            <a href="/add-venue" class="btn btn-secondary">Add a Venue</a>
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<Venue>? featuredVenues;
+    private List<Review>? recentReviews;
+    private string searchTerm = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        featuredVenues = await VenueService.GetFeaturedVenuesAsync(6);
+        recentReviews = await ReviewService.GetRecentReviewsAsync(4);
+    }
+
+    private string GetSearchUrl()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return "/venues";
+        return $"/venues?search={Uri.EscapeDataString(searchTerm)}";
+    }
+
+    private string GetStarRating(decimal rating)
+    {
+        int fullStars = (int)rating;
+        bool halfStar = rating - fullStars >= 0.5m;
+        var stars = new string('★', fullStars);
+        if (halfStar) stars += "½";
+        stars += new string('☆', 5 - fullStars - (halfStar ? 1 : 0));
+        return stars;
+    }
+
+    private string GetStarRating(int rating)
+    {
+        return new string('★', rating) + new string('☆', 5 - rating);
+    }
+
+    private string GetVenueTypeEmoji(VenueType type) => type switch
+    {
+        VenueType.Park => "🌳",
+        VenueType.Cafe => "☕",
+        VenueType.Restaurant => "🍽️",
+        VenueType.Hotel => "🏨",
+        VenueType.Store => "🛍️",
+        VenueType.Home => "🏠",
+        VenueType.Beach => "🏖️",
+        VenueType.Trail => "🥾",
+        VenueType.Veterinary => "🏥",
+        VenueType.Grooming => "✂️",
+        _ => "📍"
+    };
+
+    private string GetPetTypeEmoji(PetType type) => type switch
+    {
+        PetType.Dog => "🐕",
+        PetType.Cat => "🐈",
+        PetType.Bird => "🐦",
+        PetType.Rabbit => "🐰",
+        PetType.Reptile => "🦎",
+        PetType.Fish => "🐟",
+        PetType.SmallMammal => "🐹",
+        _ => "🐾"
+    };
+
+    private string TruncateText(string text, int maxLength)
+    {
+        if (text.Length <= maxLength) return text;
+        return text.Substring(0, maxLength).TrimEnd() + "...";
+    }
+
+    private string GetRelativeTime(DateTime date)
+    {
+        var span = DateTime.Now - date;
+        if (span.TotalDays < 1) return "Today";
+        if (span.TotalDays < 2) return "Yesterday";
+        if (span.TotalDays < 7) return $"{(int)span.TotalDays} days ago";
+        if (span.TotalDays < 30) return $"{(int)(span.TotalDays / 7)} weeks ago";
+        return $"{(int)(span.TotalDays / 30)} months ago";
+    }
+}

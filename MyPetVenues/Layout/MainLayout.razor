@@ -1,3 +1,47 @@
 ﻿@inherits LayoutComponentBase
 
-@Body
+<div class="app-container">
+    <header class="navbar">
+        <div class="container">
+            <a href="/" class="brand">
+                <span class="brand-icon">🐾</span>
+                <span class="brand-text">MyPetVenues</span>
+            </a>
+            <nav class="nav-links">
+                <NavLink href="/" Match="NavLinkMatch.All">Home</NavLink>
+                <NavLink href="/venues">Find Venues</NavLink>
+                <NavLink href="/add-venue" class="btn-nav">Add Venue</NavLink>
+            </nav>
+            <button class="nav-toggle" @onclick="ToggleMenu">☰</button>
+        </div>
+    </header>
+
+    @if (showMobileMenu)
+    {
+        <div class="mobile-nav">
+            <NavLink href="/" Match="NavLinkMatch.All" @onclick="ToggleMenu">Home</NavLink>
+            <NavLink href="/venues" @onclick="ToggleMenu">Find Venues</NavLink>
+            <NavLink href="/add-venue" @onclick="ToggleMenu">Add Venue</NavLink>
+        </div>
+    }
+
+    <main class="main-content">
+        @Body
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; @DateTime.Now.Year MyPetVenues. All rights reserved.</p>
+            <p class="footer-tagline">Made with ❤️ for pet lovers everywhere</p>
+        </div>
+    </footer>
+</div>
+
+@code {
+    private bool showMobileMenu = false;
+
+    private void ToggleMenu()
+    {
+        showMobileMenu = !showMobileMenu;
+    }
+}

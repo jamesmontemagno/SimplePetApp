@@ -1,0 +1,264 @@
+@page "/venues"
+@inject IVenueService VenueService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Find Pet-Friendly Venues - MyPetVenues</PageTitle>
+
+<div class="venues-page">
+    <!-- Search Header -->
+    <section class="search-header">
+        <div class="container">
+            <h1>Find Pet-Friendly Venues</h1>
+            <div class="search-bar">
+                <input type="text" @bind="searchTerm" @bind:event="oninput" @onkeypress="HandleKeyPress" placeholder="Search by name, city, or description..." />
+                <button class="btn btn-primary" @onclick="ApplyFilters">Search</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="container venues-content">
+        <!-- Filters Sidebar -->
+        <aside class="filters-panel">
+            <div class="filter-section">
+                <h3>Venue Type</h3>
+                <select @bind="selectedVenueType" class="filter-select">
+                    <option value="">All Types</option>
+                    @foreach (VenueType type in Enum.GetValues<VenueType>())
+                    {
+                        <option value="@type">@GetVenueTypeEmoji(type) @type</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-section">
+                <h3>Pet Type</h3>
+                <select @bind="selectedPetType" class="filter-select">
+                    <option value="">All Pets</option>
+                    @foreach (PetType type in Enum.GetValues<PetType>())
+                    {
+                        <option value="@type">@GetPetTypeEmoji(type) @type</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-section">
+                <h3>Amenities</h3>
+                <select @bind="selectedAmenity" class="filter-select">
+                    <option value="">Any Amenity</option>
+                    @foreach (Amenity amenity in Enum.GetValues<Amenity>())
+                    {
+                        <option value="@amenity">@GetAmenityName(amenity)</option>
+                    }
+                </select>
+            </div>
+
+            <button class="btn btn-secondary" @onclick="ApplyFilters">Apply Filters</button>
+            <button class="btn btn-outline" @onclick="ClearFilters">Clear All</button>
+        </aside>
+
+        <!-- Venues Grid -->
+        <main class="venues-grid-container">
+            @if (isLoading)
+            {
+                <div class="loading">Searching venues...</div>
+            }
+            else if (venues == null || !venues.Any())
+            {
+                <div class="no-results">
+                    <span class="no-results-icon">🔍</span>
+                    <h3>No venues found</h3>
+                    <p>Try adjusting your search or filters</p>
+                    <button class="btn btn-secondary" @onclick="ClearFilters">Clear Filters</button>
+                </div>
+            }
+            else
+            {
+                <div class="results-info">
+                    <span>Found <strong>@venues.Count</strong> pet-friendly venues</span>
+                </div>
+                <div class="venue-grid">
+                    @foreach (var venue in venues)
+                    {
+                        <a href="/venue/@venue.Id" class="venue-card">
+                            <div class="venue-image">
+                                <img src="@venue.ImageUrl" alt="@venue.Name" loading="lazy" />
+                                <span class="venue-type-badge">@GetVenueTypeEmoji(venue.Type) @venue.Type</span>
+                            </div>
+                            <div class="venue-info">
+                                <h3>@venue.Name</h3>
+                                <p class="venue-location">📍 @venue.City, @venue.State</p>
+                                <p class="venue-description">@TruncateText(venue.Description, 100)</p>
+                                <div class="venue-meta">
+                                    <span class="venue-rating">
+                                        @GetStarRating(venue.AverageRating)
+                                        <span class="rating-value">@venue.AverageRating.ToString("0.0")</span>
+                                        <span class="review-count">(@venue.ReviewCount reviews)</span>
+                                    </span>
+                                </div>
+                                <div class="pet-types">
+                                    @foreach (var pet in venue.AcceptedPetTypes.Take(4))
+                                    {
+                                        <span class="pet-badge" title="@pet">@GetPetTypeEmoji(pet)</span>
+                                    }
+                                    @if (venue.AcceptedPetTypes.Count > 4)
+                                    {
+                                        <span class="pet-badge">+@(venue.AcceptedPetTypes.Count - 4)</span>
+                                    }
+                                </div>
+                                <div class="amenity-preview">
+                                    @foreach (var amenity in venue.Amenities.Take(3))
+                                    {
+                                        <span class="amenity-chip">@GetAmenityName(amenity)</span>
+                                    }
+                                    @if (venue.Amenities.Count > 3)
+                                    {
+                                        <span class="amenity-chip">+@(venue.Amenities.Count - 3) more</span>
+                                    }
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+        </main>
+    </div>
+</div>
+
+@code {
+    private List<Venue>? venues;
+    private string searchTerm = "";
+    private string selectedVenueType = "";
+    private string selectedPetType = "";
+    private string selectedAmenity = "";
+    private bool isLoading = true;
+
+    [SupplyParameterFromQuery(Name = "search")]
+    public string? QuerySearch { get; set; }
+
+    [SupplyParameterFromQuery(Name = "type")]
+    public string? QueryType { get; set; }
+
+    [SupplyParameterFromQuery(Name = "pet")]
+    public string? QueryPet { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Apply query parameters
+        if (!string.IsNullOrEmpty(QuerySearch))
+            searchTerm = QuerySearch;
+        if (!string.IsNullOrEmpty(QueryType))
+            selectedVenueType = QueryType;
+        if (!string.IsNullOrEmpty(QueryPet))
+            selectedPetType = QueryPet;
+
+        await LoadVenues();
+    }
+
+    private async Task LoadVenues()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        VenueType? venueType = null;
+        PetType? petType = null;
+        Amenity? amenity = null;
+
+        if (!string.IsNullOrEmpty(selectedVenueType) && Enum.TryParse<VenueType>(selectedVenueType, out var vt))
+            venueType = vt;
+        if (!string.IsNullOrEmpty(selectedPetType) && Enum.TryParse<PetType>(selectedPetType, out var pt))
+            petType = pt;
+        if (!string.IsNullOrEmpty(selectedAmenity) && Enum.TryParse<Amenity>(selectedAmenity, out var am))
+            amenity = am;
+
+        venues = await VenueService.SearchVenuesAsync(searchTerm, venueType, petType, amenity);
+        isLoading = false;
+    }
+
+    private async Task ApplyFilters()
+    {
+        await LoadVenues();
+    }
+
+    private async Task ClearFilters()
+    {
+        searchTerm = "";
+        selectedVenueType = "";
+        selectedPetType = "";
+        selectedAmenity = "";
+        await LoadVenues();
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await ApplyFilters();
+        }
+    }
+
+    private string GetStarRating(decimal rating)
+    {
+        int fullStars = (int)rating;
+        bool halfStar = rating - fullStars >= 0.5m;
+        var stars = new string('★', fullStars);
+        if (halfStar) stars += "½";
+        stars += new string('☆', 5 - fullStars - (halfStar ? 1 : 0));
+        return stars;
+    }
+
+    private string GetVenueTypeEmoji(VenueType type) => type switch
+    {
+        VenueType.Park => "🌳",
+        VenueType.Cafe => "☕",
+        VenueType.Restaurant => "🍽️",
+        VenueType.Hotel => "🏨",
+        VenueType.Store => "🛍️",
+        VenueType.Home => "🏠",
+        VenueType.Beach => "🏖️",
+        VenueType.Trail => "🥾",
+        VenueType.Veterinary => "🏥",
+        VenueType.Grooming => "✂️",
+        _ => "📍"
+    };
+
+    private string GetPetTypeEmoji(PetType type) => type switch
+    {
+        PetType.Dog => "🐕",
+        PetType.Cat => "🐈",
+        PetType.Bird => "🐦",
+        PetType.Rabbit => "🐰",
+        PetType.Reptile => "🦎",
+        PetType.Fish => "🐟",
+        PetType.SmallMammal => "🐹",
+        _ => "🐾"
+    };
+
+    private string GetAmenityName(Amenity amenity) => amenity switch
+    {
+        Amenity.OutdoorSeating => "Outdoor Seating",
+        Amenity.WaterBowls => "Water Bowls",
+        Amenity.TreatBar => "Treat Bar",
+        Amenity.FencedArea => "Fenced Area",
+        Amenity.OffLeashAllowed => "Off-Leash",
+        Amenity.PetMenu => "Pet Menu",
+        Amenity.WasteStations => "Waste Stations",
+        Amenity.ParkingAvailable => "Parking",
+        Amenity.WheelchairAccessible => "Wheelchair Access",
+        Amenity.PetWashStation => "Pet Wash",
+        Amenity.PlayArea => "Play Area",
+        Amenity.ShadedAreas => "Shaded Areas",
+        Amenity.AirConditioned => "A/C",
+        Amenity.PetSupplies => "Pet Supplies",
+        Amenity.GroomingServices => "Grooming",
+        Amenity.BoardingAvailable => "Boarding",
+        Amenity.DogPark => "Dog Park",
+        Amenity.CatRoom => "Cat Room",
+        _ => amenity.ToString()
+    };
+
+    private string TruncateText(string text, int maxLength)
+    {
+        if (text.Length <= maxLength) return text;
+        return text.Substring(0, maxLength).TrimEnd() + "...";
+    }
+}

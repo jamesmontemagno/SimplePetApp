@@ -1,0 +1,323 @@
+@page "/add-venue"
+@inject IVenueService VenueService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Add a Pet-Friendly Venue - MyPetVenues</PageTitle>
+
+<div class="add-venue-page">
+    <div class="container">
+        <div class="page-header">
+            <h1>Add a Pet-Friendly Venue</h1>
+            <p>Help fellow pet owners discover amazing places! Share your favorite pet-friendly spots with the community.</p>
+        </div>
+
+        @if (isSubmitted)
+        {
+            <div class="success-page">
+                <div class="success-icon">🎉</div>
+                <h2>Thank You!</h2>
+                <p>Your venue has been successfully added to MyPetVenues.</p>
+                <div class="success-actions">
+                    <a href="/venue/@submittedVenueId" class="btn btn-primary">View Your Venue</a>
+                    <a href="/venues" class="btn btn-secondary">Browse All Venues</a>
+                    <button class="btn btn-outline" @onclick="ResetForm">Add Another Venue</button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="form-container">
+                <EditForm Model="@newVenue" OnValidSubmit="@HandleSubmit" FormName="addVenueForm">
+                    <DataAnnotationsValidator />
+                    
+                    <!-- Basic Information -->
+                    <fieldset class="form-section">
+                        <legend>Basic Information</legend>
+                        
+                        <div class="form-group">
+                            <label for="name">Venue Name *</label>
+                            <InputText id="name" @bind-Value="newVenue.Name" class="form-control" placeholder="e.g., Pawsome Park" />
+                            <ValidationMessage For="@(() => newVenue.Name)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="type">Venue Type *</label>
+                            <InputSelect id="type" @bind-Value="newVenue.Type" class="form-control">
+                                @foreach (VenueType type in Enum.GetValues<VenueType>())
+                                {
+                                    <option value="@type">@GetVenueTypeEmoji(type) @type</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description *</label>
+                            <InputTextArea id="description" @bind-Value="newVenue.Description" class="form-control" rows="4" 
+                                          placeholder="Tell us about this venue and why it's great for pets..." />
+                            <ValidationMessage For="@(() => newVenue.Description)" />
+                        </div>
+                    </fieldset>
+
+                    <!-- Location -->
+                    <fieldset class="form-section">
+                        <legend>Location</legend>
+                        
+                        <div class="form-group">
+                            <label for="address">Street Address *</label>
+                            <InputText id="address" @bind-Value="newVenue.Address" class="form-control" placeholder="123 Main Street" />
+                            <ValidationMessage For="@(() => newVenue.Address)" />
+                        </div>
+
+                        <div class="form-row three-col">
+                            <div class="form-group">
+                                <label for="city">City *</label>
+                                <InputText id="city" @bind-Value="newVenue.City" class="form-control" placeholder="San Francisco" />
+                                <ValidationMessage For="@(() => newVenue.City)" />
+                            </div>
+                            <div class="form-group">
+                                <label for="state">State *</label>
+                                <InputText id="state" @bind-Value="newVenue.State" class="form-control" placeholder="CA" maxlength="2" />
+                                <ValidationMessage For="@(() => newVenue.State)" />
+                            </div>
+                            <div class="form-group">
+                                <label for="zipCode">ZIP Code</label>
+                                <InputText id="zipCode" @bind-Value="newVenue.ZipCode" class="form-control" placeholder="94102" />
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Contact Information -->
+                    <fieldset class="form-section">
+                        <legend>Contact Information</legend>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <InputText id="phone" @bind-Value="newVenue.Phone" class="form-control" placeholder="(555) 123-4567" />
+                            </div>
+                            <div class="form-group">
+                                <label for="website">Website</label>
+                                <InputText id="website" @bind-Value="newVenue.Website" class="form-control" placeholder="https://example.com" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hours">Operating Hours</label>
+                            <InputText id="hours" @bind-Value="newVenue.OperatingHours" class="form-control" 
+                                      placeholder="e.g., Mon-Fri: 9AM-6PM, Sat-Sun: 10AM-4PM" />
+                        </div>
+                    </fieldset>
+
+                    <!-- Pet Types -->
+                    <fieldset class="form-section">
+                        <legend>Accepted Pet Types *</legend>
+                        <p class="field-hint">Select all pet types that are welcome at this venue</p>
+                        
+                        <div class="checkbox-grid">
+                            @foreach (PetType petType in Enum.GetValues<PetType>())
+                            {
+                                <label class="checkbox-card @(selectedPetTypes.Contains(petType) ? "selected" : "")">
+                                    <input type="checkbox" checked="@selectedPetTypes.Contains(petType)" 
+                                           @onchange="@(() => TogglePetType(petType))" />
+                                    <span class="checkbox-icon">@GetPetTypeEmoji(petType)</span>
+                                    <span class="checkbox-label">@petType</span>
+                                </label>
+                            }
+                        </div>
+                        @if (!selectedPetTypes.Any())
+                        {
+                            <span class="validation-message">Please select at least one pet type</span>
+                        }
+                    </fieldset>
+
+                    <!-- Amenities -->
+                    <fieldset class="form-section">
+                        <legend>Amenities</legend>
+                        <p class="field-hint">Select all amenities available at this venue</p>
+                        
+                        <div class="checkbox-grid amenities">
+                            @foreach (Amenity amenity in Enum.GetValues<Amenity>())
+                            {
+                                <label class="checkbox-card small @(selectedAmenities.Contains(amenity) ? "selected" : "")">
+                                    <input type="checkbox" checked="@selectedAmenities.Contains(amenity)" 
+                                           @onchange="@(() => ToggleAmenity(amenity))" />
+                                    <span class="checkbox-icon">@GetAmenityIcon(amenity)</span>
+                                    <span class="checkbox-label">@GetAmenityName(amenity)</span>
+                                </label>
+                            }
+                        </div>
+                    </fieldset>
+
+                    <!-- Image (Mock) -->
+                    <fieldset class="form-section">
+                        <legend>Venue Image</legend>
+                        <p class="field-hint">Select a preview image for your venue</p>
+                        
+                        <div class="image-selector">
+                            @foreach (var image in availableImages)
+                            {
+                                <label class="image-option @(selectedImage == image ? "selected" : "")">
+                                    <input type="radio" name="venueImage" value="@image" 
+                                           checked="@(selectedImage == image)"
+                                           @onchange="@(() => selectedImage = image)" />
+                                    <img src="@image" alt="Venue preview" />
+                                </label>
+                            }
+                        </div>
+                    </fieldset>
+
+                    <!-- Submit -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-large" 
+                                disabled="@(!IsFormValid())">
+                            Add Venue
+                        </button>
+                        <a href="/venues" class="btn btn-outline">Cancel</a>
+                    </div>
+                </EditForm>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private Venue newVenue = new Venue { Type = VenueType.Park };
+    private HashSet<PetType> selectedPetTypes = new();
+    private HashSet<Amenity> selectedAmenities = new();
+    private string selectedImage = "images/venues/park1.jpg";
+    private bool isSubmitted = false;
+    private int submittedVenueId = 0;
+
+    private readonly string[] availableImages = new[]
+    {
+        "images/venues/park1.jpg",
+        "images/venues/cafe1.jpg",
+        "images/venues/hotel1.jpg",
+        "images/venues/store1.jpg",
+        "images/venues/moochs1.jpg",
+        "images/venues/home1.jpg"
+    };
+
+    private void TogglePetType(PetType petType)
+    {
+        if (selectedPetTypes.Contains(petType))
+            selectedPetTypes.Remove(petType);
+        else
+            selectedPetTypes.Add(petType);
+    }
+
+    private void ToggleAmenity(Amenity amenity)
+    {
+        if (selectedAmenities.Contains(amenity))
+            selectedAmenities.Remove(amenity);
+        else
+            selectedAmenities.Add(amenity);
+    }
+
+    private bool IsFormValid()
+    {
+        return !string.IsNullOrWhiteSpace(newVenue.Name) &&
+               !string.IsNullOrWhiteSpace(newVenue.Description) &&
+               !string.IsNullOrWhiteSpace(newVenue.Address) &&
+               !string.IsNullOrWhiteSpace(newVenue.City) &&
+               !string.IsNullOrWhiteSpace(newVenue.State) &&
+               selectedPetTypes.Any();
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (!IsFormValid()) return;
+
+        newVenue.AcceptedPetTypes = selectedPetTypes.ToList();
+        newVenue.Amenities = selectedAmenities.ToList();
+        newVenue.ImageUrl = selectedImage;
+
+        await VenueService.AddVenueAsync(newVenue);
+        
+        submittedVenueId = newVenue.Id;
+        isSubmitted = true;
+    }
+
+    private void ResetForm()
+    {
+        newVenue = new Venue { Type = VenueType.Park };
+        selectedPetTypes.Clear();
+        selectedAmenities.Clear();
+        selectedImage = "images/venues/park1.jpg";
+        isSubmitted = false;
+        submittedVenueId = 0;
+    }
+
+    private string GetVenueTypeEmoji(VenueType type) => type switch
+    {
+        VenueType.Park => "🌳",
+        VenueType.Cafe => "☕",
+        VenueType.Restaurant => "🍽️",
+        VenueType.Hotel => "🏨",
+        VenueType.Store => "🛍️",
+        VenueType.Home => "🏠",
+        VenueType.Beach => "🏖️",
+        VenueType.Trail => "🥾",
+        VenueType.Veterinary => "🏥",
+        VenueType.Grooming => "✂️",
+        _ => "📍"
+    };
+
+    private string GetPetTypeEmoji(PetType type) => type switch
+    {
+        PetType.Dog => "🐕",
+        PetType.Cat => "🐈",
+        PetType.Bird => "🐦",
+        PetType.Rabbit => "🐰",
+        PetType.Reptile => "🦎",
+        PetType.Fish => "🐟",
+        PetType.SmallMammal => "🐹",
+        _ => "🐾"
+    };
+
+    private string GetAmenityIcon(Amenity amenity) => amenity switch
+    {
+        Amenity.OutdoorSeating => "🪑",
+        Amenity.WaterBowls => "💧",
+        Amenity.TreatBar => "🦴",
+        Amenity.FencedArea => "🚧",
+        Amenity.OffLeashAllowed => "🐕‍🦺",
+        Amenity.PetMenu => "📋",
+        Amenity.WasteStations => "🗑️",
+        Amenity.ParkingAvailable => "🅿️",
+        Amenity.WheelchairAccessible => "♿",
+        Amenity.PetWashStation => "🚿",
+        Amenity.PlayArea => "🎾",
+        Amenity.ShadedAreas => "🌳",
+        Amenity.AirConditioned => "❄️",
+        Amenity.PetSupplies => "🛒",
+        Amenity.GroomingServices => "✂️",
+        Amenity.BoardingAvailable => "🏠",
+        Amenity.DogPark => "🐕",
+        Amenity.CatRoom => "🐈",
+        _ => "✓"
+    };
+
+    private string GetAmenityName(Amenity amenity) => amenity switch
+    {
+        Amenity.OutdoorSeating => "Outdoor Seating",
+        Amenity.WaterBowls => "Water Bowls",
+        Amenity.TreatBar => "Treat Bar",
+        Amenity.FencedArea => "Fenced Area",
+        Amenity.OffLeashAllowed => "Off-Leash",
+        Amenity.PetMenu => "Pet Menu",
+        Amenity.WasteStations => "Waste Stations",
+        Amenity.ParkingAvailable => "Parking",
+        Amenity.WheelchairAccessible => "Wheelchair Access",
+        Amenity.PetWashStation => "Pet Wash",
+        Amenity.PlayArea => "Play Area",
+        Amenity.ShadedAreas => "Shaded Areas",
+        Amenity.AirConditioned => "A/C",
+        Amenity.PetSupplies => "Pet Supplies",
+        Amenity.GroomingServices => "Grooming",
+        Amenity.BoardingAvailable => "Boarding",
+        Amenity.DogPark => "Dog Park",
+        Amenity.CatRoom => "Cat Room",
+        _ => amenity.ToString()
+    };
+}
