@@ -119,7 +119,7 @@
             (string.IsNullOrWhiteSpace(searchTerm) ||
              v.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
              v.City.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-             v.Neighborhood.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) &&
+             (v.Neighborhood?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)) &&
             (categoryFilter == "All" || v.Category.Equals(categoryFilter, StringComparison.OrdinalIgnoreCase)) &&
             (petTypeFilter == "All" || v.PetTypes.Contains(petTypeFilter, StringComparer.OrdinalIgnoreCase)) &&
             (amenityFilter == "Any" || v.Amenities.Contains(amenityFilter, StringComparer.OrdinalIgnoreCase)))

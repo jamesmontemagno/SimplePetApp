@@ -123,6 +123,11 @@
                 </div>
             </div>
 
+            @if (!string.IsNullOrWhiteSpace(errorMessage))
+            {
+                <div class="validation-message">@errorMessage</div>
+            }
+
             @if (!string.IsNullOrWhiteSpace(successMessage))
             {
                 <div class="success">
@@ -145,6 +150,7 @@
 
     private NewVenueForm venueForm = new();
     private string? successMessage;
+    private string? errorMessage;
     private int? createdVenueId;
 
     private readonly List<(string Path, string Label)> imageChoices =
@@ -175,12 +181,13 @@
     {
         successMessage = null;
         createdVenueId = null;
+        errorMessage = null;
         var selectedPets = petSelections.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
         var selectedAmenities = amenitySelections.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
 
         if (!selectedPets.Any() || !selectedAmenities.Any())
         {
-            successMessage = "Please choose at least one pet type and amenity.";
+            errorMessage = "Please choose at least one pet type and amenity.";
             return;
         }
 

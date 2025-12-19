@@ -581,6 +581,10 @@ a:hover {
     flex-wrap: wrap;
 }
 
+.pill-row.wrap {
+    flex-wrap: wrap;
+}
+
 .checkbox-pill {
     display: inline-flex;
     align-items: center;

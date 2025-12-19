@@ -220,7 +220,7 @@
             (string.IsNullOrWhiteSpace(searchTerm) ||
              v.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
              v.City.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-             v.Neighborhood.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) &&
+             (v.Neighborhood?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)) &&
             (selectedPetType == "Any" || v.PetTypes.Contains(selectedPetType, StringComparer.OrdinalIgnoreCase)) &&
             (selectedAmenity == "Any" || v.Amenities.Contains(selectedAmenity, StringComparer.OrdinalIgnoreCase)));
 
