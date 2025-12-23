@@ -240,7 +240,7 @@ public class MockDataService
                 Address = "1200 Mountain Road, Nature Reserve",
                 Phone = "(555) 789-0123",
                 Email = "trails@furryfriends.com",
-                Website = "www.furryfriendsrail.com",
+                Website = "www.furryfriendsstrail.com",
                 ImageUrl = "/images/venues/park1.jpg",
                 Amenities = new List<Amenity> { waterBowls, waste, shade, outdoor },
                 AllowedPets = new List<PetType> { PetType.Dog },
