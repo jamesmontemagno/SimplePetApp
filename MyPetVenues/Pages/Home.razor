@@ -1,7 +1,161 @@
-﻿@page "/"
+@page "/"
+@using MyPetVenues.Models
+@inject Services.MockDataService DataService
+@inject NavigationManager Navigation
 
-<PageTitle>Home</PageTitle>
+<PageTitle>MyPetVenues - Discover Pet-Friendly Places</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="home-page">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="hero-emoji">🐾</span>
+                Discover Pet-Friendly Places
+            </h1>
+            <p class="hero-subtitle">
+                Find the perfect spots to enjoy with your furry, feathered, or scaly friends!
+            </p>
+            <div class="hero-actions">
+                <button class="btn btn-primary btn-lg" @onclick="@(() => Navigation.NavigateTo("/venues"))">
+                    Browse Venues 📍
+                </button>
+                <button class="btn btn-secondary btn-lg" @onclick="@(() => Navigation.NavigateTo("/venues/add"))">
+                    Add a Venue ➕
+                </button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <span class="hero-emoji-large">🐕🐈🐰</span>
+        </div>
+    </section>
+    
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon">📍</div>
+                <div class="stat-number">@venues.Count</div>
+                <div class="stat-label">Pet-Friendly Venues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-number">@reviews.Count</div>
+                <div class="stat-label">Community Reviews</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-number">@users.Count</div>
+                <div class="stat-label">Happy Pet Owners</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🐾</div>
+                <div class="stat-number">@GetTotalPets()</div>
+                <div class="stat-label">Adorable Pets</div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="features-section">
+        <h2 class="section-title">✨ Why Choose MyPetVenues?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>Easy Discovery</h3>
+                <p>Find pet-friendly venues near you with powerful search and filters</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⭐</div>
+                <h3>Trusted Reviews</h3>
+                <p>Read authentic reviews from fellow pet owners in your community</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Detailed Info</h3>
+                <p>Get all the details - amenities, pet types welcome, contact info & more</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤝</div>
+                <h3>Community Driven</h3>
+                <p>Help others by sharing your favorite pet-friendly spots</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Popular Venues Section -->
+    <section class="popular-section">
+        <h2 class="section-title">🔥 Popular Venues</h2>
+        <div class="venues-grid">
+            @foreach (var venue in popularVenues)
+            {
+                <VenueCard Venue="@venue" />
+            }
+        </div>
+        <div class="section-action">
+            <button class="btn btn-outline" @onclick="@(() => Navigation.NavigateTo("/venues"))">
+                View All Venues →
+            </button>
+        </div>
+    </section>
+    
+    <!-- Recent Reviews Section -->
+    <section class="reviews-section">
+        <h2 class="section-title">💬 Recent Reviews</h2>
+        <div class="reviews-grid">
+            @foreach (var review in recentReviews)
+            {
+                <ReviewCard Review="@review" />
+            }
+        </div>
+        <div class="section-action">
+            <button class="btn btn-outline" @onclick="@(() => Navigation.NavigateTo("/reviews"))">
+                View All Reviews →
+            </button>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Ready to explore? 🚀</h2>
+            <p>Join our community of pet lovers and discover amazing pet-friendly places!</p>
+            <button class="btn btn-primary btn-lg" @onclick="@(() => Navigation.NavigateTo("/venues"))">
+                Get Started Now
+            </button>
+        </div>
+    </section>
+</div>
 
-Welcome to your new app.
+@code {
+    private List<Venue> venues = new();
+    private List<Review> reviews = new();
+    private List<User> users = new();
+    private List<Venue> popularVenues = new();
+    private List<Review> recentReviews = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        venues = await DataService.GetVenuesAsync();
+        reviews = await DataService.GetAllReviewsAsync();
+        users = DataService.GetUsers();
+        
+        // Get top 6 venues by rating
+        popularVenues = venues
+            .OrderByDescending(v => v.Rating)
+            .ThenByDescending(v => v.ReviewCount)
+            .Take(6)
+            .ToList();
+        
+        // Get 3 most recent reviews
+        recentReviews = reviews
+            .OrderByDescending(r => r.DateCreated)
+            .Take(3)
+            .ToList();
+    }
+    
+    private int GetTotalPets()
+    {
+        return users.Sum(u => u.Pets.Count);
+    }
+}

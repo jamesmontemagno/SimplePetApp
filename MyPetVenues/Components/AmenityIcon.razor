@@ -1,0 +1,15 @@
+<span class="amenity-icon" title="@Amenity.Name">
+    <span class="amenity-emoji">@Amenity.Icon</span>
+    @if (ShowLabel)
+    {
+        <span class="amenity-label">@Amenity.Name</span>
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public Models.Amenity Amenity { get; set; } = null!;
+    
+    [Parameter]
+    public bool ShowLabel { get; set; } = true;
+}

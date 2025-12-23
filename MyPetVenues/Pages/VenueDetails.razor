@@ -1,0 +1,237 @@
+@page "/venues/{id:guid}"
+@using MyPetVenues.Models
+@inject Services.MockDataService DataService
+@inject NavigationManager Navigation
+
+<PageTitle>@(venue?.Name ?? "Venue Details") - MyPetVenues</PageTitle>
+
+@if (venue == null)
+{
+    <div class="loading-state">
+        <div class="loading-spinner">⏳</div>
+        <p>Loading venue details...</p>
+    </div>
+}
+else
+{
+    <div class="venue-details-page">
+        <!-- Hero Section -->
+        <div class="venue-hero">
+            <button class="btn-back" @onclick="GoBack">
+                ← Back to Venues
+            </button>
+            
+            <div class="venue-hero-image">
+                <img src="@venue.ImageUrl" alt="@venue.Name" />
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="venue-content">
+            <div class="venue-header">
+                <div class="venue-title-section">
+                    <h1>@venue.Name</h1>
+                    <div class="venue-type-badge">
+                        @GetVenueTypeIcon() @venue.Type
+                    </div>
+                </div>
+                
+                <div class="venue-rating-section">
+                    <StarRating Rating="@venue.Rating" ShowCount="true" Count="@venue.ReviewCount" />
+                </div>
+            </div>
+            
+            <div class="venue-layout">
+                <!-- Left Column - Main Info -->
+                <div class="venue-main">
+                    <section class="venue-section">
+                        <h2>📝 About</h2>
+                        <p class="venue-description">@venue.Description</p>
+                    </section>
+                    
+                    @if (venue.Amenities.Any())
+                    {
+                        <section class="venue-section">
+                            <h2>✨ Amenities</h2>
+                            <div class="amenities-grid">
+                                @foreach (var amenity in venue.Amenities)
+                                {
+                                    <AmenityIcon Amenity="@amenity" ShowLabel="true" />
+                                }
+                            </div>
+                        </section>
+                    }
+                    
+                    <section class="venue-section">
+                        <h2>🐾 Pets Welcome</h2>
+                        <div class="pets-grid">
+                            @foreach (var petType in venue.AllowedPets)
+                            {
+                                <div class="pet-badge-large">
+                                    <span class="pet-emoji">@GetPetEmoji(petType)</span>
+                                    <span class="pet-name">@petType</span>
+                                </div>
+                            }
+                        </div>
+                    </section>
+                    
+                    <!-- Reviews Section -->
+                    <section class="venue-section">
+                        <div class="reviews-header">
+                            <h2>⭐ Reviews (@reviews.Count)</h2>
+                        </div>
+                        
+                        @if (reviews.Any())
+                        {
+                            <div class="reviews-list">
+                                @foreach (var review in reviews)
+                                {
+                                    <ReviewCard Review="@review" />
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="empty-reviews">
+                                <p>No reviews yet. Be the first to share your experience!</p>
+                            </div>
+                        }
+                    </section>
+                </div>
+                
+                <!-- Right Column - Contact Info -->
+                <div class="venue-sidebar">
+                    <div class="contact-card">
+                        <h3>�� Contact Information</h3>
+                        
+                        @if (!string.IsNullOrEmpty(venue.Address))
+                        {
+                            <div class="contact-item">
+                                <span class="contact-icon">📍</span>
+                                <div class="contact-info">
+                                    <strong>Address</strong>
+                                    <p>@venue.Address</p>
+                                </div>
+                            </div>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(venue.Phone))
+                        {
+                            <div class="contact-item">
+                                <span class="contact-icon">📞</span>
+                                <div class="contact-info">
+                                    <strong>Phone</strong>
+                                    <p><a href="tel:@venue.Phone">@venue.Phone</a></p>
+                                </div>
+                            </div>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(venue.Email))
+                        {
+                            <div class="contact-item">
+                                <span class="contact-icon">✉️</span>
+                                <div class="contact-info">
+                                    <strong>Email</strong>
+                                    <p><a href="mailto:@venue.Email">@venue.Email</a></p>
+                                </div>
+                            </div>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(venue.Website))
+                        {
+                            <div class="contact-item">
+                                <span class="contact-icon">🌐</span>
+                                <div class="contact-info">
+                                    <strong>Website</strong>
+                                    <p><a href="@GetWebsiteUrl()" target="_blank">Visit Website →</a></p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="info-card">
+                        <h4>ℹ️ Venue Info</h4>
+                        <div class="info-item">
+                            <strong>Added:</strong>
+                            <span>@venue.DateAdded.ToString("MMMM dd, yyyy")</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Type:</strong>
+                            <span>@venue.Type</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Amenities:</strong>
+                            <span>@venue.Amenities.Count</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+    
+    private Venue? venue;
+    private List<Review> reviews = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        venue = await DataService.GetVenueByIdAsync(Id);
+        
+        if (venue != null)
+        {
+            reviews = await DataService.GetReviewsForVenueAsync(Id);
+        }
+    }
+    
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/venues");
+    }
+    
+    private string GetWebsiteUrl()
+    {
+        if (venue?.Website == null) return "#";
+        
+        if (venue.Website.StartsWith("http://") || venue.Website.StartsWith("https://"))
+            return venue.Website;
+        
+        return "https://" + venue.Website;
+    }
+    
+    private string GetVenueTypeIcon()
+    {
+        return venue?.Type switch
+        {
+            VenueType.Park => "🌳",
+            VenueType.Cafe => "☕",
+            VenueType.Store => "🏪",
+            VenueType.Hotel => "🏨",
+            VenueType.Clinic => "⚕️",
+            VenueType.Restaurant => "🍽️",
+            VenueType.Beach => "🏖️",
+            VenueType.Trail => "🥾",
+            _ => "📍"
+        };
+    }
+    
+    private string GetPetEmoji(PetType petType)
+    {
+        return petType switch
+        {
+            PetType.Dog => "🐕",
+            PetType.Cat => "🐈",
+            PetType.Rabbit => "🐰",
+            PetType.Bird => "🦜",
+            PetType.Hamster => "🐹",
+            PetType.GuineaPig => "🐹",
+            PetType.Hedgehog => "🦔",
+            PetType.Reptile => "🦎",
+            PetType.Fish => "🐠",
+            _ => "🐾"
+        };
+    }
+}
