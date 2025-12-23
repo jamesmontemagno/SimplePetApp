@@ -1,3 +1,17 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@inject MyPetVenues.Services.ThemeService ThemeService
 
-@Body
+<div class="app-shell">
+    <NavBar />
+    <main class="content">
+        @Body
+    </main>
+    <Footer />
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await ThemeService.InitializeAsync();
+    }
+}

@@ -1,7 +1,122 @@
-﻿@page "/"
+@page "/"
+@inject IPetVenueService VenueService
 
-<PageTitle>Home</PageTitle>
+<PageTitle>MyPetVenues</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="hero">
+    <div class="hero-content">
+        <div class="eyebrow">Modern, pet-first outings</div>
+        <h1>Find places that love your pets as much as you do.</h1>
+        <p class="lead">Curated parks, cafés, hotels, and hideaways with the amenities your companions deserve. Try the mock experience and imagine your next outing.</p>
+        <div class="hero-actions">
+            <a class="pill-button primary" href="/venues">Browse venues</a>
+            <a class="pill-button ghost" href="#highlights">See highlights</a>
+        </div>
+        <div class="stats">
+            <div>
+                <strong>200+</strong>
+                <span>community reviews</span>
+            </div>
+            <div>
+                <strong>8</strong>
+                <span>curated locations</span>
+            </div>
+            <div>
+                <strong>3</strong>
+                <span>pet types supported</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-media">
+        <div class="glass-card">
+            <img src="images/pets/dog1.png" alt="Happy dog" />
+            <div>
+                <div class="badge">Featured today</div>
+                <p class="hero-card-title">Sunset Bark Park</p>
+                <p class="muted">Shoreline run · Water bowls · Shade</p>
+            </div>
+        </div>
+        <div class="glass-card secondary">
+            <img src="images/pets/cat1.jpg" alt="Relaxed cat" />
+            <div>
+                <p class="hero-card-title">Whisker &amp; Bean Café</p>
+                <p class="muted">Calm spaces for cats + humans</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-Welcome to your new app.
+<section id="highlights" class="section">
+    <div class="section-heading">
+        <p class="eyebrow">Why pet parents love us</p>
+        <h2>Designed for real-life outings.</h2>
+        <p class="muted">Filters that matter, quick reads, and stunning visuals so you can decide in seconds.</p>
+    </div>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="icon-circle">🔍</div>
+            <h3>Smart filters</h3>
+            <p>Search by pet type, amenities, and vibe—instantly updated results.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon-circle">✨</div>
+            <h3>Curated highlights</h3>
+            <p>Handpicked venues with verified amenities and quick-read badges.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon-circle">🌗</div>
+            <h3>Light &amp; dark ready</h3>
+            <p>Comfortable reading with a pink gradient aesthetic and theme toggle.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon-circle">📱</div>
+            <h3>Responsive layouts</h3>
+            <p>Feels native on phones, tablets, or desktops with fluid cards.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-heading">
+        <p class="eyebrow">Featured</p>
+        <h2>Top spots this week</h2>
+        <p class="muted">Pulled from our mock dataset to demonstrate the experience.</p>
+    </div>
+    <div class="cards-grid">
+        @foreach (var venue in _featuredVenues)
+        {
+            <VenueCard Venue="venue" @key="venue.Id" />
+        }
+    </div>
+</section>
+
+<section class="section alt">
+    <div class="section-heading">
+        <p class="eyebrow">Pet energy</p>
+        <h2>Pick your adventure buddy</h2>
+    </div>
+    <div class="pet-gallery">
+        <img src="images/pets/dog3.jpg" alt="Excited dog" />
+        <img src="images/pets/cat3.jpg" alt="Curious cat" />
+        <img src="images/pets/hedgehog.jpg" alt="Hedgehog" />
+        <img src="images/pets/dog8.jpg" alt="Relaxed dog" />
+    </div>
+</section>
+
+<section class="cta">
+    <div>
+        <p class="eyebrow">Plan your next outing</p>
+        <h2>Ready to explore pet-friendly places?</h2>
+        <p class="muted">Toggle the theme, browse the venues, and imagine your perfect day out.</p>
+    </div>
+    <a class="pill-button primary" href="/venues">Start browsing</a>
+</section>
+
+@code {
+    private IReadOnlyList<PetVenue> _featuredVenues = Array.Empty<PetVenue>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _featuredVenues = await VenueService.GetFeaturedAsync();
+    }
+}
