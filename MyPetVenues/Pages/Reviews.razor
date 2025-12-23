@@ -1,0 +1,160 @@
+@page "/reviews"
+@using MyPetVenues.Models
+@inject Services.MockDataService DataService
+
+<PageTitle>Reviews - MyPetVenues</PageTitle>
+
+<div class="reviews-page">
+    <div class="page-header">
+        <h1>⭐ Community Reviews</h1>
+        <p>See what pet owners are saying about venues</p>
+    </div>
+    
+    <div class="reviews-controls">
+        <div class="filters">
+            <select @bind="selectedRating" @bind:after="FilterReviews" class="filter-select">
+                <option value="">All Ratings</option>
+                <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
+                <option value="4">⭐⭐⭐⭐ 4+ Stars</option>
+                <option value="3">⭐⭐⭐ 3+ Stars</option>
+            </select>
+            
+            <select @bind="selectedPetType" @bind:after="FilterReviews" class="filter-select">
+                <option value="">All Pets</option>
+                @foreach (var type in Enum.GetValues<PetType>())
+                {
+                    <option value="@type">@GetPetEmoji(type) @type</option>
+                }
+            </select>
+            
+            <select @bind="sortBy" @bind:after="FilterReviews" class="filter-select">
+                <option value="newest">🆕 Newest First</option>
+                <option value="rating">⭐ Highest Rated</option>
+                <option value="helpful">👍 Most Helpful</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="reviews-results">
+        <div class="results-header">
+            <span class="results-count">
+                Showing <strong>@filteredReviews.Count</strong> of <strong>@allReviews.Count</strong> reviews
+            </span>
+            
+            @if (HasActiveFilters())
+            {
+                <button class="btn-clear-filters" @onclick="ClearFilters">
+                    Clear Filters ✕
+                </button>
+            }
+        </div>
+        
+        @if (filteredReviews.Any())
+        {
+            <div class="reviews-list">
+                @foreach (var review in filteredReviews)
+                {
+                    <div class="review-with-venue">
+                        <ReviewCard Review="@review" />
+                        @if (GetVenueForReview(review.VenueId) is { } venue)
+                        {
+                            <div class="review-venue-link">
+                                <a href="/venues/@venue.Id">
+                                    View @venue.Name →
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">😔</div>
+                <h3>No reviews found</h3>
+                <p>Try adjusting your filters</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Review> allReviews = new();
+    private List<Review> filteredReviews = new();
+    private List<Venue> venues = new();
+    
+    private string selectedRating = string.Empty;
+    private string selectedPetType = string.Empty;
+    private string sortBy = "newest";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        allReviews = await DataService.GetAllReviewsAsync();
+        venues = await DataService.GetVenuesAsync();
+        FilterReviews();
+    }
+    
+    private void FilterReviews()
+    {
+        IEnumerable<Review> query = allReviews;
+        
+        // Apply rating filter
+        if (!string.IsNullOrEmpty(selectedRating) && int.TryParse(selectedRating, out var minRating))
+        {
+            query = query.Where(r => r.Rating >= minRating);
+        }
+        
+        // Apply pet type filter
+        if (!string.IsNullOrEmpty(selectedPetType) && Enum.TryParse<PetType>(selectedPetType, out var petType))
+        {
+            query = query.Where(r => r.PetType == petType);
+        }
+        
+        // Apply sorting
+        query = sortBy switch
+        {
+            "newest" => query.OrderByDescending(r => r.DateCreated),
+            "rating" => query.OrderByDescending(r => r.Rating).ThenByDescending(r => r.DateCreated),
+            "helpful" => query.OrderByDescending(r => r.HelpfulCount).ThenByDescending(r => r.DateCreated),
+            _ => query.OrderByDescending(r => r.DateCreated)
+        };
+        
+        filteredReviews = query.ToList();
+    }
+    
+    private bool HasActiveFilters()
+    {
+        return !string.IsNullOrEmpty(selectedRating) ||
+               !string.IsNullOrEmpty(selectedPetType);
+    }
+    
+    private void ClearFilters()
+    {
+        selectedRating = string.Empty;
+        selectedPetType = string.Empty;
+        FilterReviews();
+    }
+    
+    private Venue? GetVenueForReview(Guid venueId)
+    {
+        return venues.FirstOrDefault(v => v.Id == venueId);
+    }
+    
+    private string GetPetEmoji(PetType petType)
+    {
+        return petType switch
+        {
+            PetType.Dog => "🐕",
+            PetType.Cat => "🐈",
+            PetType.Rabbit => "🐰",
+            PetType.Bird => "🦜",
+            PetType.Hamster => "🐹",
+            PetType.GuineaPig => "🐹",
+            PetType.Hedgehog => "🦔",
+            PetType.Reptile => "🦎",
+            PetType.Fish => "🐠",
+            _ => "🐾"
+        };
+    }
+}

@@ -1,0 +1,70 @@
+@inject Services.ThemeService ThemeService
+@implements IDisposable
+
+<nav class="navbar">
+    <div class="navbar-container">
+        <a href="/" class="navbar-brand">
+            <span class="brand-icon">��</span>
+            <span class="brand-text">MyPetVenues</span>
+        </a>
+        
+        <button class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon">@(collapseNavMenu ? "☰" : "✕")</span>
+        </button>
+        
+        <div class="navbar-menu @NavMenuCssClass">
+            <a href="/" class="nav-link" @onclick="CloseNavMenu">
+                <span class="nav-icon">🏠</span>
+                <span>Home</span>
+            </a>
+            <a href="/venues" class="nav-link" @onclick="CloseNavMenu">
+                <span class="nav-icon">📍</span>
+                <span>Venues</span>
+            </a>
+            <a href="/venues/add" class="nav-link" @onclick="CloseNavMenu">
+                <span class="nav-icon">➕</span>
+                <span>Add Venue</span>
+            </a>
+            <a href="/reviews" class="nav-link" @onclick="CloseNavMenu">
+                <span class="nav-icon">⭐</span>
+                <span>Reviews</span>
+            </a>
+            
+            <button class="theme-toggle" @onclick="ToggleTheme" title="Toggle theme">
+                <span class="theme-icon">@(ThemeService.CurrentTheme == "light" ? "🌙" : "☀️")</span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+@code {
+    private bool collapseNavMenu = true;
+    
+    private string NavMenuCssClass => collapseNavMenu ? "collapsed" : "";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await ThemeService.InitializeAsync();
+        ThemeService.OnThemeChanged += StateHasChanged;
+    }
+    
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+    
+    private void CloseNavMenu()
+    {
+        collapseNavMenu = true;
+    }
+    
+    private async Task ToggleTheme()
+    {
+        await ThemeService.ToggleThemeAsync();
+    }
+    
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+    }
+}
