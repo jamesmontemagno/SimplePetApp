@@ -1,0 +1,258 @@
+@page "/venues"
+@inject MockDataService DataService
+@inject NavigationManager Navigation
+
+<PageTitle>Pet-Friendly Venues - MyPetVenues 🐾</PageTitle>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1>🔍 Explore Pet-Friendly Venues</h1>
+        <p>Discover amazing places that welcome you and your furry friends!</p>
+    </div>
+</section>
+
+<!-- Search & Filters -->
+<section class="section">
+    <div class="container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" 
+                       class="search-input" 
+                       placeholder="Search venues by name, city, or description..." 
+                       @bind="searchQuery"
+                       @bind:event="oninput"
+                       @onkeyup="HandleSearch" />
+            </div>
+            <button class="btn btn-primary" @onclick="HandleSearch">Search</button>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="filter-group">
+            <button class="filter-btn @(selectedCategory == null ? "active" : "")" 
+                    @onclick="() => FilterByCategory(null)">
+                All Categories
+            </button>
+            @foreach (var category in Enum.GetValues<VenueCategory>())
+            {
+                <button class="filter-btn @(selectedCategory == category ? "active" : "")" 
+                        @onclick="() => FilterByCategory(category)">
+                    @category.GetEmoji() @category.GetDisplayName()
+                </button>
+            }
+        </div>
+
+        <!-- Pet Type Filters -->
+        <div class="pet-types-bar">
+            @foreach (var petType in Enum.GetValues<PetType>())
+            {
+                <button class="pet-type-btn @(selectedPetType == petType ? "active" : "")" 
+                        @onclick="() => FilterByPetType(petType)">
+                    <span class="pet-type-emoji">@petType.GetEmoji()</span>
+                    <span>@petType.GetDisplayName()</span>
+                </button>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Results -->
+<section class="section">
+    <div class="container">
+        <!-- Results Header -->
+        <div class="flex items-center justify-between mb-lg">
+            <p class="text-muted">
+                Showing @filteredVenues.Count venue@(filteredVenues.Count != 1 ? "s" : "")
+                @if (!string.IsNullOrEmpty(searchQuery))
+                {
+                    <span> for "@searchQuery"</span>
+                }
+            </p>
+            <div class="flex gap-md">
+                <select class="form-select" style="width: auto;" @bind="sortBy" @bind:after="ApplyFilters">
+                    <option value="rating">Sort by Rating</option>
+                    <option value="reviews">Sort by Reviews</option>
+                    <option value="newest">Sort by Newest</option>
+                    <option value="name">Sort by Name</option>
+                </select>
+            </div>
+        </div>
+
+        @if (filteredVenues.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-emoji">🔍</div>
+                <h3 class="empty-title">No Venues Found</h3>
+                <p class="empty-description">
+                    We couldn't find any venues matching your criteria. Try adjusting your filters or search terms.
+                </p>
+                <button class="btn btn-primary" @onclick="ClearFilters">Clear Filters</button>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-3">
+                @foreach (var venue in filteredVenues)
+                {
+                    <div class="card">
+                        <div class="card-image-wrapper">
+                            <img src="@venue.ImageUrl" alt="@venue.Name" class="card-image" />
+                            @if (venue.IsFeatured)
+                            {
+                                <span class="card-badge">⭐ Featured</span>
+                            }
+                            <button class="card-favorite" title="Add to favorites">💕</button>
+                        </div>
+                        <div class="card-body">
+                            <span class="card-category">
+                                <span>@venue.Category.GetEmoji()</span>
+                                @venue.Category.GetDisplayName()
+                            </span>
+                            <h3 class="card-title">
+                                <a href="/venue/@venue.Id">@venue.Name</a>
+                            </h3>
+                            <p class="card-description">@venue.Description</p>
+                            <div class="card-meta mb-lg">
+                                <span>📍</span>
+                                <span>@venue.City, @venue.State</span>
+                            </div>
+                            <div class="rating">
+                                <div class="rating-stars">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <span class="rating-star @(i <= venue.AverageRating ? "filled" : "")">★</span>
+                                    }
+                                </div>
+                                <span class="rating-value">@venue.AverageRating.ToString("F1")</span>
+                                <span class="rating-count">(@venue.ReviewCount)</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="amenities-list">
+                                @foreach (var amenity in venue.Amenities.Take(4))
+                                {
+                                    <span class="amenity-tag" title="@amenity.Name">@amenity.Icon</span>
+                                }
+                                @if (venue.Amenities.Count > 4)
+                                {
+                                    <span class="amenity-tag">+@(venue.Amenities.Count - 4)</span>
+                                }
+                            </div>
+                            <a href="/venue/@venue.Id" class="btn btn-sm btn-outline">View</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="cta-banner">
+            <h2 class="cta-title">Can't Find What You're Looking For? 🤔</h2>
+            <p class="cta-description">
+                Help us grow! Add your favorite pet-friendly spots and help other pet parents discover great places.
+            </p>
+            <a href="/add-venue" class="btn btn-white btn-lg">
+                <span>➕</span> Add a Venue
+            </a>
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<Venue> allVenues = [];
+    private List<Venue> filteredVenues = [];
+    private string searchQuery = "";
+    private VenueCategory? selectedCategory;
+    private PetType selectedPetType = PetType.All;
+    private string sortBy = "rating";
+
+    protected override void OnInitialized()
+    {
+        allVenues = DataService.GetAllVenues();
+        ApplyFilters();
+        
+        // Check for query parameters
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("category", out var categoryValue))
+        {
+            if (Enum.TryParse<VenueCategory>(categoryValue, true, out var category))
+            {
+                selectedCategory = category;
+                ApplyFilters();
+            }
+        }
+    }
+
+    private void HandleSearch()
+    {
+        ApplyFilters();
+    }
+
+    private void FilterByCategory(VenueCategory? category)
+    {
+        selectedCategory = category;
+        ApplyFilters();
+    }
+
+    private void FilterByPetType(PetType petType)
+    {
+        selectedPetType = petType;
+        ApplyFilters();
+    }
+
+    private void ClearFilters()
+    {
+        searchQuery = "";
+        selectedCategory = null;
+        selectedPetType = PetType.All;
+        sortBy = "rating";
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        var query = allVenues.AsEnumerable();
+
+        // Search filter
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            query = query.Where(v =>
+                v.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                v.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                v.City.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                v.State.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+        }
+
+        // Category filter
+        if (selectedCategory.HasValue)
+        {
+            query = query.Where(v => v.Category == selectedCategory.Value);
+        }
+
+        // Pet type filter
+        if (selectedPetType != PetType.All)
+        {
+            query = query.Where(v => 
+                v.AcceptedPetTypes.Contains(selectedPetType) || 
+                v.AcceptedPetTypes.Contains(PetType.All));
+        }
+
+        // Sorting
+        query = sortBy switch
+        {
+            "rating" => query.OrderByDescending(v => v.AverageRating).ThenByDescending(v => v.ReviewCount),
+            "reviews" => query.OrderByDescending(v => v.ReviewCount),
+            "newest" => query.OrderByDescending(v => v.DateAdded),
+            "name" => query.OrderBy(v => v.Name),
+            _ => query.OrderByDescending(v => v.AverageRating)
+        };
+
+        filteredVenues = query.ToList();
+    }
+}
