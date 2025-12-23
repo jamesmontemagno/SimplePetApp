@@ -1,3 +1,119 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JS
 
-@Body
+<div class="page-wrapper" data-theme="@(isDarkMode ? "dark" : "light")">
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-logo">
+                <span class="emoji">🐾</span>
+                <span>MyPetVenues</span>
+            </a>
+            
+            <ul class="navbar-nav @(isMenuOpen ? "open" : "")">
+                <li><NavLink href="/" class="nav-link" Match="NavLinkMatch.All">Home</NavLink></li>
+                <li><NavLink href="/venues" class="nav-link">Venues</NavLink></li>
+                <li><NavLink href="/add-venue" class="nav-link">Add Venue</NavLink></li>
+                <li><NavLink href="/my-pets" class="nav-link">My Pets</NavLink></li>
+                <li><NavLink href="/about" class="nav-link">About</NavLink></li>
+            </ul>
+            
+            <div class="navbar-actions">
+                <button class="theme-toggle" @onclick="ToggleTheme" title="@(isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")">
+                    <span class="theme-icon">@(isDarkMode ? "☀️" : "🌙")</span>
+                </button>
+                <button class="mobile-menu-btn" @onclick="ToggleMenu">
+                    @(isMenuOpen ? "✕" : "☰")
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        @Body
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <span class="emoji">🐾</span>
+                        <span>MyPetVenues</span>
+                    </div>
+                    <p class="footer-description">
+                        Discover pet-friendly locations, share your experiences, and connect with fellow pet lovers. 
+                        Because every pet deserves amazing adventures! 🐕🐱
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" title="Facebook">📘</a>
+                        <a href="#" class="social-link" title="Twitter">🐦</a>
+                        <a href="#" class="social-link" title="Instagram">📷</a>
+                        <a href="#" class="social-link" title="TikTok">🎵</a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="footer-title">Explore</h4>
+                    <ul class="footer-links">
+                        <li><a href="/venues" class="footer-link">All Venues</a></li>
+                        <li><a href="/venues?category=park" class="footer-link">Parks</a></li>
+                        <li><a href="/venues?category=cafe" class="footer-link">Cafés</a></li>
+                        <li><a href="/venues?category=hotel" class="footer-link">Hotels</a></li>
+                        <li><a href="/venues?category=beach" class="footer-link">Beaches</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="footer-title">Community</h4>
+                    <ul class="footer-links">
+                        <li><a href="/add-venue" class="footer-link">Add a Venue</a></li>
+                        <li><a href="/my-pets" class="footer-link">My Pets</a></li>
+                        <li><a href="#" class="footer-link">Write a Review</a></li>
+                        <li><a href="#" class="footer-link">Pet Meetups</a></li>
+                        <li><a href="#" class="footer-link">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="footer-title">Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="/about" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">Contact</a></li>
+                        <li><a href="#" class="footer-link">FAQ</a></li>
+                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="#" class="footer-link">Report Issue</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="footer-copyright">
+                    © @DateTime.Now.Year MyPetVenues. Made with 💕 for pet lovers everywhere.
+                </p>
+                <div class="footer-legal">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+
+@code {
+    private bool isDarkMode = false;
+    private bool isMenuOpen = false;
+
+    private void ToggleTheme()
+    {
+        isDarkMode = !isDarkMode;
+    }
+
+    private void ToggleMenu()
+    {
+        isMenuOpen = !isMenuOpen;
+    }
+}
