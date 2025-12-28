@@ -1,0 +1,40 @@
+@using MyPetVenues.Services
+@inject ThemeService ThemeService
+@implements IDisposable
+
+<header class="top-nav">
+    <div class="nav-brand">
+        <div class="brand-mark">🐾</div>
+        <div class="brand-text">
+            <span class="brand-name">MyPetVenues</span>
+            <small class="brand-tag">Find places that love your pets</small>
+        </div>
+    </div>
+
+    <nav class="nav-links">
+        <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">Home</NavLink>
+        <NavLink class="nav-link" href="/venues">Venues</NavLink>
+    </nav>
+
+    <div class="nav-actions">
+        <button class="ghost-btn" @onclick="ToggleTheme">
+            <span class="icon">@(ThemeService.CurrentTheme == "dark" ? "☀️" : "🌙")</span>
+            <span>@(ThemeService.CurrentTheme == "dark" ? "Light" : "Dark")</span>
+        </button>
+    </div>
+</header>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnChange += StateHasChanged;
+        await ThemeService.InitializeAsync();
+    }
+
+    private async Task ToggleTheme() => await ThemeService.ToggleAsync();
+
+    public void Dispose()
+    {
+        ThemeService.OnChange -= StateHasChanged;
+    }
+}

@@ -1,0 +1,34 @@
+@using MyPetVenues.Models
+
+<div class="venue-card">
+    <div class="venue-image" style=$"background-image:url('{Venue.ImageUrl}')" role="img" aria-label=@Venue.Name></div>
+    <div class="venue-body">
+        <div class="venue-header">
+            <div>
+                <p class="badge">@Venue.Category</p>
+                <h3>@Venue.Name</h3>
+                <p class="subtext">@Venue.City, @Venue.State · @Venue.PetType</p>
+            </div>
+            <div class="rating">
+                ⭐ @Venue.Rating.ToString("0.0")
+                <span class="muted">(@Venue.ReviewCount)</span>
+            </div>
+        </div>
+        <p class="venue-description">@Venue.Description</p>
+        <div class="amenities">
+            @foreach (var amenity in Venue.Amenities)
+            {
+                <span class="chip" @key="amenity">@amenity</span>
+            }
+        </div>
+        <div class="venue-actions">
+            <a class="pill-button" href="/venues#@Venue.Id">View details</a>
+            <span class="muted">Open: @(Venue.Hours ?? "See details")</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required PetVenue Venue { get; set; }
+}
