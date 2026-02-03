@@ -1,0 +1,360 @@
+@page "/venue/{Id:int}"
+@inject MockDataService DataService
+@inject NavigationManager Navigation
+
+<PageTitle>@(venue?.Name ?? "Venue") - MyPetVenues 🐾</PageTitle>
+
+@if (venue == null)
+{
+    <div class="empty-state" style="min-height: 60vh; display: flex; flex-direction: column; justify-content: center;">
+        <div class="empty-emoji">🔍</div>
+        <h3 class="empty-title">Venue Not Found</h3>
+        <p class="empty-description">Sorry, we couldn't find the venue you're looking for.</p>
+        <a href="/venues" class="btn btn-primary">Browse All Venues</a>
+    </div>
+}
+else
+{
+    <!-- Hero Image Section -->
+    <section class="venue-header">
+        <img src="@venue.ImageUrl" alt="@venue.Name" class="venue-hero-image" />
+        <div class="venue-hero-overlay">
+            <div class="container">
+                <span class="card-category" style="background: var(--gradient-primary); padding: 8px 16px; border-radius: 20px; color: white;">
+                    @venue.Category.GetEmoji() @venue.Category.GetDisplayName()
+                </span>
+                <h1 style="font-size: 2.5rem; margin: 1rem 0 0.5rem;">@venue.Name</h1>
+                <div class="flex items-center gap-md" style="flex-wrap: wrap;">
+                    <div class="rating">
+                        <div class="rating-stars">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <span class="rating-star @(i <= venue.AverageRating ? "filled" : "")">★</span>
+                            }
+                        </div>
+                        <span class="rating-value" style="color: white;">@venue.AverageRating.ToString("F1")</span>
+                        <span class="rating-count" style="color: rgba(255,255,255,0.8);">(@venue.ReviewCount reviews)</span>
+                    </div>
+                    <span style="color: rgba(255,255,255,0.8);">•</span>
+                    <span style="color: rgba(255,255,255,0.9);">📍 @venue.City, @venue.State</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="section">
+        <div class="container">
+            <div class="venue-content">
+                <!-- Left Column - Main Info -->
+                <div>
+                    <!-- About Section -->
+                    <div class="mb-lg">
+                        <h2>About This Venue</h2>
+                        <p style="font-size: 1.1rem; line-height: 1.8;">@venue.Description</p>
+                    </div>
+
+                    <!-- Accepted Pets -->
+                    <div class="mb-lg">
+                        <h3>🐾 Accepted Pets</h3>
+                        <div class="pet-types-bar" style="justify-content: flex-start; padding: 1rem 0;">
+                            @foreach (var petType in venue.AcceptedPetTypes)
+                            {
+                                <span class="pet-type-btn active" style="cursor: default;">
+                                    <span class="pet-type-emoji">@petType.GetEmoji()</span>
+                                    <span>@petType.GetDisplayName()</span>
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Amenities Section -->
+                    <div class="mb-lg">
+                        <h3>✨ Amenities</h3>
+                        <div class="grid grid-3" style="gap: 1rem; margin-top: 1rem;">
+                            @foreach (var amenity in venue.Amenities)
+                            {
+                                <div class="amenity-tag" style="padding: 1rem; background: var(--bg-secondary); font-size: 1rem;">
+                                    <span style="font-size: 1.5rem; margin-right: 0.5rem;">@amenity.Icon</span>
+                                    <span style="font-weight: 500;">@amenity.Name</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Reviews Section -->
+                    <div>
+                        <div class="flex items-center justify-between mb-lg">
+                            <h3>💬 Reviews (@venue.Reviews.Count)</h3>
+                            <button class="btn btn-primary" @onclick="ToggleReviewForm">
+                                ✍️ Write a Review
+                            </button>
+                        </div>
+
+                        @if (showReviewForm)
+                        {
+                            <div class="review-card mb-lg" style="background: var(--bg-secondary);">
+                                <h4>Share Your Experience</h4>
+                                <EditForm Model="@newReview" OnValidSubmit="SubmitReview">
+                                    <div class="form-group">
+                                        <label class="form-label">Your Rating</label>
+                                        <div class="rating-stars" style="font-size: 2rem; cursor: pointer;">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                var star = i;
+                                                <span class="rating-star @(star <= newReview.Rating ? "filled" : "")"
+                                                      @onclick="() => SetRating(star)">★</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Your Review</label>
+                                        <textarea class="form-textarea" 
+                                                  placeholder="Tell us about your experience..."
+                                                  @bind="newReview.Comment"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Pet Name (Optional)</label>
+                                        <input type="text" class="form-input" 
+                                               placeholder="Who did you bring?"
+                                               @bind="newReview.PetName" />
+                                    </div>
+                                    <div class="flex gap-md">
+                                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                                        <button type="button" class="btn btn-outline" @onclick="ToggleReviewForm">Cancel</button>
+                                    </div>
+                                </EditForm>
+                            </div>
+                        }
+
+                        @if (venue.Reviews.Count == 0)
+                        {
+                            <div class="empty-state" style="padding: 2rem;">
+                                <div class="empty-emoji">💬</div>
+                                <h4 class="empty-title">No Reviews Yet</h4>
+                                <p class="empty-description">Be the first to share your experience at this venue!</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="grid" style="gap: 1rem;">
+                                @foreach (var review in venue.Reviews.OrderByDescending(r => r.Date))
+                                {
+                                    <div class="review-card">
+                                        <div class="review-header">
+                                            <img src="@review.UserImageUrl" alt="@review.UserName" class="review-avatar" />
+                                            <div class="review-author">
+                                                <div class="review-name">
+                                                    @review.UserName
+                                                    @if (review.PetType.HasValue)
+                                                    {
+                                                        <span>@review.PetType.Value.GetEmoji()</span>
+                                                    }
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(review.PetName))
+                                                {
+                                                    <div class="review-pet">with @review.PetName</div>
+                                                }
+                                            </div>
+                                            <div class="review-date">@review.TimeAgo</div>
+                                        </div>
+                                        <div class="rating mb-lg">
+                                            <div class="rating-stars">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    <span class="rating-star @(i <= review.Rating ? "filled" : "")">★</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <p class="review-content">@review.Comment</p>
+                                        <div class="review-footer">
+                                            <button class="helpful-btn" @onclick="() => MarkHelpful(review)">
+                                                👍 Helpful (@review.HelpfulCount)
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Right Column - Sidebar -->
+                <div class="venue-sidebar">
+                    <div class="venue-info-card">
+                        <div class="venue-info-item">
+                            <span class="venue-info-icon">📍</span>
+                            <div class="venue-info-content">
+                                <div class="venue-info-label">Address</div>
+                                <div class="venue-info-value">@venue.FullAddress</div>
+                            </div>
+                        </div>
+                        <div class="venue-info-item">
+                            <span class="venue-info-icon">📞</span>
+                            <div class="venue-info-content">
+                                <div class="venue-info-label">Phone</div>
+                                <div class="venue-info-value">@venue.Phone</div>
+                            </div>
+                        </div>
+                        <div class="venue-info-item">
+                            <span class="venue-info-icon">🕐</span>
+                            <div class="venue-info-content">
+                                <div class="venue-info-label">Hours</div>
+                                <div class="venue-info-value">@venue.Hours</div>
+                            </div>
+                        </div>
+                        <div class="venue-info-item">
+                            <span class="venue-info-icon">🌐</span>
+                            <div class="venue-info-content">
+                                <div class="venue-info-label">Website</div>
+                                <div class="venue-info-value">
+                                    <a href="@venue.Website" target="_blank" rel="noopener">Visit Website</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1.5rem;">
+                            <button class="btn btn-primary" style="width: 100%; margin-bottom: 0.75rem;">
+                                💕 Save to Favorites
+                            </button>
+                            <button class="btn btn-outline" style="width: 100%;">
+                                📤 Share Venue
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="venue-info-card" style="margin-top: 1.5rem; text-align: center;">
+                        <h4 style="margin-bottom: 1rem;">📊 Quick Stats</h4>
+                        <div class="grid grid-2" style="gap: 1rem;">
+                            <div class="pet-stat">
+                                <div class="pet-stat-value">@venue.AverageRating.ToString("F1")</div>
+                                <div class="pet-stat-label">Avg Rating</div>
+                            </div>
+                            <div class="pet-stat">
+                                <div class="pet-stat-value">@venue.ReviewCount</div>
+                                <div class="pet-stat-label">Reviews</div>
+                            </div>
+                            <div class="pet-stat">
+                                <div class="pet-stat-value">@venue.Amenities.Count</div>
+                                <div class="pet-stat-label">Amenities</div>
+                            </div>
+                            <div class="pet-stat">
+                                <div class="pet-stat-value">@venue.AcceptedPetTypes.Count</div>
+                                <div class="pet-stat-label">Pet Types</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Venues -->
+    @if (relatedVenues.Count > 0)
+    {
+        <section class="section section-alt">
+            <div class="container">
+                <div class="section-header">
+                    <h2>🔗 Similar Venues You Might Like</h2>
+                </div>
+                <div class="grid grid-3">
+                    @foreach (var related in relatedVenues)
+                    {
+                        <div class="card">
+                            <div class="card-image-wrapper">
+                                <img src="@related.ImageUrl" alt="@related.Name" class="card-image" />
+                            </div>
+                            <div class="card-body">
+                                <span class="card-category">
+                                    <span>@related.Category.GetEmoji()</span>
+                                    @related.Category.GetDisplayName()
+                                </span>
+                                <h3 class="card-title">
+                                    <a href="/venue/@related.Id">@related.Name</a>
+                                </h3>
+                                <div class="rating">
+                                    <div class="rating-stars">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <span class="rating-star @(i <= related.AverageRating ? "filled" : "")">★</span>
+                                        }
+                                    </div>
+                                    <span class="rating-value">@related.AverageRating.ToString("F1")</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    }
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Venue? venue;
+    private List<Venue> relatedVenues = [];
+    private bool showReviewForm = false;
+    private Review newReview = new();
+
+    protected override void OnParametersSet()
+    {
+        venue = DataService.GetVenueById(Id);
+        
+        if (venue != null)
+        {
+            relatedVenues = DataService.GetVenuesByCategory(venue.Category)
+                .Where(v => v.Id != venue.Id)
+                .Take(3)
+                .ToList();
+            
+            newReview = new Review
+            {
+                VenueId = venue.Id,
+                UserId = 1, // Current user
+                UserName = "You",
+                UserImageUrl = "images/pets/dog1.png",
+                Rating = 5
+            };
+        }
+    }
+
+    private void ToggleReviewForm()
+    {
+        showReviewForm = !showReviewForm;
+    }
+
+    private void SetRating(int rating)
+    {
+        newReview.Rating = rating;
+    }
+
+    private void SubmitReview()
+    {
+        if (venue != null && !string.IsNullOrWhiteSpace(newReview.Comment))
+        {
+            DataService.AddReview(venue.Id, newReview);
+            showReviewForm = false;
+            
+            // Reset form
+            newReview = new Review
+            {
+                VenueId = venue.Id,
+                UserId = 1,
+                UserName = "You",
+                UserImageUrl = "images/pets/dog1.png",
+                Rating = 5
+            };
+            
+            // Refresh venue data
+            venue = DataService.GetVenueById(Id);
+        }
+    }
+
+    private void MarkHelpful(Review review)
+    {
+        review.HelpfulCount++;
+    }
+}

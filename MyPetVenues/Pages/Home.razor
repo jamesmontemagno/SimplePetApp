@@ -1,7 +1,339 @@
 ﻿@page "/"
+@inject MockDataService DataService
 
-<PageTitle>Home</PageTitle>
+<PageTitle>MyPetVenues - Find Pet-Friendly Places 🐾</PageTitle>
 
-<h1>Hello, world!</h1>
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-emoji">🐾</div>
+            <h1 class="hero-title">Find Paw-some Places for Your Furry Friends!</h1>
+            <p class="hero-subtitle">
+                Discover pet-friendly parks, cafés, hotels, and more. Share your experiences and connect with fellow pet lovers! 🐕🐱🐰
+            </p>
+            <div class="hero-buttons">
+                <a href="/venues" class="btn btn-white btn-lg">
+                    <span>🔍</span> Explore Venues
+                </a>
+                <a href="/add-venue" class="btn btn-ghost btn-lg">
+                    <span>➕</span> Add a Venue
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number">@stats.VenueCount+</span>
+                    <span class="stat-label">Pet-Friendly Venues</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">@stats.ReviewCount+</span>
+                    <span class="stat-label">Happy Reviews</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">@stats.PetCount+</span>
+                    <span class="stat-label">Happy Pets</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-Welcome to your new app.
+<!-- Pet Types Filter -->
+<section class="section">
+    <div class="container">
+        <div class="pet-types-bar">
+            @foreach (var petType in Enum.GetValues<PetType>())
+            {
+                <button class="pet-type-btn @(selectedPetType == petType ? "active" : "")" 
+                        @onclick="() => FilterByPetType(petType)">
+                    <span class="pet-type-emoji">@petType.GetEmoji()</span>
+                    <span>@petType.GetDisplayName()</span>
+                </button>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <div class="features-header">
+            <span class="section-emoji">✨</span>
+            <h2 class="section-title">Why Pet Parents Love Us</h2>
+            <p class="section-subtitle">Everything you need to plan amazing adventures with your furry friends</p>
+        </div>
+        <div class="grid grid-4">
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3 class="feature-title">Discover Venues</h3>
+                <p class="feature-description">Find pet-friendly parks, cafés, hotels, beaches, and more near you or anywhere you're traveling!</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⭐</div>
+                <h3 class="feature-title">Trusted Reviews</h3>
+                <p class="feature-description">Read honest reviews from real pet parents who've visited with their furry companions.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🦴</div>
+                <h3 class="feature-title">Amenity Details</h3>
+                <p class="feature-description">Know exactly what to expect with detailed amenity info - water bowls, treats, off-leash areas, and more!</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💕</div>
+                <h3 class="feature-title">Pet Profiles</h3>
+                <p class="feature-description">Create profiles for your pets and track all your favorite venues and adventures together!</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Venues Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header center">
+            <span class="section-emoji">🌟</span>
+            <h2 class="section-title">Featured Venues</h2>
+            <p class="section-subtitle">Handpicked pet-friendly spots loved by our community</p>
+        </div>
+        <div class="grid grid-3">
+            @foreach (var venue in featuredVenues)
+            {
+                <div class="card">
+                    <div class="card-image-wrapper">
+                        <img src="@venue.ImageUrl" alt="@venue.Name" class="card-image" />
+                        @if (venue.IsFeatured)
+                        {
+                            <span class="card-badge">⭐ Featured</span>
+                        }
+                        <button class="card-favorite" title="Add to favorites">💕</button>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-category">
+                            <span>@venue.Category.GetEmoji()</span>
+                            @venue.Category.GetDisplayName()
+                        </span>
+                        <h3 class="card-title">
+                            <a href="/venue/@venue.Id">@venue.Name</a>
+                        </h3>
+                        <p class="card-description">@venue.Description</p>
+                        <div class="rating">
+                            <div class="rating-stars">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="rating-star @(i <= venue.AverageRating ? "filled" : "")">★</span>
+                                }
+                            </div>
+                            <span class="rating-value">@venue.AverageRating.ToString("F1")</span>
+                            <span class="rating-count">(@venue.ReviewCount reviews)</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="amenities-list">
+                            @foreach (var amenity in venue.Amenities.Take(3))
+                            {
+                                <span class="amenity-tag" title="@amenity.Name">@amenity.Icon</span>
+                            }
+                            @if (venue.Amenities.Count > 3)
+                            {
+                                <span class="amenity-tag">+@(venue.Amenities.Count - 3)</span>
+                            }
+                        </div>
+                        <a href="/venue/@venue.Id" class="btn btn-sm btn-outline">View Details</a>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="text-center mt-lg">
+            <a href="/venues" class="btn btn-primary btn-lg">
+                <span>🔍</span> View All Venues
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Category Browse Section -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-header center">
+            <span class="section-emoji">📍</span>
+            <h2 class="section-title">Browse by Category</h2>
+            <p class="section-subtitle">Find the perfect spot for your next adventure</p>
+        </div>
+        <div class="grid grid-3">
+            @foreach (var category in popularCategories)
+            {
+                <a href="/venues?category=@category.ToString().ToLower()" class="feature-card" style="text-decoration: none;">
+                    <div class="feature-icon">@category.GetEmoji()</div>
+                    <h3 class="feature-title">@category.GetDisplayName()s</h3>
+                    <p class="feature-description">@GetCategoryDescription(category)</p>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Recent Reviews Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header center">
+            <span class="section-emoji">💬</span>
+            <h2 class="section-title">What Pet Parents Are Saying</h2>
+            <p class="section-subtitle">Real reviews from our amazing community</p>
+        </div>
+        <div class="grid grid-3">
+            @foreach (var review in recentReviews)
+            {
+                var venue = DataService.GetVenueById(review.VenueId);
+                <div class="review-card">
+                    <div class="review-header">
+                        <img src="@review.UserImageUrl" alt="@review.UserName" class="review-avatar" />
+                        <div class="review-author">
+                            <div class="review-name">
+                                @review.UserName
+                                @if (review.PetType.HasValue)
+                                {
+                                    <span>@review.PetType.Value.GetEmoji()</span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(review.PetName))
+                            {
+                                <div class="review-pet">with @review.PetName</div>
+                            }
+                        </div>
+                        <div class="review-date">@review.TimeAgo</div>
+                    </div>
+                    <div class="rating mb-lg">
+                        <div class="rating-stars">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <span class="rating-star @(i <= review.Rating ? "filled" : "")">★</span>
+                            }
+                        </div>
+                    </div>
+                    <p class="review-content">@review.Comment</p>
+                    @if (venue != null)
+                    {
+                        <div class="card-meta">
+                            <span>📍</span>
+                            <a href="/venue/@venue.Id">@venue.Name</a>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Meet Some Pets Section -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-header center">
+            <span class="section-emoji">🐾</span>
+            <h2 class="section-title">Meet Our Community Pets</h2>
+            <p class="section-subtitle">Some of the adorable adventurers exploring venues near you!</p>
+        </div>
+        <div class="grid grid-4">
+            @foreach (var pet in communityPets.Take(4))
+            {
+                <div class="pet-card">
+                    <img src="@pet.ImageUrl" alt="@pet.Name" class="pet-image" />
+                    <div class="pet-info">
+                        <h3 class="pet-name">
+                            @pet.Name
+                            <span>@pet.Type.GetEmoji()</span>
+                        </h3>
+                        <p class="pet-breed">@pet.Breed • @pet.AgeDisplay</p>
+                    </div>
+                    <div class="pet-stats">
+                        <div class="pet-stat">
+                            <div class="pet-stat-value">@pet.VisitedVenueIds.Count</div>
+                            <div class="pet-stat-label">Venues Visited</div>
+                        </div>
+                        <div class="pet-stat">
+                            <div class="pet-stat-value">@pet.FavoriteActivities.Count</div>
+                            <div class="pet-stat-label">Activities</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="text-center mt-lg">
+            <a href="/my-pets" class="btn btn-primary btn-lg">
+                <span>🐾</span> Add Your Pet
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section">
+    <div class="container">
+        <div class="cta-banner">
+            <h2 class="cta-title">Know a Great Pet-Friendly Spot? 🌟</h2>
+            <p class="cta-description">
+                Help fellow pet parents discover amazing places! Share your favorite pet-friendly venues 
+                and help grow our community.
+            </p>
+            <a href="/add-venue" class="btn btn-white btn-lg">
+                <span>➕</span> Add a Venue Now
+            </a>
+        </div>
+    </div>
+</section>
+
+@code {
+    private (int VenueCount, int ReviewCount, int PetCount) stats;
+    private List<Venue> featuredVenues = [];
+    private List<Review> recentReviews = [];
+    private List<Pet> communityPets = [];
+    private PetType selectedPetType = PetType.All;
+    
+    private readonly VenueCategory[] popularCategories = 
+    [
+        VenueCategory.Park,
+        VenueCategory.Cafe,
+        VenueCategory.Hotel,
+        VenueCategory.Beach,
+        VenueCategory.Store,
+        VenueCategory.Trail
+    ];
+
+    protected override void OnInitialized()
+    {
+        stats = DataService.GetStatistics();
+        featuredVenues = DataService.GetFeaturedVenues();
+        recentReviews = DataService.GetRecentReviews(3);
+        communityPets = DataService.GetAllPets();
+    }
+
+    private void FilterByPetType(PetType petType)
+    {
+        selectedPetType = petType;
+        if (petType == PetType.All)
+        {
+            featuredVenues = DataService.GetFeaturedVenues();
+        }
+        else
+        {
+            featuredVenues = DataService.GetVenuesByPetType(petType)
+                .Where(v => v.IsFeatured)
+                .ToList();
+            
+            if (featuredVenues.Count == 0)
+            {
+                featuredVenues = DataService.GetVenuesByPetType(petType).Take(5).ToList();
+            }
+        }
+    }
+
+    private static string GetCategoryDescription(VenueCategory category) => category switch
+    {
+        VenueCategory.Park => "Off-leash areas, walking trails, and play spaces for your pup!",
+        VenueCategory.Cafe => "Grab a coffee while your furry friend enjoys a puppuccino!",
+        VenueCategory.Hotel => "Pet-friendly accommodations for your next adventure!",
+        VenueCategory.Beach => "Sandy paws and splashing waves await!",
+        VenueCategory.Store => "Shop with your pet by your side!",
+        VenueCategory.Trail => "Scenic hikes and outdoor adventures for active pets!",
+        _ => "Explore pet-friendly venues!"
+    };
+}

@@ -1,0 +1,373 @@
+@page "/my-pets"
+@inject MockDataService DataService
+
+<PageTitle>My Pets - MyPetVenues 🐾</PageTitle>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1>🐾 My Pets</h1>
+        <p>Manage your furry family members and track their adventures!</p>
+    </div>
+</section>
+
+<!-- Add Pet Button Section -->
+<section class="section">
+    <div class="container">
+        <div class="flex items-center justify-between mb-lg" style="flex-wrap: wrap; gap: 1rem;">
+            <h2>Your Pets (@myPets.Count)</h2>
+            <button class="btn btn-primary" @onclick="ToggleAddForm">
+                @(showAddForm ? "✕ Cancel" : "➕ Add New Pet")
+            </button>
+        </div>
+
+        @if (showAddForm)
+        {
+            <div class="card" style="padding: 2rem; margin-bottom: 2rem; background: var(--bg-secondary);">
+                <h3 style="margin-bottom: 1.5rem;">🐾 Add a New Pet</h3>
+                <EditForm Model="@newPet" OnValidSubmit="AddPet">
+                    <div class="grid grid-2" style="gap: 1.5rem;">
+                        <div class="form-group">
+                            <label class="form-label">Pet Name *</label>
+                            <input type="text" class="form-input" 
+                                   placeholder="What's your pet's name?"
+                                   @bind="newPet.Name" required />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Pet Type *</label>
+                            <select class="form-select" @bind="newPet.Type">
+                                @foreach (var petType in Enum.GetValues<PetType>().Where(p => p != PetType.All))
+                                {
+                                    <option value="@petType">@petType.GetEmoji() @petType.GetDisplayName()</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Breed</label>
+                            <input type="text" class="form-input" 
+                                   placeholder="e.g., Golden Retriever"
+                                   @bind="newPet.Breed" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Age (years)</label>
+                            <input type="number" class="form-input" 
+                                   min="0" max="30"
+                                   @bind="newPet.Age" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Bio</label>
+                        <textarea class="form-textarea" 
+                                  placeholder="Tell us about your pet's personality..."
+                                  @bind="newPet.Bio"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Choose a Photo</label>
+                        <div class="grid grid-4" style="gap: 1rem;">
+                            @foreach (var image in availablePetImages)
+                            {
+                                <div class="card" 
+                                     style="cursor: pointer; @(newPet.ImageUrl == image ? "border: 3px solid var(--primary);" : "")"
+                                     @onclick="() => SelectPetImage(image)">
+                                    <img src="@image" alt="Pet option" style="width: 100%; height: 80px; object-fit: cover;" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="flex gap-md" style="margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-primary">Save Pet</button>
+                        <button type="button" class="btn btn-outline" @onclick="ToggleAddForm">Cancel</button>
+                    </div>
+                </EditForm>
+            </div>
+        }
+
+        @if (myPets.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-emoji">🐾</div>
+                <h3 class="empty-title">No Pets Yet</h3>
+                <p class="empty-description">
+                    Add your furry friends to start tracking their adventures and finding pet-friendly venues!
+                </p>
+                <button class="btn btn-primary" @onclick="ToggleAddForm">➕ Add Your First Pet</button>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-3">
+                @foreach (var pet in myPets)
+                {
+                    <div class="pet-card">
+                        <div style="position: relative;">
+                            <img src="@pet.ImageUrl" alt="@pet.Name" class="pet-image" />
+                            <span class="card-badge">@pet.Type.GetEmoji()</span>
+                        </div>
+                        <div class="pet-info">
+                            <h3 class="pet-name">
+                                @pet.Name
+                                <span>@pet.Type.GetEmoji()</span>
+                            </h3>
+                            <span class="pet-type-badge">
+                                @pet.Type.GetDisplayName()
+                            </span>
+                            <p class="pet-breed" style="margin-top: 0.5rem;">
+                                @if (!string.IsNullOrEmpty(pet.Breed))
+                                {
+                                    <span>@pet.Breed • </span>
+                                }
+                                @pet.AgeDisplay
+                            </p>
+                            <p class="pet-bio">@pet.Bio</p>
+                            
+                            @if (pet.FavoriteActivities.Count > 0)
+                            {
+                                <div class="amenities-list" style="justify-content: center; margin-top: 1rem;">
+                                    @foreach (var activity in pet.FavoriteActivities.Take(3))
+                                    {
+                                        <span class="amenity-tag">@activity</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="pet-stats">
+                            <div class="pet-stat">
+                                <div class="pet-stat-value">@pet.VisitedVenueIds.Count</div>
+                                <div class="pet-stat-label">Venues Visited</div>
+                            </div>
+                            <div class="pet-stat">
+                                <div class="pet-stat-value">@pet.FavoriteActivities.Count</div>
+                                <div class="pet-stat-label">Activities</div>
+                            </div>
+                        </div>
+                        <div style="padding: 1rem; display: flex; gap: 0.5rem;">
+                            <button class="btn btn-sm btn-outline" style="flex: 1;" @onclick="() => EditPet(pet)">
+                                ✏️ Edit
+                            </button>
+                            <button class="btn btn-sm btn-outline" style="flex: 1;" @onclick="() => DeletePet(pet.Id)">
+                                🗑️ Remove
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Pet Activity Section -->
+@if (myPets.Count > 0)
+{
+    <section class="section section-alt">
+        <div class="container">
+            <div class="section-header center">
+                <span class="section-emoji">📊</span>
+                <h2 class="section-title">Pet Adventure Stats</h2>
+                <p class="section-subtitle">See where your pets have been exploring!</p>
+            </div>
+            
+            <div class="grid grid-4">
+                <div class="feature-card">
+                    <div class="feature-icon">🐾</div>
+                    <h3 class="feature-title">@myPets.Count</h3>
+                    <p class="feature-description">Total Pets</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📍</div>
+                    <h3 class="feature-title">@myPets.Sum(p => p.VisitedVenueIds.Count)</h3>
+                    <p class="feature-description">Total Visits</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⭐</div>
+                    <h3 class="feature-title">@myPets.SelectMany(p => p.FavoriteActivities).Distinct().Count()</h3>
+                    <p class="feature-description">Unique Activities</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💕</div>
+                    <h3 class="feature-title">@myPets.Select(p => p.Type).Distinct().Count()</h3>
+                    <p class="feature-description">Pet Types</p>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Suggested Venues Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header center">
+            <span class="section-emoji">🌟</span>
+            <h2 class="section-title">Recommended for Your Pets</h2>
+            <p class="section-subtitle">Venues perfect for your furry friends</p>
+        </div>
+        
+        <div class="grid grid-3">
+            @foreach (var venue in suggestedVenues)
+            {
+                <div class="card">
+                    <div class="card-image-wrapper">
+                        <img src="@venue.ImageUrl" alt="@venue.Name" class="card-image" />
+                        <span class="card-badge">@venue.Category.GetEmoji() @venue.Category.GetDisplayName()</span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">
+                            <a href="/venue/@venue.Id">@venue.Name</a>
+                        </h3>
+                        <p class="card-description">@venue.Description</p>
+                        <div class="rating">
+                            <div class="rating-stars">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="rating-star @(i <= venue.AverageRating ? "filled" : "")">★</span>
+                                }
+                            </div>
+                            <span class="rating-value">@venue.AverageRating.ToString("F1")</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="amenities-list">
+                            @foreach (var petType in venue.AcceptedPetTypes.Take(3))
+                            {
+                                <span class="amenity-tag">@petType.GetEmoji()</span>
+                            }
+                        </div>
+                        <a href="/venue/@venue.Id" class="btn btn-sm btn-outline">Visit</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<Pet> myPets = [];
+    private List<Venue> suggestedVenues = [];
+    private Pet newPet = new();
+    private bool showAddForm = false;
+    private Pet? editingPet = null;
+
+    private readonly string[] availablePetImages =
+    [
+        "images/pets/dog1.png",
+        "images/pets/dog3.jpg",
+        "images/pets/dog4.png",
+        "images/pets/dog5.jpg",
+        "images/pets/dog6.png",
+        "images/pets/dog7.jpg",
+        "images/pets/dog8.jpg",
+        "images/pets/cat1.jpg",
+        "images/pets/cat2.jpg",
+        "images/pets/cat3.jpg",
+        "images/pets/bunny.jpg",
+        "images/pets/hedgehog.jpg"
+    ];
+
+    protected override void OnInitialized()
+    {
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        // Get pets for the current user (user ID 1 for demo)
+        myPets = DataService.GetPetsByOwner(1);
+        
+        // Get suggested venues based on pet types
+        var petTypes = myPets.Select(p => p.Type).Distinct().ToList();
+        if (petTypes.Count > 0)
+        {
+            suggestedVenues = DataService.GetTopRatedVenues(6)
+                .Where(v => v.AcceptedPetTypes.Any(pt => petTypes.Contains(pt) || pt == PetType.All))
+                .Take(3)
+                .ToList();
+        }
+        else
+        {
+            suggestedVenues = DataService.GetTopRatedVenues(3);
+        }
+        
+        ResetNewPet();
+    }
+
+    private void ToggleAddForm()
+    {
+        showAddForm = !showAddForm;
+        if (!showAddForm)
+        {
+            editingPet = null;
+            ResetNewPet();
+        }
+    }
+
+    private void ResetNewPet()
+    {
+        newPet = new Pet
+        {
+            Type = PetType.Dog,
+            OwnerId = 1,
+            ImageUrl = availablePetImages[0],
+            Age = 1
+        };
+    }
+
+    private void SelectPetImage(string imageUrl)
+    {
+        newPet.ImageUrl = imageUrl;
+    }
+
+    private void AddPet()
+    {
+        if (!string.IsNullOrWhiteSpace(newPet.Name))
+        {
+            if (editingPet != null)
+            {
+                // Update existing pet
+                editingPet.Name = newPet.Name;
+                editingPet.Type = newPet.Type;
+                editingPet.Breed = newPet.Breed;
+                editingPet.Age = newPet.Age;
+                editingPet.Bio = newPet.Bio;
+                editingPet.ImageUrl = newPet.ImageUrl;
+                DataService.UpdatePet(editingPet);
+            }
+            else
+            {
+                // Add new pet
+                DataService.AddPet(newPet);
+            }
+            
+            showAddForm = false;
+            editingPet = null;
+            LoadData();
+        }
+    }
+
+    private void EditPet(Pet pet)
+    {
+        editingPet = pet;
+        newPet = new Pet
+        {
+            Id = pet.Id,
+            Name = pet.Name,
+            Type = pet.Type,
+            Breed = pet.Breed,
+            Age = pet.Age,
+            Bio = pet.Bio,
+            ImageUrl = pet.ImageUrl,
+            OwnerId = pet.OwnerId
+        };
+        showAddForm = true;
+    }
+
+    private void DeletePet(int petId)
+    {
+        DataService.DeletePet(petId);
+        LoadData();
+    }
+}

@@ -1,0 +1,316 @@
+@page "/add-venue"
+@inject MockDataService DataService
+@inject NavigationManager Navigation
+
+<PageTitle>Add a Venue - MyPetVenues 🐾</PageTitle>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <h1>➕ Add a Pet-Friendly Venue</h1>
+        <p>Help fellow pet parents discover amazing places for their furry friends!</p>
+    </div>
+</section>
+
+<!-- Form Section -->
+<section class="section">
+    <div class="container" style="max-width: 800px;">
+        @if (isSubmitted)
+        {
+            <div class="empty-state" style="background: var(--bg-secondary); border-radius: var(--radius-xl); padding: 3rem;">
+                <div class="empty-emoji">🎉</div>
+                <h2 class="empty-title">Thank You!</h2>
+                <p class="empty-description">
+                    Your venue has been submitted successfully! It will be reviewed and added to our directory soon.
+                </p>
+                <div class="flex gap-md justify-center" style="flex-wrap: wrap;">
+                    <a href="/venues" class="btn btn-primary">Browse Venues</a>
+                    <button class="btn btn-outline" @onclick="ResetForm">Add Another Venue</button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card" style="padding: 2rem;">
+                <EditForm Model="@newVenue" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    
+                    <!-- Basic Information -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <span>📝</span> Basic Information
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Venue Name *</label>
+                            <input type="text" class="form-input" 
+                                   placeholder="e.g., Pawsome Park" 
+                                   @bind="newVenue.Name" required />
+                            <span class="form-hint">Enter the official name of the venue</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Category *</label>
+                            <select class="form-select" @bind="newVenue.Category">
+                                @foreach (var category in Enum.GetValues<VenueCategory>())
+                                {
+                                    <option value="@category">@category.GetEmoji() @category.GetDisplayName()</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Description *</label>
+                            <textarea class="form-textarea" 
+                                      placeholder="Describe what makes this venue special for pets..."
+                                      @bind="newVenue.Description" required></textarea>
+                            <span class="form-hint">Be specific about pet-friendly features!</span>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <span>📍</span> Location
+                        </h3>
+
+                        <div class="form-group">
+                            <label class="form-label">Street Address *</label>
+                            <input type="text" class="form-input" 
+                                   placeholder="123 Main Street"
+                                   @bind="newVenue.Address" required />
+                        </div>
+
+                        <div class="grid grid-3" style="gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">City *</label>
+                                <input type="text" class="form-input" 
+                                       placeholder="Seattle"
+                                       @bind="newVenue.City" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">State *</label>
+                                <input type="text" class="form-input" 
+                                       placeholder="WA"
+                                       @bind="newVenue.State" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">ZIP Code</label>
+                                <input type="text" class="form-input" 
+                                       placeholder="98101"
+                                       @bind="newVenue.ZipCode" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <span>📞</span> Contact Information
+                        </h3>
+
+                        <div class="grid grid-2" style="gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-input" 
+                                       placeholder="(555) 123-4567"
+                                       @bind="newVenue.Phone" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Website</label>
+                                <input type="url" class="form-input" 
+                                       placeholder="https://example.com"
+                                       @bind="newVenue.Website" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Operating Hours</label>
+                            <input type="text" class="form-input" 
+                                   placeholder="Mon-Fri: 9am-5pm, Sat-Sun: 10am-4pm"
+                                   @bind="newVenue.Hours" />
+                        </div>
+                    </div>
+
+                    <!-- Accepted Pet Types -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <span>🐾</span> Accepted Pet Types
+                        </h3>
+                        <p class="text-muted" style="margin-bottom: 1rem;">Select all pet types that are welcome at this venue</p>
+                        
+                        <div class="form-checkbox-group">
+                            @foreach (var petType in Enum.GetValues<PetType>())
+                            {
+                                <label class="form-checkbox-label">
+                                    <input type="checkbox" 
+                                           checked="@selectedPetTypes.Contains(petType)"
+                                           @onchange="() => TogglePetType(petType)" />
+                                    <span>@petType.GetEmoji() @petType.GetDisplayName()</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Amenities -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <span>✨</span> Amenities
+                        </h3>
+                        <p class="text-muted" style="margin-bottom: 1rem;">Select all amenities available at this venue</p>
+                        
+                        <div class="form-checkbox-group">
+                            @foreach (var amenity in allAmenities)
+                            {
+                                <label class="form-checkbox-label">
+                                    <input type="checkbox" 
+                                           checked="@selectedAmenityIds.Contains(amenity.Id)"
+                                           @onchange="() => ToggleAmenity(amenity.Id)" />
+                                    <span>@amenity.Icon @amenity.Name</span>
+                                </label>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Image -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <span>📸</span> Venue Image
+                        </h3>
+                        <p class="text-muted" style="margin-bottom: 1rem;">Select a representative image for the venue</p>
+                        
+                        <div class="grid grid-3" style="gap: 1rem;">
+                            @foreach (var image in availableImages)
+                            {
+                                <div class="card @(newVenue.ImageUrl == image ? "selected-image" : "")" 
+                                     style="cursor: pointer; @(newVenue.ImageUrl == image ? "border: 3px solid var(--primary);" : "")"
+                                     @onclick="() => SelectImage(image)">
+                                    <img src="@image" alt="Venue option" style="width: 100%; height: 120px; object-fit: cover;" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="flex gap-md" style="margin-top: 2rem;">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            ✅ Submit Venue
+                        </button>
+                        <button type="button" class="btn btn-outline btn-lg" @onclick="ResetForm">
+                            🔄 Reset Form
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Tips Section -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-header center">
+            <span class="section-emoji">💡</span>
+            <h2 class="section-title">Tips for Great Submissions</h2>
+        </div>
+        <div class="grid grid-3">
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3 class="feature-title">Be Detailed</h3>
+                <p class="feature-description">Include specific details about what makes this venue pet-friendly. The more info, the better!</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">✅</div>
+                <h3 class="feature-title">Be Accurate</h3>
+                <p class="feature-description">Double-check the address and hours. Accurate information helps other pet parents plan better.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💕</div>
+                <h3 class="feature-title">Be Helpful</h3>
+                <p class="feature-description">Mention any special rules or requirements. Let others know what to expect when visiting!</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    private Venue newVenue = new();
+    private List<Amenity> allAmenities = [];
+    private HashSet<int> selectedAmenityIds = [];
+    private HashSet<PetType> selectedPetTypes = [];
+    private bool isSubmitted = false;
+
+    private readonly string[] availableImages =
+    [
+        "images/venues/park1.jpg",
+        "images/venues/cafe1.jpg",
+        "images/venues/hotel1.jpg",
+        "images/venues/store1.jpg",
+        "images/venues/home1.jpg",
+        "images/venues/moochs1.jpg"
+    ];
+
+    protected override void OnInitialized()
+    {
+        allAmenities = DataService.GetAllAmenities();
+        ResetForm();
+    }
+
+    private void TogglePetType(PetType petType)
+    {
+        if (selectedPetTypes.Contains(petType))
+        {
+            selectedPetTypes.Remove(petType);
+        }
+        else
+        {
+            selectedPetTypes.Add(petType);
+        }
+    }
+
+    private void ToggleAmenity(int amenityId)
+    {
+        if (selectedAmenityIds.Contains(amenityId))
+        {
+            selectedAmenityIds.Remove(amenityId);
+        }
+        else
+        {
+            selectedAmenityIds.Add(amenityId);
+        }
+    }
+
+    private void SelectImage(string imageUrl)
+    {
+        newVenue.ImageUrl = imageUrl;
+    }
+
+    private void HandleSubmit()
+    {
+        // Set the selected amenities and pet types
+        newVenue.AcceptedPetTypes = selectedPetTypes.ToList();
+        newVenue.Amenities = allAmenities.Where(a => selectedAmenityIds.Contains(a.Id)).ToList();
+        
+        // Set default image if none selected
+        if (string.IsNullOrEmpty(newVenue.ImageUrl))
+        {
+            newVenue.ImageUrl = availableImages[0];
+        }
+
+        // Add the venue
+        DataService.AddVenue(newVenue);
+        isSubmitted = true;
+    }
+
+    private void ResetForm()
+    {
+        newVenue = new Venue
+        {
+            Category = VenueCategory.Park,
+            ImageUrl = availableImages[0]
+        };
+        selectedPetTypes = [PetType.Dog];
+        selectedAmenityIds = [];
+        isSubmitted = false;
+    }
+}
