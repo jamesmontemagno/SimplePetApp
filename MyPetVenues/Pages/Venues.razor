@@ -1,0 +1,184 @@
+@page "/venues"
+@using MyPetVenues.Models
+@inject Services.MockDataService DataService
+
+<PageTitle>Browse Venues - MyPetVenues</PageTitle>
+
+<div class="venues-page">
+    <div class="page-header">
+        <h1>🐾 Pet-Friendly Venues</h1>
+        <p>Discover amazing places to visit with your pets</p>
+    </div>
+    
+    <div class="venues-controls">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" 
+                   placeholder="Search venues..." 
+                   @bind="searchTerm" 
+                   @bind:event="oninput"
+                   @onkeyup="FilterVenues" />
+        </div>
+        
+        <div class="filters">
+            <select @bind="selectedVenueType" @bind:after="FilterVenues" class="filter-select">
+                <option value="">All Types</option>
+                @foreach (var type in Enum.GetValues<VenueType>())
+                {
+                    <option value="@type">@GetVenueTypeIcon(type) @type</option>
+                }
+            </select>
+            
+            <select @bind="selectedPetType" @bind:after="FilterVenues" class="filter-select">
+                <option value="">All Pets</option>
+                @foreach (var type in Enum.GetValues<PetType>())
+                {
+                    <option value="@type">@GetPetEmoji(type) @type</option>
+                }
+            </select>
+            
+            <select @bind="sortBy" @bind:after="FilterVenues" class="filter-select">
+                <option value="rating">⭐ Highest Rated</option>
+                <option value="reviews">💬 Most Reviewed</option>
+                <option value="newest">🆕 Newest</option>
+                <option value="name">📝 Name (A-Z)</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="venues-results">
+        <div class="results-header">
+            <span class="results-count">
+                Found <strong>@filteredVenues.Count</strong> venues
+            </span>
+            
+            @if (HasActiveFilters())
+            {
+                <button class="btn-clear-filters" @onclick="ClearFilters">
+                    Clear Filters ✕
+                </button>
+            }
+        </div>
+        
+        @if (filteredVenues.Any())
+        {
+            <div class="venues-grid">
+                @foreach (var venue in filteredVenues)
+                {
+                    <VenueCard Venue="@venue" />
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-icon">😔</div>
+                <h3>No venues found</h3>
+                <p>Try adjusting your filters or search term</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<Venue> allVenues = new();
+    private List<Venue> filteredVenues = new();
+    
+    private string searchTerm = string.Empty;
+    private string selectedVenueType = string.Empty;
+    private string selectedPetType = string.Empty;
+    private string sortBy = "rating";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        allVenues = await DataService.GetVenuesAsync();
+        FilterVenues();
+    }
+    
+    private void FilterVenues()
+    {
+        IEnumerable<Venue> query = allVenues;
+        
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(v =>
+                v.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                v.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                v.Address.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            );
+        }
+        
+        // Apply venue type filter
+        if (!string.IsNullOrEmpty(selectedVenueType) && Enum.TryParse<VenueType>(selectedVenueType, out var venueType))
+        {
+            query = query.Where(v => v.Type == venueType);
+        }
+        
+        // Apply pet type filter
+        if (!string.IsNullOrEmpty(selectedPetType) && Enum.TryParse<PetType>(selectedPetType, out var petType))
+        {
+            query = query.Where(v => v.AllowedPets.Contains(petType));
+        }
+        
+        // Apply sorting
+        query = sortBy switch
+        {
+            "rating" => query.OrderByDescending(v => v.Rating).ThenByDescending(v => v.ReviewCount),
+            "reviews" => query.OrderByDescending(v => v.ReviewCount).ThenByDescending(v => v.Rating),
+            "newest" => query.OrderByDescending(v => v.DateAdded),
+            "name" => query.OrderBy(v => v.Name),
+            _ => query.OrderByDescending(v => v.Rating)
+        };
+        
+        filteredVenues = query.ToList();
+    }
+    
+    private bool HasActiveFilters()
+    {
+        return !string.IsNullOrWhiteSpace(searchTerm) ||
+               !string.IsNullOrEmpty(selectedVenueType) ||
+               !string.IsNullOrEmpty(selectedPetType);
+    }
+    
+    private void ClearFilters()
+    {
+        searchTerm = string.Empty;
+        selectedVenueType = string.Empty;
+        selectedPetType = string.Empty;
+        FilterVenues();
+    }
+    
+    private string GetVenueTypeIcon(VenueType type)
+    {
+        return type switch
+        {
+            VenueType.Park => "🌳",
+            VenueType.Cafe => "☕",
+            VenueType.Store => "🏪",
+            VenueType.Hotel => "🏨",
+            VenueType.Clinic => "⚕️",
+            VenueType.Restaurant => "🍽️",
+            VenueType.Beach => "🏖️",
+            VenueType.Trail => "🥾",
+            _ => "📍"
+        };
+    }
+    
+    private string GetPetEmoji(PetType petType)
+    {
+        return petType switch
+        {
+            PetType.Dog => "🐕",
+            PetType.Cat => "🐈",
+            PetType.Rabbit => "🐰",
+            PetType.Bird => "🦜",
+            PetType.Hamster => "🐹",
+            PetType.GuineaPig => "🐹",
+            PetType.Hedgehog => "🦔",
+            PetType.Reptile => "🦎",
+            PetType.Fish => "🐠",
+            _ => "🐾"
+        };
+    }
+}

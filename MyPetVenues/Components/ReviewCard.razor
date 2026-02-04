@@ -1,0 +1,60 @@
+@using MyPetVenues.Models
+
+<div class="review-card">
+    <div class="review-card-header">
+        <div class="review-user">
+            <div class="review-user-avatar">
+                @if (!string.IsNullOrEmpty(Review.User?.AvatarUrl))
+                {
+                    <img src="@Review.User.AvatarUrl" alt="@Review.UserName" />
+                }
+                else
+                {
+                    <span>👤</span>
+                }
+            </div>
+            <div class="review-user-info">
+                <div class="review-user-name">@Review.UserName</div>
+                <div class="review-date">@Review.DateCreated.ToString("MMMM dd, yyyy")</div>
+            </div>
+        </div>
+        
+        <div class="review-rating">
+            <StarRating Rating="@Review.Rating" />
+        </div>
+    </div>
+    
+    @if (!string.IsNullOrEmpty(Review.Title))
+    {
+        <h4 class="review-title">@Review.Title</h4>
+    }
+    
+    <p class="review-comment">@Review.Comment</p>
+    
+    <div class="review-meta">
+        <span class="review-pet-type">@GetPetEmoji(Review.PetType) @Review.PetType</span>
+        <span class="review-helpful">👍 @Review.HelpfulCount helpful</span>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Review Review { get; set; } = null!;
+    
+    private string GetPetEmoji(PetType petType)
+    {
+        return petType switch
+        {
+            PetType.Dog => "🐕",
+            PetType.Cat => "🐈",
+            PetType.Rabbit => "🐰",
+            PetType.Bird => "🦜",
+            PetType.Hamster => "🐹",
+            PetType.GuineaPig => "🐹",
+            PetType.Hedgehog => "🦔",
+            PetType.Reptile => "🦎",
+            PetType.Fish => "🐠",
+            _ => "🐾"
+        };
+    }
+}

@@ -1,0 +1,108 @@
+@using MyPetVenues.Models
+
+<div class="venue-card" @onclick="NavigateToVenue">
+    <div class="venue-card-image">
+        <img src="@Venue.ImageUrl" alt="@Venue.Name" loading="lazy" />
+        <div class="venue-card-type">@GetVenueTypeIcon() @Venue.Type</div>
+    </div>
+    
+    <div class="venue-card-content">
+        <h3 class="venue-card-title">@Venue.Name</h3>
+        
+        <div class="venue-card-rating">
+            <StarRating Rating="@Venue.Rating" ShowCount="true" Count="@Venue.ReviewCount" />
+        </div>
+        
+        <p class="venue-card-description">@TruncateDescription(Venue.Description)</p>
+        
+        <div class="venue-card-pets">
+            @foreach (var petType in Venue.AllowedPets.Take(3))
+            {
+                <span class="pet-badge">@GetPetEmoji(petType) @petType</span>
+            }
+            @if (Venue.AllowedPets.Count > 3)
+            {
+                <span class="pet-badge-more">+@(Venue.AllowedPets.Count - 3) more</span>
+            }
+        </div>
+        
+        @if (Venue.Amenities.Any())
+        {
+            <div class="venue-card-amenities">
+                @foreach (var amenity in Venue.Amenities.Take(4))
+                {
+                    <span class="amenity-badge" title="@amenity.Name">@amenity.Icon</span>
+                }
+                @if (Venue.Amenities.Count > 4)
+                {
+                    <span class="amenity-badge-more">+@(Venue.Amenities.Count - 4)</span>
+                }
+            </div>
+        }
+        
+        <div class="venue-card-footer">
+            <span class="venue-card-address">📍 @GetShortAddress()</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Venue Venue { get; set; } = null!;
+    
+    [Inject]
+    private NavigationManager Navigation { get; set; } = null!;
+    
+    private void NavigateToVenue()
+    {
+        Navigation.NavigateTo($"/venues/{Venue.Id}");
+    }
+    
+    private string TruncateDescription(string description)
+    {
+        const int maxLength = 100;
+        if (description.Length <= maxLength)
+            return description;
+        
+        return description.Substring(0, maxLength) + "...";
+    }
+    
+    private string GetShortAddress()
+    {
+        var parts = Venue.Address.Split(',');
+        return parts.Length > 0 ? parts[0].Trim() : Venue.Address;
+    }
+    
+    private string GetVenueTypeIcon()
+    {
+        return Venue.Type switch
+        {
+            VenueType.Park => "🌳",
+            VenueType.Cafe => "☕",
+            VenueType.Store => "🏪",
+            VenueType.Hotel => "🏨",
+            VenueType.Clinic => "⚕️",
+            VenueType.Restaurant => "🍽️",
+            VenueType.Beach => "🏖️",
+            VenueType.Trail => "🥾",
+            _ => "📍"
+        };
+    }
+    
+    private string GetPetEmoji(PetType petType)
+    {
+        return petType switch
+        {
+            PetType.Dog => "🐕",
+            PetType.Cat => "🐈",
+            PetType.Rabbit => "🐰",
+            PetType.Bird => "🦜",
+            PetType.Hamster => "🐹",
+            PetType.GuineaPig => "🐹",
+            PetType.Hedgehog => "🦔",
+            PetType.Reptile => "🦎",
+            PetType.Fish => "🐠",
+            _ => "🐾"
+        };
+    }
+}
