@@ -6,6 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MyPetVenues</title>
     <base href="/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        (() => {
+            const saved = localStorage.getItem('petVenuesTheme');
+            const prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = saved || (prefers ? 'dark' : 'light');
+            document.documentElement.dataset.theme = theme;
+            document.body?.classList.add(theme === 'dark' ? 'theme-dark' : 'theme-light');
+        })();
+    </script>
     <link rel="stylesheet" href="css/app.css" />
     <link href="MyPetVenues.styles.css" rel="stylesheet" />
 </head>
@@ -24,6 +36,7 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
+    <script src="js/theme.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 

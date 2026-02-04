@@ -1,0 +1,112 @@
+@page "/venues"
+@inject IPetVenueService VenueService
+
+<PageTitle>Venues</PageTitle>
+
+<section class="section">
+    <div class="section-heading">
+        <p class="eyebrow">Browse</p>
+        <h1>Pet-friendly venues</h1>
+        <p class="muted">Search, filter, and explore our mock dataset. All content is sample data for demo purposes.</p>
+    </div>
+
+    <div class="filters">
+        <input type="search" placeholder="Search by name, city, or vibe" value="@_searchTerm" @oninput="OnSearch" />
+        <select value="@_petType" @onchange="OnPetTypeChanged">
+            <option value="all">All pets</option>
+            <option value="Dogs">Dogs</option>
+            <option value="Cats">Cats</option>
+            <option value="Small Pets">Small Pets</option>
+            <option value="All Pets">All Pets</option>
+        </select>
+    </div>
+
+    <div class="amenity-chips">
+        @foreach (var amenity in _allAmenities)
+        {
+            var active = _selectedAmenities.Contains(amenity);
+            <button class="chip @(active ? "active" : string.Empty)" @onclick="() => ToggleAmenity(amenity)" aria-pressed="@active">
+                @if (active)
+                {
+                    <span>✓</span>
+                }
+                @amenity
+            </button>
+        }
+    </div>
+
+    <div class="cards-grid" id="results">
+        @if (_filtered.Count == 0)
+        {
+            <div class="empty-state">
+                <p>No venues match that combo yet. Try removing a filter.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var venue in _filtered)
+            {
+                <div id="@venue.Id">
+                    <VenueCard Venue="venue" @key="venue.Id" />
+                </div>
+            }
+        }
+    </div>
+</section>
+
+@code {
+    private IReadOnlyList<PetVenue> _allVenues = Array.Empty<PetVenue>();
+    private IReadOnlyList<PetVenue> _filtered = Array.Empty<PetVenue>();
+    private readonly HashSet<string> _selectedAmenities = new(StringComparer.OrdinalIgnoreCase);
+    private readonly string[] _allAmenities = new[] { "Water bowls", "Shade", "Agility course", "Restrooms", "Indoor seating", "Treat menu", "Wi-Fi", "Quiet zone", "Heated patio", "Dog menu", "Waste bags" };
+    private string _searchTerm = string.Empty;
+    private string _petType = "all";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _allVenues = await VenueService.GetAllAsync();
+        await ApplyFiltersAsync();
+    }
+
+    private Task ApplyFiltersAsync()
+    {
+        _filtered = _allVenues
+            .Where(v => string.IsNullOrWhiteSpace(_searchTerm)
+                || v.Name.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)
+                || v.City.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)
+                || v.Description.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase))
+            .Where(v => _petType.Equals("all", StringComparison.OrdinalIgnoreCase)
+                || v.PetType.Equals(_petType, StringComparison.OrdinalIgnoreCase)
+                || v.PetType.Equals("All Pets", StringComparison.OrdinalIgnoreCase))
+            .Where(v => !_selectedAmenities.Any() || _selectedAmenities.All(a => v.Amenities.Any(x => x.Equals(a, StringComparison.OrdinalIgnoreCase))))
+            .ToList();
+
+        return Task.CompletedTask;
+    }
+
+    private async Task ToggleAmenity(string amenity)
+    {
+        if (_selectedAmenities.Contains(amenity))
+        {
+            _selectedAmenities.Remove(amenity);
+        }
+        else
+        {
+            _selectedAmenities.Add(amenity);
+        }
+
+        await ApplyFiltersAsync();
+    }
+
+    private async Task OnSearch(ChangeEventArgs args)
+    {
+        _searchTerm = args.Value?.ToString() ?? string.Empty;
+        await ApplyFiltersAsync();
+    }
+
+    private async Task OnPetTypeChanged(ChangeEventArgs args)
+    {
+        _petType = args.Value?.ToString() ?? "all";
+        await ApplyFiltersAsync();
+    }
+}
